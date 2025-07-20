@@ -23,7 +23,7 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
     video.onloadedmetadata = () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      video.currentTime = 0; // Seek to 1 second
+      video.currentTime = 0;
     };
 
     video.onseeked = () => {
@@ -96,14 +96,12 @@ export const VideoPlayer = ({
     setActiveIndex(newIndex);
 
     if (nextItem.type && !isImageType(String(nextItem.type))) {
-      // It's a video, start playing immediately
       setShown(true);
       setPlaying(true);
       setMuted(false);
       stopAudio();
       pauseAllOtherVideos();
     } else {
-      // It's an image, just show it
       setShown(true);
       setPlaying(false);
     }
@@ -199,6 +197,29 @@ export const VideoPlayer = ({
         }
       });
 
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        if (playerRef.current) {
+          const currentTime = playerRef.current.getCurrentTime();
+          const newTime = Math.max(0, currentTime - 10);
+          playerRef.current.seekTo(newTime);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        if (playerRef.current) {
+          const currentTime = playerRef.current.getCurrentTime();
+          const duration = playerRef.current.getDuration();
+          const newTime = Math.min(duration, currentTime + 10);
+          playerRef.current.seekTo(newTime);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (playerRef.current && details.seekTime !== null) {
+          playerRef.current.seekTo(details.seekTime);
+        }
+      });
+
       navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
     }
 
@@ -206,6 +227,9 @@ export const VideoPlayer = ({
       if ('mediaSession' in navigator) {
         navigator.mediaSession.setActionHandler('play', null);
         navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('seekbackward', null);
+        navigator.mediaSession.setActionHandler('seekforward', null);
+        navigator.mediaSession.setActionHandler('seekto', null);
       }
     };
   }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos]);
@@ -243,8 +267,19 @@ export const VideoPlayer = ({
     return false
   };
 
-  const handleProgress = (state: { played: number }) => {
+  const handleProgress = (state: { played: number; playedSeconds: number; loadedSeconds: number }) => {
     setProgress(state.played * 100);
+    
+    if ('mediaSession' in navigator && playerRef.current) {
+      const duration = playerRef.current.getDuration();
+      if (duration && shown) {
+        navigator.mediaSession.setPositionState({
+          duration: duration,
+          playbackRate: 1,
+          position: state.playedSeconds
+        });
+      }
+    }
   };
 
   const handleSeekChange = (value: number) => {
