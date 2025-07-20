@@ -178,8 +178,18 @@ export const VideoPlayer = ({
       return;
     }
     const player = playerWithControlsRef.current;
-    screenfull.toggle(player, { navigationUI: "hide" }).catch((error) => {
+    const wasPlaying = playing;
+    screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
+      // Preserve playing state after fullscreen toggle
+      if (wasPlaying) {
+        setPlaying(true);
+      }
+    }).catch((error) => {
       console.error("Error toggling fullscreen:", error);
+      // Restore playing state even if fullscreen toggle fails
+      if (wasPlaying) {
+        setPlaying(true);
+      }
     });
   };
 
@@ -243,8 +253,8 @@ export const VideoPlayer = ({
           e.preventDefault();
           if (!shown) {
             setShown(true);
+            handlePlayPause();
           }
-          handlePlayPause();
         }}
         onKeyDown={(e) => {
           if (e.key === " ") {
@@ -254,7 +264,16 @@ export const VideoPlayer = ({
         className="relative h-full flex flex-col"
       >
         <div className="relative flex-1">
-          <div className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}>
+          <div 
+            className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}
+            onClick={(e) => {
+              if (shown && !isFullscreen) {
+                e.stopPropagation();
+                e.preventDefault();
+                handlePlayPause();
+              }
+            }}
+          >
             {shown &&
               (() => {
                 const currentItem = getCurrentItem();
@@ -442,7 +461,11 @@ export const VideoPlayer = ({
             value={progress}
           />
           {screenfull.isEnabled && (
-            <button type="button" onClick={handleFullscreen}>
+            <button type="button" onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleFullscreen();
+            }}>
               {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
             </button>
           )}
