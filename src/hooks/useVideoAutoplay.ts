@@ -64,10 +64,12 @@ export function useVideoAutoplay(
     const shouldPlay = isIntersecting && intersectionRatio >= threshold;
     
     if (shouldPlay && !isAutoplaying.current) {
+      pauseAllOtherVideos();
       timeoutRef.current = setTimeout(() => {
-        pauseAllOtherVideos();
-        playCallbackRef.current?.();
-        isAutoplaying.current = true;
+        if (isIntersecting && intersectionRatio >= threshold) {
+          playCallbackRef.current?.();
+          isAutoplaying.current = true;
+        }
       }, debounceMs);
     } else if (!shouldPlay && isAutoplaying.current) {
       pauseCallbackRef.current?.();
