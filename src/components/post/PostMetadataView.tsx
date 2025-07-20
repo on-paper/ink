@@ -335,26 +335,34 @@ type MediaAttachment = {
 };
 
 const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; authorHandle?: string }) => {
+  const hasMixedMedia = items.some(item => item.type && isImageMimeType(String(item.type))) && 
+                        items.some(item => item.type && !isImageMimeType(String(item.type)));
+  const firstVideoIndex = items.findIndex(item => item.type && !isImageMimeType(String(item.type)));
+  
   return (
     <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" style={{ height: "300px" }}>
       <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
-        {items.map((item, index) => (
-          <div key={`${item.item}-${index}`} className="h-full flex items-center">
-            {item.type && isImageMimeType(String(item.type)) ? (
-              <ImageViewer
-                src={item.item}
-                alt={`Gallery image ${index + 1}`}
-                className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
-                galleryItems={items}
-                currentIndex={index}
-              />
-            ) : (
-              <div className="h-full flex items-center" style={{ height: "300px" }}>
-                <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={index === 0} authorHandle={authorHandle} />
-              </div>
-            )}
-          </div>
-        ))}
+        {items.map((item, index) => {
+          const isFirstVideo = index === firstVideoIndex;
+          
+          return (
+            <div key={`${item.item}-${index}`} className="h-full flex items-center">
+              {item.type && isImageMimeType(String(item.type)) ? (
+                <ImageViewer
+                  src={item.item}
+                  alt={`Gallery image ${index + 1}`}
+                  className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
+                  galleryItems={items}
+                  currentIndex={index}
+                />
+              ) : (
+                <div className="h-full flex items-center" style={{ height: "300px" }}>
+                  <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={isFirstVideo} authorHandle={authorHandle} useModal={hasMixedMedia} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

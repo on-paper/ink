@@ -9,6 +9,8 @@ import { useVideoAutoplay } from "../hooks/useVideoAutoplay";
 import { Progress } from "./ui/video-progress";
 import { useSetAtom } from "jotai";
 import { stopAudioAtom } from "../atoms/audio";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 
 // when a video has no preview, we generate a thumbnail from the video
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
@@ -54,6 +56,7 @@ export const VideoPlayer = ({
   autoplayThreshold = 0.5,
   autoplayRootMargin = "-10% 0px",
   authorHandle,
+  useModal = false,
 }: {
   url: string;
   preview: string;
@@ -63,6 +66,7 @@ export const VideoPlayer = ({
   autoplayThreshold?: number;
   autoplayRootMargin?: string;
   authorHandle?: string;
+  useModal?: boolean;
 }) => {
   const playerWithControlsRef = useRef(null);
   const playerRef = useRef(null);
@@ -75,6 +79,9 @@ export const VideoPlayer = ({
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
   const [isHovering, setIsHovering] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [direction, setDirection] = useState(0);
+  const [isInitialOpen, setIsInitialOpen] = useState(true);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
   const { registerPlayer, pauseAllOtherVideos } = useVideoState(videoId);
   const { ref: autoplayRef, registerAutoplayCallbacks } = useVideoAutoplay(videoId, {
@@ -93,6 +100,8 @@ export const VideoPlayer = ({
     if (!galleryItems || galleryItems.length <= 1) return;
 
     const nextItem = galleryItems[newIndex];
+    setIsInitialOpen(false);
+    setDirection(newIndex > activeIndex ? 1 : -1);
     setActiveIndex(newIndex);
 
     if (nextItem.type && !isImageType(String(nextItem.type))) {
@@ -251,19 +260,27 @@ export const VideoPlayer = ({
   };
 
   const handleFullscreen = () => {
-    if (!screenfull.isEnabled || !playerWithControlsRef.current) {
-      return;
-    }
-    const player = playerWithControlsRef.current;
-    if (muted) {
-      setMuted(false);
-      stopAudio();
-    }
+    if (useModal || (galleryItems && galleryItems.some(item => item.type && isImageType(String(item.type))))) {
+      setModalOpen(!modalOpen);
+      if (!modalOpen && muted) {
+        setMuted(false);
+        stopAudio();
+      }
+    } else {
+      if (!screenfull.isEnabled || !playerWithControlsRef.current) {
+        return;
+      }
+      const player = playerWithControlsRef.current;
+      if (muted) {
+        setMuted(false);
+        stopAudio();
+      }
 
-    screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
-    }).catch((error) => {
-      console.error("Error toggling fullscreen:", error);
-    });
+      screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
+      }).catch((error) => {
+        console.error("Error toggling fullscreen:", error);
+      });
+    }
     return false
   };
 
@@ -302,7 +319,151 @@ export const VideoPlayer = ({
     }
   }, [url, preview, generatedThumbnail]);
 
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? "33%" : "-33%",
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? "33%" : "-33%",
+      opacity: 0,
+    }),
+  };
+
+  const modalContent = (
+    <AnimatePresence>
+      {modalOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setModalOpen(false);
+            setIsInitialOpen(true);
+          }}
+        >
+          <div className="absolute z-[60] right-4 top-4">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setModalOpen(false);
+                setIsInitialOpen(true);
+              }}
+              className="w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
+            >
+              <XIcon className="w-6 h-6 text-white" />
+            </button>
+          </div>
+
+          {galleryItems && galleryItems.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  goToPrevious();
+                }}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 z-[60] w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  goToNext();
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 z-[60] w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          <div className="flex items-center justify-center h-full w-full overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                layout
+                key={activeIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial={isInitialOpen ? "center" : "enter"}
+                animate="center"
+                exit="exit"
+                transition={{
+                  duration: 0.15,
+                }}
+                className="flex items-center justify-center h-full w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {(() => {
+                  const currentItem = getCurrentItem();
+                  return currentItem.type && isImageType(String(currentItem.type)) ? (
+                    <img src={currentItem.item} alt="Gallery item" className="max-h-full max-w-full object-contain" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <ReactPlayer
+                        ref={playerRef}
+                        playing={playing}
+                        onProgress={handleProgress}
+                        progressInterval={50}
+                        controls={false}
+                        muted={muted}
+                        height="100%"
+                        width="100%"
+                        url={currentItem.item}
+                        loop
+                        style={{ objectFit: "contain" }}
+                      />
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {galleryItems && galleryItems.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[60] flex gap-2">
+              {galleryItems.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsInitialOpen(false);
+                    setDirection(index > activeIndex ? 1 : -1);
+                    setActiveIndex(index);
+                    navigateToItem(index);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all ${index === activeIndex ? "bg-white" : "bg-white/50"}`}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   return (
+    <>
     <div
       ref={(node) => {
         playerWithControlsRef.current = node;
@@ -547,11 +708,13 @@ export const VideoPlayer = ({
               e.preventDefault();
               handleFullscreen();
             }}>
-              {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
+              {(isFullscreen || modalOpen) ? <MinimizeIcon /> : <MaximizeIcon />}
             </button>
           )}
         </div>
       )}
     </div>
+    {typeof document !== "undefined" && createPortal(modalContent, document.body)}
+    </>
   );
 };
