@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import screenfull from "screenfull";
 import { useVideoState } from "../hooks/useVideoState";
+import { useVideoAutoplay } from "../hooks/useVideoAutoplay";
 import { Progress } from "./ui/video-progress";
 
 // when a video has no preview, we generate a thumbnail from the video
@@ -47,11 +48,17 @@ export const VideoPlayer = ({
   preview,
   galleryItems,
   currentIndex,
+  autoplay = true,
+  autoplayThreshold = 0.5,
+  autoplayRootMargin = "-10% 0px",
 }: {
   url: string;
   preview: string;
   galleryItems?: any[];
   currentIndex?: number;
+  autoplay?: boolean;
+  autoplayThreshold?: number;
+  autoplayRootMargin?: string;
 }) => {
   const playerWithControlsRef = useRef(null);
   const playerRef = useRef(null);
@@ -65,6 +72,11 @@ export const VideoPlayer = ({
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
   const { registerPlayer, pauseAllOtherVideos } = useVideoState(videoId);
+  const { ref: autoplayRef, registerAutoplayCallbacks } = useVideoAutoplay(videoId, {
+    enabled: autoplay,
+    threshold: autoplayThreshold,
+    rootMargin: autoplayRootMargin,
+  });
 
   const isImageType = (type: string): boolean => {
     const imageTypes = ["PNG", "JPEG", "GIF", "BMP", "WEBP", "SVG_XML", "TIFF", "AVIF", "HEIC", "X_MS_BMP"];
@@ -140,7 +152,18 @@ export const VideoPlayer = ({
     registerPlayer(() => {
       setPlaying(false);
     });
-  }, [registerPlayer]);
+    
+    registerAutoplayCallbacks(
+      () => {
+        setShown(true);
+        setPlaying(true);
+        setMuted(true);
+      },
+      () => {
+        setPlaying(false);
+      }
+    );
+  }, [registerPlayer, registerAutoplayCallbacks]);
 
   const handlePlayPause = () => {
     if (!playing) {
@@ -186,7 +209,10 @@ export const VideoPlayer = ({
 
   return (
     <div
-      ref={playerWithControlsRef}
+      ref={(node) => {
+        playerWithControlsRef.current = node;
+        autoplayRef.current = node;
+      }}
       className={`relative flex justify-center items-center rounded-lg overflow-hidden border 
         ${preview !== "" ? "max-h-[400px] w-fit" : "h-fit"}
         ${isFullscreen && "w-full"} 

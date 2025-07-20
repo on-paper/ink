@@ -211,7 +211,7 @@ const getVideoMediaContent = (metadata: VideoMetadataDetails): React.ReactNode =
     <MediaGallery items={allMedia} />
   ) : allMedia.length === 1 ? (
     <div className="mt-2" style={{ maxHeight: "min(100%, 400px)" }}>
-      <VideoPlayer url={allMedia[0].item} preview={cover} />
+      <VideoPlayer url={allMedia[0].item} preview={cover} autoplay={true} />
     </div>
   ) : null;
 };
@@ -346,7 +346,7 @@ const MediaGallery = ({ items }: { items: MediaAttachment[] }) => {
               />
             ) : (
               <div className="h-full flex items-center" style={{ height: "300px" }}>
-                <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} />
+                <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={true} />
               </div>
             )}
           </div>
