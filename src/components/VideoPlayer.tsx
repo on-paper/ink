@@ -53,6 +53,7 @@ export const VideoPlayer = ({
   autoplay = true,
   autoplayThreshold = 0.5,
   autoplayRootMargin = "-10% 0px",
+  authorHandle,
 }: {
   url: string;
   preview: string;
@@ -61,6 +62,7 @@ export const VideoPlayer = ({
   autoplay?: boolean;
   autoplayThreshold?: number;
   autoplayRootMargin?: string;
+  authorHandle?: string;
 }) => {
   const playerWithControlsRef = useRef(null);
   const playerRef = useRef(null);
@@ -172,6 +174,42 @@ export const VideoPlayer = ({
     );
   }, [registerPlayer, registerAutoplayCallbacks, isFullscreen]);
 
+  useEffect(() => {
+    if ('mediaSession' in navigator && shown) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: authorHandle ? `Video by @${authorHandle}` : 'Video',
+        artist: 'Pingpad',
+        artwork: [
+          { src: preview || generatedThumbnail || '', sizes: '512x512', type: 'image/jpeg' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (!playing) {
+          setPlaying(true);
+          setMuted(false);
+          stopAudio();
+          pauseAllOtherVideos();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (playing) {
+          setPlaying(false);
+        }
+      });
+
+      navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+    }
+
+    return () => {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+      }
+    };
+  }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos]);
+
   const handlePlayPause = () => {
     if (!playing) {
       setPlaying(true);
@@ -235,7 +273,7 @@ export const VideoPlayer = ({
         playerWithControlsRef.current = node;
         autoplayRef.current = node;
       }}
-      className={`relative flex justify-center items-center rounded-lg overflow-hidden border 
+      className={`relative flex justify-center items-center rounded-lg overflow-hidden 
         ${preview !== "" ? "max-h-[400px] w-fit" : "h-fit"}
         ${isFullscreen && "w-full"} 
       `}
@@ -453,7 +491,7 @@ export const VideoPlayer = ({
             e.stopPropagation();
             e.preventDefault();
           }}
-          className={`z-10 w-full border-t transition-all absolute bottom-0 flex justify-between items-center backdrop-blur-sm text-secondary-foreground p-2 bg-secondary/50 cursor-pointer ${
+          className={`z-10 w-full transition-all absolute bottom-0 flex justify-between items-center backdrop-blur-sm text-secondary-foreground p-2 bg-secondary/40 cursor-pointer ${
             !muted && !isHovering ? "opacity-0" : "opacity-100"
           }`}
         >
