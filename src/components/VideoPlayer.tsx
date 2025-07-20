@@ -179,17 +179,23 @@ export const VideoPlayer = ({
     }
     const player = playerWithControlsRef.current;
     const wasPlaying = playing;
+    
+    // Use setTimeout to ensure state is preserved after fullscreen change
     screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
-      // Preserve playing state after fullscreen toggle
-      if (wasPlaying) {
-        setPlaying(true);
-      }
+      // Small delay to ensure fullscreen transition completes
+      setTimeout(() => {
+        if (wasPlaying) {
+          setPlaying(true);
+        }
+      }, 100);
     }).catch((error) => {
       console.error("Error toggling fullscreen:", error);
       // Restore playing state even if fullscreen toggle fails
-      if (wasPlaying) {
-        setPlaying(true);
-      }
+      setTimeout(() => {
+        if (wasPlaying) {
+          setPlaying(true);
+        }
+      }, 100);
     });
   };
 
@@ -267,7 +273,7 @@ export const VideoPlayer = ({
           <div 
             className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}
             onClick={(e) => {
-              if (shown && !isFullscreen) {
+              if (shown) {
                 e.stopPropagation();
                 e.preventDefault();
                 handlePlayPause();
