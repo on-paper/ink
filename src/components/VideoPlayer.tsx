@@ -72,6 +72,7 @@ export const VideoPlayer = ({
   const [shown, setShown] = useState(false);
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
+  const [isHovering, setIsHovering] = useState(false);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
   const { registerPlayer, pauseAllOtherVideos } = useVideoState(videoId);
   const { ref: autoplayRef, registerAutoplayCallbacks } = useVideoAutoplay(videoId, {
@@ -241,6 +242,8 @@ export const VideoPlayer = ({
       onClick={() => {
         if (isFullscreen) handleFullscreen();
       }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
       onKeyDown={(e) => {
         if (e.key === "f") {
           handleFullscreen();
@@ -450,7 +453,9 @@ export const VideoPlayer = ({
             e.stopPropagation();
             e.preventDefault();
           }}
-          className="z-10 w-full border-t transition-all absolute bottom-0 flex justify-between items-center backdrop-blur-sm text-secondary-foreground p-2 bg-secondary/50 cursor-pointer"
+          className={`z-10 w-full border-t transition-all absolute bottom-0 flex justify-between items-center backdrop-blur-sm text-secondary-foreground p-2 bg-secondary/50 cursor-pointer ${
+            !muted && !isHovering ? "opacity-0" : "opacity-100"
+          }`}
         >
           <button type="button" onClick={handlePlayPause}>
             {playing ? <PauseIcon /> : <PlayIcon />}
