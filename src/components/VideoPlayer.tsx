@@ -7,6 +7,8 @@ import screenfull from "screenfull";
 import { useVideoState } from "../hooks/useVideoState";
 import { useVideoAutoplay } from "../hooks/useVideoAutoplay";
 import { Progress } from "./ui/video-progress";
+import { useSetAtom } from "jotai";
+import { stopAudioAtom } from "../atoms/audio";
 
 // when a video has no preview, we generate a thumbnail from the video
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
@@ -77,6 +79,7 @@ export const VideoPlayer = ({
     threshold: autoplayThreshold,
     rootMargin: autoplayRootMargin,
   });
+  const stopAudio = useSetAtom(stopAudioAtom);
 
   const isImageType = (type: string): boolean => {
     const imageTypes = ["PNG", "JPEG", "GIF", "BMP", "WEBP", "SVG_XML", "TIFF", "AVIF", "HEIC", "X_MS_BMP"];
@@ -94,6 +97,7 @@ export const VideoPlayer = ({
       setShown(true);
       setPlaying(true);
       setMuted(false);
+      stopAudio();
       pauseAllOtherVideos();
     } else {
       // It's an image, just show it
@@ -171,9 +175,11 @@ export const VideoPlayer = ({
     if (!playing) {
       setPlaying(true);
       setMuted(false);
+      stopAudio();
     } else {
       if (muted) {
         setMuted(false);
+        stopAudio();
       } else {
         setPlaying(false);
       }
@@ -186,7 +192,10 @@ export const VideoPlayer = ({
       return;
     }
     const player = playerWithControlsRef.current;
-    if (muted) setMuted(false);
+    if (muted) {
+      setMuted(false);
+      stopAudio();
+    }
 
     screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
     }).catch((error) => {
