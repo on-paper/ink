@@ -61,20 +61,18 @@ export function useVideoAutoplay(
       clearTimeout(timeoutRef.current);
     }
 
-    timeoutRef.current = setTimeout(() => {
-      if (isIntersecting && intersectionRatio >= threshold) {
-        if (!isAutoplaying.current) {
-          pauseAllOtherVideos();
-          playCallbackRef.current?.();
-          isAutoplaying.current = true;
-        }
-      } else {
-        if (isAutoplaying.current) {
-          pauseCallbackRef.current?.();
-          isAutoplaying.current = false;
-        }
-      }
-    }, debounceMs);
+    const shouldPlay = isIntersecting && intersectionRatio >= threshold;
+    
+    if (shouldPlay && !isAutoplaying.current) {
+      timeoutRef.current = setTimeout(() => {
+        pauseAllOtherVideos();
+        playCallbackRef.current?.();
+        isAutoplaying.current = true;
+      }, debounceMs);
+    } else if (!shouldPlay && isAutoplaying.current) {
+      pauseCallbackRef.current?.();
+      isAutoplaying.current = false;
+    }
 
     return () => {
       if (timeoutRef.current) {
