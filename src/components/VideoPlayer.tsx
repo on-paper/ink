@@ -160,17 +160,25 @@ export const VideoPlayer = ({
         setMuted(true);
       },
       () => {
-        setPlaying(false);
+        if (!isFullscreen) {
+          setPlaying(false);
+        }
       }
     );
-  }, [registerPlayer, registerAutoplayCallbacks]);
+  }, [registerPlayer, registerAutoplayCallbacks, isFullscreen]);
 
   const handlePlayPause = () => {
     if (!playing) {
-      pauseAllOtherVideos();
+      setPlaying(true);
+      setMuted(false);
+    } else {
+      if (muted) {
+        setMuted(false);
+      } else {
+        setPlaying(false);
+      }
     }
-    setPlaying(!playing);
-    setMuted(false);
+    return false;
   };
 
   const handleFullscreen = () => {
@@ -178,25 +186,13 @@ export const VideoPlayer = ({
       return;
     }
     const player = playerWithControlsRef.current;
-    const wasPlaying = playing;
-    
-    // Use setTimeout to ensure state is preserved after fullscreen change
+    if (muted) setMuted(false);
+
     screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
-      // Small delay to ensure fullscreen transition completes
-      setTimeout(() => {
-        if (wasPlaying) {
-          setPlaying(true);
-        }
-      }, 100);
     }).catch((error) => {
       console.error("Error toggling fullscreen:", error);
-      // Restore playing state even if fullscreen toggle fails
-      setTimeout(() => {
-        if (wasPlaying) {
-          setPlaying(true);
-        }
-      }, 100);
     });
+    return false
   };
 
   const handleProgress = (state: { played: number }) => {
@@ -251,16 +247,15 @@ export const VideoPlayer = ({
           e.preventDefault();
           goToNext();
         }
+        return false;
       }}
     >
       <div
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          if (!shown) {
-            setShown(true);
-            handlePlayPause();
-          }
+          handlePlayPause();
+          return false;
         }}
         onKeyDown={(e) => {
           if (e.key === " ") {
@@ -270,16 +265,7 @@ export const VideoPlayer = ({
         className="relative h-full flex flex-col"
       >
         <div className="relative flex-1">
-          <div 
-            className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}
-            onClick={(e) => {
-              if (shown) {
-                e.stopPropagation();
-                e.preventDefault();
-                handlePlayPause();
-              }
-            }}
-          >
+          <div className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}>
             {shown &&
               (() => {
                 const currentItem = getCurrentItem();
@@ -318,6 +304,7 @@ export const VideoPlayer = ({
                 e.stopPropagation();
                 e.preventDefault();
                 handleFullscreen();
+                return false;
               }}
               className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
             >
@@ -410,6 +397,7 @@ export const VideoPlayer = ({
                         e.preventDefault();
                         setShown(true);
                         handlePlayPause();
+                        return false;
                       }}
                     >
                       <PlayIcon className="w-8 h-8 text-primary fill-primary ml-1" />
