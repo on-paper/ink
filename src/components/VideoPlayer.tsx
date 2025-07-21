@@ -10,7 +10,6 @@ import { stopAudioAtom } from "../atoms/audio";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
-// when a video has no preview, we generate a thumbnail from the video
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
@@ -71,6 +70,7 @@ export const VideoPlayer = ({
   const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
+  const [modalMuted, setModalMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [shown, setShown] = useState(false);
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
@@ -104,7 +104,7 @@ export const VideoPlayer = ({
     if (nextItem.type && !isImageType(String(nextItem.type))) {
       setShown(true);
       setPlaying(true);
-      if (!muted) {
+      if (!modalMuted) {
         stopAudio();
         pauseAllOtherVideos();
       }
@@ -153,7 +153,6 @@ export const VideoPlayer = ({
     );
   }, [registerPlayer, registerAutoplayCallbacks, modalOpen, pauseAllOtherVideos]);
 
-  // Check if video should autoplay on initial mount when already in viewport
   useEffect(() => {
     if (!autoplay || !autoplayRef.current) return;
 
@@ -165,7 +164,6 @@ export const VideoPlayer = ({
       const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
       const visibleRatio = visibleHeight / rect.height;
       
-      // If video is already visible enough on mount, trigger autoplay
       if (visibleRatio >= autoplayThreshold && rect.top < windowHeight && rect.bottom > 0 && !initialAutoplayDone) {
         setShown(true);
         setPlaying(true);
@@ -175,10 +173,8 @@ export const VideoPlayer = ({
       }
     };
 
-    // Check immediately
     checkInitialVisibility();
     
-    // Also check after a brief delay to handle cases where the layout hasn't settled
     const timeoutId = setTimeout(checkInitialVisibility, 200);
     
     return () => clearTimeout(timeoutId);
@@ -197,7 +193,6 @@ export const VideoPlayer = ({
       navigator.mediaSession.setActionHandler('play', () => {
         if (!playing) {
           setPlaying(true);
-          // Keep current mute state when playing via media session
           if (!muted) {
             stopAudio();
             pauseAllOtherVideos();
@@ -276,10 +271,10 @@ export const VideoPlayer = ({
 
   const handleFullscreen = () => {
     if (!modalOpen && playerRef.current) {
-      // Store current time before opening modal
       const currentTime = playerRef.current.getCurrentTime();
       setModalOpen(true);
       setIsFullscreen(true);
+      setModalMuted(muted);
       setTimeout(() => {
         if (modalVideoRef.current) {
           modalVideoRef.current.currentTime = currentTime;
@@ -290,7 +285,6 @@ export const VideoPlayer = ({
         }
       }, 20);
     } else {
-      // When closing modal, sync the time back to preview
       syncTimeToPreview();
       setModalOpen(false);
       setIsFullscreen(false);
@@ -479,7 +473,7 @@ export const VideoPlayer = ({
                           className="max-h-[100vh] max-w-full"
                           style={{ objectFit: "contain", height: "auto", width: "auto" }}
                           autoPlay={playing}
-                          muted={muted}
+                          muted={modalMuted}
                           loop
                           onTimeUpdate={(e) => {
                             const video = e.currentTarget;
@@ -493,15 +487,15 @@ export const VideoPlayer = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            setMuted(!muted);
-                            if (muted) {
+                            setModalMuted(!modalMuted);
+                            if (modalMuted) {
                               stopAudio();
                               pauseAllOtherVideos();
                             }
                           }}
                           className="absolute bottom-5 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-4"
                         >
-                          {muted ? <VolumeOff className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                          {modalMuted ? <VolumeOff className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                         </button>
                       </div>
 
@@ -611,17 +605,16 @@ export const VideoPlayer = ({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              // Always open modal when clicking on video preview
               const currentTime = playerRef.current?.getCurrentTime() || 0;
               setModalOpen(true);
               setIsFullscreen(true);
               setShown(true);
               setPlaying(true);
+              setModalMuted(muted);
               if (!muted) {
                 stopAudio();
                 pauseAllOtherVideos();
               }
-              // Sync time when opening from preview
               setTimeout(() => {
                 if (modalVideoRef.current) {
                   modalVideoRef.current.currentTime = currentTime;
@@ -645,7 +638,6 @@ export const VideoPlayer = ({
                   </>
                 );
               }
-              // For videos, show the original preview or generate thumbnail
               const videoPreview = activeIndex === (currentIndex || 0) ? preview : "";
               return (
                 <>
