@@ -230,7 +230,7 @@ export const VideoPlayer = ({
       const currentTime = playerRef.current.getCurrentTime();
       setModalOpen(true);
       setIsFullscreen(true);
-      setPreviewMuted(true);
+      // Don't change previewMuted here - keep the existing state
       // Sync time to modal player after it opens
       setTimeout(() => {
         if (modalPlayerRef.current) {
@@ -243,6 +243,8 @@ export const VideoPlayer = ({
         }
       }, 20);
     } else {
+      // When closing modal, sync the mute state back to preview
+      setPreviewMuted(muted);
       setModalOpen(false);
       setIsFullscreen(false);
     }
@@ -308,7 +310,7 @@ export const VideoPlayer = ({
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, [modalOpen]);
+  }, [modalOpen, muted]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -339,6 +341,7 @@ export const VideoPlayer = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
+            setPreviewMuted(muted);
             setModalOpen(false);
             setIsFullscreen(false);
             setIsInitialOpen(true);
@@ -350,6 +353,7 @@ export const VideoPlayer = ({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
+                setPreviewMuted(muted);
                 setModalOpen(false);
                 setIsFullscreen(false);
                 setIsInitialOpen(true);
@@ -539,7 +543,7 @@ export const VideoPlayer = ({
                       onProgress={handleProgress}
                       progressInterval={50}
                       controls={false}
-                      muted={previewMuted}
+                      muted={previewMuted || isFullscreen}
                       height={preview !== "" ? "100%" : "300px"}
                       width="100%"
                       url={currentItem.item}
