@@ -632,7 +632,7 @@ export const VideoPlayer = ({
 
           <div className="flex items-center justify-start h-full min-w-full overflow-hidden">
           {(galleryItems || [{ item: url, type: "video" }]).map((item, index) => (
-            <motion.div
+            <motion.div key={index}
             className="flex items-center justify-center h-full min-w-[100vw]"
             animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
