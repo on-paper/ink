@@ -260,6 +260,20 @@ export const VideoPlayer = ({
   }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos, modalOpen]);
 
 
+  const syncTimeToModal = () => {
+    if (playerRef.current && modalVideoRef.current) {
+      const currentTime = playerRef.current.getCurrentTime();
+      modalVideoRef.current.currentTime = currentTime;
+    }
+  };
+
+  const syncTimeToPreview = () => {
+    if (modalVideoRef.current && playerRef.current) {
+      const currentTime = modalVideoRef.current.currentTime;
+      playerRef.current.seekTo(currentTime);
+    }
+  };
+
   const handleFullscreen = () => {
     if (!modalOpen && playerRef.current) {
       // Store current time before opening modal
@@ -277,10 +291,7 @@ export const VideoPlayer = ({
       }, 20);
     } else {
       // When closing modal, sync the time back to preview
-      if (modalVideoRef.current && playerRef.current) {
-        const currentTime = modalVideoRef.current.currentTime;
-        playerRef.current.seekTo(currentTime);
-      }
+      syncTimeToPreview();
       setModalOpen(false);
       setIsFullscreen(false);
     }
@@ -329,7 +340,9 @@ export const VideoPlayer = ({
   useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && modalOpen) {
-        handleFullscreen();
+        syncTimeToPreview();
+        setModalOpen(false);
+        setIsFullscreen(false);
       }
     };
 
@@ -371,6 +384,7 @@ export const VideoPlayer = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
+            syncTimeToPreview();
             setModalOpen(false);
             setIsFullscreen(false);
             setIsInitialOpen(true);
@@ -382,6 +396,7 @@ export const VideoPlayer = ({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
+                syncTimeToPreview();
                 setModalOpen(false);
                 setIsFullscreen(false);
                 setIsInitialOpen(true);
@@ -472,9 +487,9 @@ export const VideoPlayer = ({
                               pauseAllOtherVideos();
                             }
                           }}
-                          className="absolute bottom-4 right-4 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2"
+                          className="absolute bottom-5 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-4"
                         >
-                          {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                          {muted ? <VolumeOff className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                         </button>
                       </div>
 
@@ -585,6 +600,7 @@ export const VideoPlayer = ({
               e.stopPropagation();
               e.preventDefault();
               // Always open modal when clicking on video preview
+              const currentTime = playerRef.current?.getCurrentTime() || 0;
               setModalOpen(true);
               setIsFullscreen(true);
               setShown(true);
@@ -593,6 +609,12 @@ export const VideoPlayer = ({
                 stopAudio();
                 pauseAllOtherVideos();
               }
+              // Sync time when opening from preview
+              setTimeout(() => {
+                if (modalVideoRef.current) {
+                  modalVideoRef.current.currentTime = currentTime;
+                }
+              }, 20);
             }}
           >
             {(() => {
