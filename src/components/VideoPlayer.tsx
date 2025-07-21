@@ -142,7 +142,6 @@ export const VideoPlayer = ({
       if (duration > 0) {
         const progress = currentTime / duration;
         setVideoProgress(progress);
-        console.log("Progress:", progress); // Debug log
       }
       progressAnimationRef.current = requestAnimationFrame(updateProgressSmooth);
     }
@@ -515,14 +514,11 @@ export const VideoPlayer = ({
                             setVideoProgress(played);
                             handleProgress({ played: played, playedSeconds: video.currentTime, loadedSeconds: 0 });
 
-                            // Ensure smooth updates are running
                             if (!progressAnimationRef.current && !video.paused) {
                               updateProgressSmooth();
                             }
                           }}
                         />
-                        {/* Mute/unmute button positioned relative to video */}
-                        {/* Progress bar */}
                         <div className="absolute bottom-0 w-full p-3 z-[65]">
                           <div className="max-w-2xl mx-auto w-full">
                             <div
@@ -597,7 +593,6 @@ export const VideoPlayer = ({
             </div>
           )}
 
-          {/* Mute/unmute button moved inside the video container */}
         </motion.div>
       )}
     </AnimatePresence>
@@ -649,10 +644,7 @@ export const VideoPlayer = ({
                   return currentItem.type && isImageType(String(currentItem.type)) ? (
                     <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" />
                   ) : (
-                    <div
-                      className="h-full w-full flex items-center justify-center"
-                      // style={{ minHeight: preview !== "" ? "auto" : "300px" }}
-                    >
+                    <div className="h-full w-full flex items-center justify-center">
                       <ReactPlayer
                         ref={playerRef}
                         playing={playing}
@@ -767,8 +759,6 @@ export const VideoPlayer = ({
                 </button>
               </div>
             )}
-
-            {/* Gallery indicators now only in modal */}
           </div>
         </div>
       </div>
