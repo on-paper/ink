@@ -1,12 +1,10 @@
 "use client";
 
-import { MaximizeIcon, MinimizeIcon, PauseIcon, PlayIcon, VideoIcon, XIcon } from "lucide-react";
+import { PlayIcon, VideoIcon, Volume2, VolumeOff, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
-import screenfull from "screenfull";
 import { useVideoState } from "../hooks/useVideoState";
 import { useVideoAutoplay } from "../hooks/useVideoAutoplay";
-import { Progress } from "./ui/video-progress";
 import { useSetAtom } from "jotai";
 import { stopAudioAtom } from "../atoms/audio";
 import { createPortal } from "react-dom";
@@ -70,11 +68,13 @@ export const VideoPlayer = ({
 }) => {
   const playerWithControlsRef = useRef(null);
   const playerRef = useRef(null);
+  const modalPlayerRef = useRef(null);
   const progressRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [muted, setMuted] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(screenfull.isFullscreen);
+  const [previewMuted, setPreviewMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [shown, setShown] = useState(false);
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
@@ -110,6 +110,8 @@ export const VideoPlayer = ({
       setMuted(false);
       stopAudio();
       pauseAllOtherVideos();
+      // Mute preview when gallery is unmuted
+      setPreviewMuted(true);
     } else {
       setShown(true);
       setPlaying(false);
@@ -134,33 +136,6 @@ export const VideoPlayer = ({
     return galleryItems?.[activeIndex] || { item: url, type: "video" };
   };
 
-  const isIOSVideo = (_videoUrl: string): boolean => {
-    return false;
-
-    // return videoUrl.toLowerCase().includes('.mov') ||
-    //   videoUrl.toLowerCase().includes('.m4v') ||
-    //   videoUrl.includes('ios') ||
-    //   videoUrl.includes('iphone') ||
-    //   videoUrl.includes('ipad');
-  };
-
-  useEffect(() => {
-    if (screenfull.isEnabled) {
-      const onFullscreenChange = () => {
-        if (playerWithControlsRef.current && screenfull.element === playerWithControlsRef.current) {
-          setIsFullscreen(screenfull.isFullscreen);
-        } else {
-          setIsFullscreen(false);
-        }
-      };
-
-      screenfull.on("change", onFullscreenChange);
-
-      return () => {
-        screenfull.off("change", onFullscreenChange);
-      };
-    }
-  }, []);
 
   useEffect(() => {
     registerPlayer(() => {
@@ -174,12 +149,12 @@ export const VideoPlayer = ({
         setMuted(true);
       },
       () => {
-        if (!isFullscreen) {
+        if (!modalOpen) {
           setPlaying(false);
         }
       }
     );
-  }, [registerPlayer, registerAutoplayCallbacks, isFullscreen]);
+  }, [registerPlayer, registerAutoplayCallbacks, modalOpen]);
 
   useEffect(() => {
     if ('mediaSession' in navigator && shown) {
@@ -197,6 +172,10 @@ export const VideoPlayer = ({
           setMuted(false);
           stopAudio();
           pauseAllOtherVideos();
+          // Mute preview when gallery is unmuted
+          if (modalOpen) {
+            setPreviewMuted(true);
+          }
         }
       });
 
@@ -207,25 +186,28 @@ export const VideoPlayer = ({
       });
 
       navigator.mediaSession.setActionHandler('seekbackward', () => {
-        if (playerRef.current) {
-          const currentTime = playerRef.current.getCurrentTime();
+        const activePlayer = modalOpen ? modalPlayerRef.current : playerRef.current;
+        if (activePlayer) {
+          const currentTime = activePlayer.getCurrentTime();
           const newTime = Math.max(0, currentTime - 10);
-          playerRef.current.seekTo(newTime);
+          activePlayer.seekTo(newTime);
         }
       });
 
       navigator.mediaSession.setActionHandler('seekforward', () => {
-        if (playerRef.current) {
-          const currentTime = playerRef.current.getCurrentTime();
-          const duration = playerRef.current.getDuration();
+        const activePlayer = modalOpen ? modalPlayerRef.current : playerRef.current;
+        if (activePlayer) {
+          const currentTime = activePlayer.getCurrentTime();
+          const duration = activePlayer.getDuration();
           const newTime = Math.min(duration, currentTime + 10);
-          playerRef.current.seekTo(newTime);
+          activePlayer.seekTo(newTime);
         }
       });
 
       navigator.mediaSession.setActionHandler('seekto', (details) => {
-        if (playerRef.current && details.seekTime !== null) {
-          playerRef.current.seekTo(details.seekTime);
+        const activePlayer = modalOpen ? modalPlayerRef.current : playerRef.current;
+        if (activePlayer && details.seekTime !== null) {
+          activePlayer.seekTo(details.seekTime);
         }
       });
 
@@ -241,17 +223,18 @@ export const VideoPlayer = ({
         navigator.mediaSession.setActionHandler('seekto', null);
       }
     };
-  }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos]);
+  }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos, modalOpen]);
 
   const handlePlayPause = () => {
     if (!playing) {
       setPlaying(true);
-      setMuted(false);
-      stopAudio();
+      // Don't unmute here - keep preview always muted
+      if (!modalOpen) {
+        handleFullscreen();
+      }
     } else {
       if (muted) {
-        setMuted(false);
-        stopAudio();
+        handleFullscreen();
       } else {
         setPlaying(false);
       }
@@ -260,48 +243,54 @@ export const VideoPlayer = ({
   };
 
   const handleFullscreen = () => {
-    if (useModal || (galleryItems && galleryItems.some(item => item.type && isImageType(String(item.type))))) {
-      setModalOpen(!modalOpen);
-      if (!modalOpen && muted) {
-        setMuted(false);
-        stopAudio();
-      }
+    if (!modalOpen && playerRef.current) {
+      // Store current time before opening modal
+      const currentTime = playerRef.current.getCurrentTime();
+      setModalOpen(true);
+      setIsFullscreen(true);
+      // Sync time to modal player after it opens
+      setTimeout(() => {
+        if (modalPlayerRef.current) {
+          modalPlayerRef.current.seekTo(currentTime);
+          // If we're going to unmute in gallery, mute the preview
+          if (muted) {
+            setMuted(false);
+            stopAudio();
+            setPreviewMuted(true);
+          }
+        }
+      }, 100);
     } else {
-      if (!screenfull.isEnabled || !playerWithControlsRef.current) {
-        return;
-      }
-      const player = playerWithControlsRef.current;
-      if (muted) {
-        setMuted(false);
-        stopAudio();
-      }
-
-      screenfull.toggle(player, { navigationUI: "hide" }).then(() => {
-      }).catch((error) => {
-        console.error("Error toggling fullscreen:", error);
-      });
+      setModalOpen(false);
+      setIsFullscreen(false);
     }
-    return false
+    return false;
   };
 
   const handleProgress = (state: { played: number; playedSeconds: number; loadedSeconds: number }) => {
     setProgress(state.played * 100);
     
-    if ('mediaSession' in navigator && playerRef.current) {
-      const duration = playerRef.current.getDuration();
-      if (duration && shown) {
-        navigator.mediaSession.setPositionState({
-          duration: duration,
-          playbackRate: 1,
-          position: state.playedSeconds
-        });
+    if ('mediaSession' in navigator) {
+      const activePlayer = modalOpen ? modalPlayerRef.current : playerRef.current;
+      if (activePlayer) {
+        const duration = activePlayer.getDuration();
+        if (duration && shown) {
+          navigator.mediaSession.setPositionState({
+            duration: duration,
+            playbackRate: 1,
+            position: state.playedSeconds
+          });
+        }
       }
     }
   };
 
   const handleSeekChange = (value: number) => {
-    playerRef.current.seekTo(value / 100);
-    setProgress(value);
+    const activePlayer = modalOpen ? modalPlayerRef.current : playerRef.current;
+    if (activePlayer) {
+      activePlayer.seekTo(value / 100);
+      setProgress(value);
+    }
   };
 
   useEffect(() => {
@@ -318,6 +307,24 @@ export const VideoPlayer = ({
       });
     }
   }, [url, preview, generatedThumbnail]);
+
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && modalOpen) {
+        setModalOpen(false);
+        setIsFullscreen(false);
+        setIsInitialOpen(true);
+      }
+    };
+
+    if (modalOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [modalOpen]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -344,11 +351,12 @@ export const VideoPlayer = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4"
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             setModalOpen(false);
+            setIsFullscreen(false);
             setIsInitialOpen(true);
           }}
         >
@@ -359,11 +367,12 @@ export const VideoPlayer = ({
                 e.stopPropagation();
                 e.preventDefault();
                 setModalOpen(false);
+                setIsFullscreen(false);
                 setIsInitialOpen(true);
               }}
-              className="w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
+              className="w-10 h-10 rounded-full bg-zinc-500/50 hover:bg-zinc-800/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
             >
-              <XIcon className="w-6 h-6 text-white" />
+              <XIcon className="w-7 h-7 text-zinc-200" />
             </button>
           </div>
 
@@ -421,7 +430,7 @@ export const VideoPlayer = ({
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
                       <ReactPlayer
-                        ref={playerRef}
+                        ref={modalPlayerRef}
                         playing={playing}
                         onProgress={handleProgress}
                         progressInterval={50}
@@ -471,10 +480,9 @@ export const VideoPlayer = ({
       }}
       className={`relative flex justify-center items-center rounded-lg overflow-hidden 
         ${preview !== "" ? "max-h-[400px] w-fit" : "h-fit"}
-        ${isFullscreen && "w-full"} 
       `}
       onClick={() => {
-        if (isFullscreen) handleFullscreen();
+        if (modalOpen) handleFullscreen();
       }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -482,14 +490,14 @@ export const VideoPlayer = ({
         if (e.key === "f") {
           handleFullscreen();
         }
-        if (e.key === "Escape" && isFullscreen) {
+        if (e.key === "Escape" && modalOpen) {
           handleFullscreen();
         }
-        if (e.key === "ArrowLeft" && galleryItems && galleryItems.length > 1 && isFullscreen) {
+        if (e.key === "ArrowLeft" && galleryItems && galleryItems.length > 1 && modalOpen) {
           e.preventDefault();
           goToPrevious();
         }
-        if (e.key === "ArrowRight" && galleryItems && galleryItems.length > 1 && isFullscreen) {
+        if (e.key === "ArrowRight" && galleryItems && galleryItems.length > 1 && modalOpen) {
           e.preventDefault();
           goToNext();
         }
@@ -500,18 +508,13 @@ export const VideoPlayer = ({
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          handlePlayPause();
+          handleFullscreen();
           return false;
-        }}
-        onKeyDown={(e) => {
-          if (e.key === " ") {
-            handlePlayPause();
-          }
         }}
         className="relative h-full flex flex-col"
       >
         <div className="relative flex-1">
-          <div className={`${isFullscreen ? "fixed inset-0" : "absolute inset-0"}`}>
+          <div className="absolute inset-0">
             {shown &&
               (() => {
                 const currentItem = getCurrentItem();
@@ -519,10 +522,7 @@ export const VideoPlayer = ({
                   <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" />
                 ) : (
                   <div
-                    className={`h-full w-full flex items-center justify-center ${isFullscreen ? "fullscreen-video [&_video]:!object-contain [&_video]:!w-full [&_video]:!h-full" : ""}`}
-                    style={{
-                      transform: isFullscreen && isIOSVideo(currentItem.item) ? "rotate(180deg)" : "none",
-                    }}
+                    className="h-full w-full flex items-center justify-center"
                   >
                     <ReactPlayer
                       ref={playerRef}
@@ -530,65 +530,19 @@ export const VideoPlayer = ({
                       onProgress={handleProgress}
                       progressInterval={50}
                       controls={false}
-                      muted={muted}
-                      height={isFullscreen ? "100%" : preview !== "" ? "100%" : "300px"}
+                      muted={previewMuted}
+                      height={preview !== "" ? "100%" : "300px"}
                       width="100%"
                       url={currentItem.item}
                       loop
-                      style={isFullscreen ? { objectFit: "contain" } : {}}
+                      style={{}}
                     />
                   </div>
                 );
               })()}
           </div>
 
-          {/* Close X handle for fullscreen mode */}
-          {isFullscreen && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleFullscreen();
-                return false;
-              }}
-              className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
-            >
-              <XIcon className="w-6 h-6 text-white" />
-            </button>
-          )}
-
-          {/* Gallery navigation arrows for fullscreen mode */}
-          {isFullscreen && galleryItems && galleryItems.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  goToPrevious();
-                }}
-                className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  goToNext();
-                }}
-                className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </>
-          )}
+          {/* Removed in-player fullscreen controls - now handled by modal */}
 
           <div
             className={`${shown ? "opacity-0" : "opacity-100"} transition-opacity flex items-center justify-center relative h-full w-full`}
@@ -654,26 +608,7 @@ export const VideoPlayer = ({
             })()}
           </div>
 
-          {/* Gallery indicators for fullscreen mode */}
-          {galleryItems && galleryItems.length > 1 && isFullscreen && (
-            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex gap-2">
-              {galleryItems.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setPlaying(false);
-                    navigateToItem(index);
-                  }}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === activeIndex ? "bg-white" : "bg-white/50"
-                  }`}
-                  aria-label={`Go to item ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
+          {/* Gallery indicators now only in modal */}
         </div>
       </div>
 
@@ -687,30 +622,17 @@ export const VideoPlayer = ({
             e.stopPropagation();
             e.preventDefault();
           }}
-          className={`z-10 w-full transition-all absolute bottom-0 flex justify-between items-center backdrop-blur-sm text-secondary-foreground p-2 bg-secondary/40 cursor-pointer ${
-            !muted && !isHovering ? "opacity-0" : "opacity-100"
-          }`}
+          className="z-10 transition-all absolute bottom-0 right-0 cursor-pointer p-2"
         >
-          <button type="button" onClick={handlePlayPause}>
-            {playing ? <PauseIcon /> : <PlayIcon />}
+          <button type="button" onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setPreviewMuted(!previewMuted);
+          }}
+            className="hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2"
+          >
+            { previewMuted ? <VolumeOff className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}
           </button>
-          <Progress
-            ref={progressRef}
-            onChange={handleSeekChange}
-            playing={playing}
-            setPlaying={setPlaying}
-            className="mx-2 h-2"
-            value={progress}
-          />
-          {screenfull.isEnabled && (
-            <button type="button" onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleFullscreen();
-            }}>
-              {(isFullscreen || modalOpen) ? <MinimizeIcon /> : <MaximizeIcon />}
-            </button>
-          )}
         </div>
       )}
     </div>
