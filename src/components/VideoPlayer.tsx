@@ -392,23 +392,26 @@ export const VideoPlayer = ({
   useEffect(() => {
     console.log(' 📙  Gallery index changed to:', activeIndex);
     if (modalOpen && galleryItems) {
-      // Pausar y mutear todos los videos que no sean el actual
       galleryItems.forEach((item, index) => {
         if (index !== activeIndex && item.type && !isImageType(String(item.type))) {
-          // Este es un video diferente al actual - pausarlo y mutearlo
           const videoElements = document.querySelectorAll(`video[src="${item.item}"]`);
           videoElements.forEach((video) => {
             const videoEl = video as HTMLVideoElement;
             videoEl.pause();
             videoEl.muted = true;
           });
+        } else if (index === activeIndex && item.type && !isImageType(String(item.type))) {
+          const videoElements = document.querySelectorAll(`video[src="${item.item}"]`);
+          videoElements.forEach((video) => {
+            const videoEl = video as HTMLVideoElement;
+            videoEl.play();
+            videoEl.muted = false;
+          });
         }
       });
-      
-      // También usar el sistema de video state para pausar otros reproductores
       pauseAllOtherVideos();
-    }
-  }, [activeIndex, modalOpen, galleryItems, pauseAllOtherVideos]);
+    } 
+  }, [activeIndex, modalOpen, galleryItems]);
 
   useEffect(() => {
     if (preview) {
