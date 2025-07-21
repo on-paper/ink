@@ -338,22 +338,34 @@ export const VideoPlayer = ({
   }, [url, preview, generatedThumbnail]);
 
   useEffect(() => {
-    const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && modalOpen) {
+    const handleGlobalKeydown = (e: KeyboardEvent) => {
+      if (!modalOpen) return;
+      
+      if (e.key === 'Escape') {
         syncTimeToPreview();
         setModalOpen(false);
         setIsFullscreen(false);
       }
+      
+      if (e.key === 'ArrowLeft' && galleryItems && galleryItems.length > 1) {
+        e.preventDefault();
+        goToPrevious();
+      }
+      
+      if (e.key === 'ArrowRight' && galleryItems && galleryItems.length > 1) {
+        e.preventDefault();
+        goToNext();
+      }
     };
 
     if (modalOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
+      document.addEventListener('keydown', handleGlobalKeydown);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
+      document.removeEventListener('keydown', handleGlobalKeydown);
     };
-  }, [modalOpen, muted]);
+  }, [modalOpen, galleryItems, goToPrevious, goToNext]);
 
   const slideVariants = {
     enter: (direction: number) => ({
