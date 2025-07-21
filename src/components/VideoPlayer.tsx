@@ -592,7 +592,7 @@ export const VideoPlayer = ({
           <div className="flex items-center justify-start h-full min-w-full overflow-hidden">
           {(galleryItems || [{ item: url, type: "video" }]).map((item, index) => (
             <motion.div
-            className="flex items-center h-full border-4 border-red-500 min-w-[100vw]"
+            className="flex items-center justify-center h-full min-w-[100vw]"
             animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{ width: `${(galleryItems?.length || 1) * 100}vw` }}
@@ -832,12 +832,12 @@ export const VideoPlayer = ({
                     <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
-                      <div ref={previewContainerRef} className="h-full w-full flex items-center justify-center border-2 border-purple-400">
+                      <div ref={previewContainerRef} className="h-full w-full flex items-center justify-center">
                         {shown && currentItem.type && !isImageType(String(currentItem.type)) && (
                           <video
                             ref={videoRef}
                             src={currentItem.item}
-                            className="h-full w-full object-contain border-2 border-yellow-400"
+                            className="h-full w-full object-contain"
                             style={{ maxHeight: preview !== "" ? "100%" : "300px" }}
                             autoPlay={playing}
                             muted={muted}
@@ -886,16 +886,9 @@ export const VideoPlayer = ({
                 const currentItem = getCurrentItem();
                 if (currentItem.type && isImageType(String(currentItem.type))) {
                   return (
-                    <>
-                      <img src={currentItem.item} alt="" className="h-full w-full object-cover rounded-xl mx-auto" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
-                        <div className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-200">
-                          <svg className="w-8 h-8 text-primary fill-primary" viewBox="0 0 24 24">
-                            <path d="M8.5 8.5v7l7-3.5z" />
-                          </svg>
-                        </div>
-                      </div>
-                    </>
+                    <div className="h-full max-h-[300px] w-auto relative">
+                      <img src={currentItem.item} alt="" className="w-auto h-[300px] object-cover rounded-xl mx-auto" />
+                    </div>
                   );
                 }
                 const videoPreview = activeIndex === (currentIndex || 0) ? preview : "";
