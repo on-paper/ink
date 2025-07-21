@@ -9,6 +9,7 @@ import { useSetAtom } from "jotai";
 import { stopAudioAtom } from "../atoms/audio";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "sonner";
 
 // when a video has no preview, we generate a thumbnail from the video
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
@@ -107,11 +108,10 @@ export const VideoPlayer = ({
     if (nextItem.type && !isImageType(String(nextItem.type))) {
       setShown(true);
       setPlaying(true);
-      setMuted(false);
-      stopAudio();
-      pauseAllOtherVideos();
-      // Mute preview when gallery is unmuted
-      setPreviewMuted(true);
+      if (!muted) {
+        stopAudio();
+        pauseAllOtherVideos();
+      }
     } else {
       setShown(true);
       setPlaying(false);
@@ -169,12 +169,10 @@ export const VideoPlayer = ({
       navigator.mediaSession.setActionHandler('play', () => {
         if (!playing) {
           setPlaying(true);
-          setMuted(false);
-          stopAudio();
-          pauseAllOtherVideos();
-          // Mute preview when gallery is unmuted
-          if (modalOpen) {
-            setPreviewMuted(true);
+          // Keep current mute state when playing via media session
+          if (!muted && !previewMuted) {
+            stopAudio();
+            pauseAllOtherVideos();
           }
         }
       });
@@ -225,22 +223,6 @@ export const VideoPlayer = ({
     };
   }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos, modalOpen]);
 
-  const handlePlayPause = () => {
-    if (!playing) {
-      setPlaying(true);
-      // Don't unmute here - keep preview always muted
-      if (!modalOpen) {
-        handleFullscreen();
-      }
-    } else {
-      if (muted) {
-        handleFullscreen();
-      } else {
-        setPlaying(false);
-      }
-    }
-    return false;
-  };
 
   const handleFullscreen = () => {
     if (!modalOpen && playerRef.current) {
@@ -248,18 +230,18 @@ export const VideoPlayer = ({
       const currentTime = playerRef.current.getCurrentTime();
       setModalOpen(true);
       setIsFullscreen(true);
+      setPreviewMuted(true);
       // Sync time to modal player after it opens
       setTimeout(() => {
         if (modalPlayerRef.current) {
           modalPlayerRef.current.seekTo(currentTime);
-          // If we're going to unmute in gallery, mute the preview
-          if (muted) {
-            setMuted(false);
+          setMuted(previewMuted);
+          if (!previewMuted) {
             stopAudio();
-            setPreviewMuted(true);
+            pauseAllOtherVideos();
           }
         }
-      }, 100);
+      }, 20);
     } else {
       setModalOpen(false);
       setIsFullscreen(false);
@@ -311,9 +293,11 @@ export const VideoPlayer = ({
   useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && modalOpen) {
-        setModalOpen(false);
-        setIsFullscreen(false);
-        setIsInitialOpen(true);
+        handleFullscreen();
+        // setModalOpen(false);
+        // setPreviewMuted(muted);
+        // setIsFullscreen(false);
+        // setIsInitialOpen(true);
       }
     };
 
@@ -466,6 +450,31 @@ export const VideoPlayer = ({
               ))}
             </div>
           )}
+
+          {/* Mute/unmute button for fullscreen gallery view */}
+          {(() => {
+            const currentItem = getCurrentItem();
+            const isVideo = currentItem.type && !isImageType(String(currentItem.type));
+            return isVideo ? (
+              <div className="absolute bottom-4 right-4 z-[60]">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setMuted(!muted);
+                    if (muted) {
+                      stopAudio();
+                      pauseAllOtherVideos();
+                    }
+                  }}
+                  className="hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2"
+                >
+                  {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+              </div>
+            ) : null;
+          })()}
         </motion.div>
       )}
     </AnimatePresence>
@@ -588,21 +597,6 @@ export const VideoPlayer = ({
                       <VideoIcon className="w-16 h-16 text-muted-foreground" />
                     </div>
                   )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
-                    <button
-                      type="button"
-                      className="flex items-center justify-center w-16 h-16 rounded-full transition-all duration-200 hover:scale-110"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setShown(true);
-                        handlePlayPause();
-                        return false;
-                      }}
-                    >
-                      <PlayIcon className="w-8 h-8 text-primary fill-primary ml-1" />
-                    </button>
-                  </div>
                 </>
               );
             })()}
