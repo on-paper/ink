@@ -902,7 +902,7 @@ export const VideoPlayer = ({
               })()}
             </div>
 
-            {!modalOpen && (
+            {shown && !modalOpen && (
               <div className="z-10 absolute bottom-0 right-0 p-1">
                 <button
                   type="button"
