@@ -93,7 +93,7 @@ export const VideoPlayer = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
-  const { registerPlayer, pauseAllOtherVideos } = useVideoState(videoId);
+  const { registerPlayer, pauseAllOtherVideos, setUnmutedState } = useVideoState(videoId);
   const { ref: autoplayRef, registerAutoplayCallbacks } = useVideoAutoplay(videoId, {
     enabled: autoplay,
     threshold: autoplayThreshold,
@@ -112,20 +112,17 @@ export const VideoPlayer = ({
     const currentItem = galleryItems[activeIndex];
     const nextItem = galleryItems[newIndex];
     
-    // Save current video's unmuted state if we're leaving a video
     if (currentItem?.type && !isImageType(String(currentItem.type)) && !muted) {
       setVideoUnmutedStates(prev => ({ ...prev, [activeIndex]: true }));
     }
 
     setActiveIndex(newIndex);
-    setImageScale(1); // Reset image zoom when navigating
+    setImageScale(1); 
 
     if (nextItem.type && !isImageType(String(nextItem.type))) {
-      // Navigating to a video
       setShown(true);
       setPlaying(true);
       
-      // Restore unmuted state for this video if it was previously unmuted
       const wasVideoUnmuted = videoUnmutedStates[newIndex];
       if (wasVideoUnmuted) {
         setMuted(false);
@@ -135,7 +132,6 @@ export const VideoPlayer = ({
         setMuted(true);
       }
     } else {
-      // Navigating to an image - pause and mute the video
       setShown(true);
       setPlaying(false);
       setMuted(true);
@@ -160,7 +156,6 @@ export const VideoPlayer = ({
     return galleryItems?.[activeIndex] || { item: url, type: "video" };
   };
 
-  // Image utility functions
   const handleImageDownload = async () => {
     try {
       const currentItem = getCurrentItem();
@@ -242,22 +237,33 @@ export const VideoPlayer = ({
   };
 
   useEffect(() => {
-    registerPlayer(() => {
-      setPlaying(false);
-    });
+    registerPlayer(
+      () => {
+        setPlaying(false);
+        if (videoRef.current) {
+          videoRef.current.pause();
+        }
+      },
+      () => {
+        setMuted(true);
+      }
+    );
 
     registerAutoplayCallbacks(
       () => {
-        setShown(true);
-        setPlaying(true);
-        setMuted(true);
-        pauseAllOtherVideos();
+        if (!modalOpen) {
+          pauseAllOtherVideos();
+          setShown(true);
+          setPlaying(true);
+          setMuted(true);
+        }
       },
       () => {
         if (!modalOpen) {
           setPlaying(false);
         }
       },
+      () => !muted 
     );
 
     return () => {
@@ -265,7 +271,29 @@ export const VideoPlayer = ({
         cancelAnimationFrame(progressAnimationRef.current);
       }
     };
-  }, [registerPlayer, registerAutoplayCallbacks, modalOpen, pauseAllOtherVideos]);
+  }, [registerPlayer, registerAutoplayCallbacks, modalOpen, pauseAllOtherVideos, muted]);
+
+  useEffect(() => {
+    if (!videoRef.current || !shown) return;
+    
+    const timeoutId = setTimeout(() => {
+      if (!videoRef.current) return;
+      
+      if (playing && videoRef.current.paused) {
+        videoRef.current.play().catch(console.error);
+      } else if (!playing && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
+  }, [playing, shown]);
+
+  useEffect(() => {
+    if (shown && playing) {
+      setUnmutedState(!muted);
+    }
+  }, [muted, setUnmutedState, shown, playing]);
 
   useEffect(() => {
     if (!autoplay || !autoplayRef.current) return;
@@ -279,11 +307,11 @@ export const VideoPlayer = ({
       const visibleRatio = visibleHeight / rect.height;
 
       if (visibleRatio >= autoplayThreshold && rect.top < windowHeight && rect.bottom > 0 && !initialAutoplayDone) {
+        pauseAllOtherVideos();
         setShown(true);
         setPlaying(true);
         setMuted(true);
         setInitialAutoplayDone(true);
-        pauseAllOtherVideos();
       }
     };
 
@@ -390,27 +418,15 @@ export const VideoPlayer = ({
   };
 
   useEffect(() => {
-    console.log(' 📙  Gallery index changed to:', activeIndex);
+    
     if (modalOpen && galleryItems) {
-      galleryItems.forEach((item, index) => {
-        if (index !== activeIndex && item.type && !isImageType(String(item.type))) {
-          const videoElements = document.querySelectorAll(`video[src="${item.item}"]`);
-          videoElements.forEach((video) => {
-            const videoEl = video as HTMLVideoElement;
-            videoEl.pause();
-            videoEl.muted = true;
-          });
-        } else if (index === activeIndex && item.type && !isImageType(String(item.type))) {
-          const videoElements = document.querySelectorAll(`video[src="${item.item}"]`);
-          videoElements.forEach((video) => {
-            const videoEl = video as HTMLVideoElement;
-            videoEl.play();
-            videoEl.muted = false;
-          });
+      const currentItem = galleryItems[activeIndex];
+      if (currentItem && currentItem.type && !isImageType(String(currentItem.type))) {
+        if (videoRef.current) {
+          videoRef.current.play().catch(console.error);
         }
-      });
-      pauseAllOtherVideos();
-    } 
+      }
+    }
   }, [activeIndex, modalOpen, galleryItems]);
 
   useEffect(() => {
@@ -457,21 +473,17 @@ export const VideoPlayer = ({
     };
   }, [modalOpen, galleryItems, goToPrevious, goToNext]);
 
-  // Handle trackpad swipes in fullscreen gallery
   useEffect(() => {
     if (!modalOpen || !galleryItems || galleryItems.length <= 1) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // Only handle horizontal scrolling (trackpad swipes)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
 
         const threshold = 10;
         if (e.deltaX > threshold && activeIndex < galleryItems.length - 1) {
-          // Swipe left, go to next
           goToNext();
         } else if (e.deltaX < -threshold && activeIndex > 0) {
-          // Swipe right, go to previous
           goToPrevious();
         }
       }
@@ -484,43 +496,35 @@ export const VideoPlayer = ({
     };
   }, [modalOpen, galleryItems, activeIndex, goToNext, goToPrevious]);
 
-  // Manage single video element between containers and gallery items
   useEffect(() => {
     if (!shown || !videoRef.current) return;
 
     const currentItem = getCurrentItem();
     const isVideo = currentItem.type ? !isImageType(String(currentItem.type)) : true;
 
-    // Update video source when switching between videos
     if (isVideo && videoRef.current.src !== currentItem.item) {
       videoRef.current.src = currentItem.item;
       videoRef.current.load();
     }
 
-    // Move video element to appropriate container
     const moveVideo = () => {
       if (!videoRef.current) return;
 
-      // Need to wait a bit for the new modalContainerRef to be attached to the active item
       setTimeout(() => {
         if (modalOpen && isVideo && modalContainerRef.current) {
-          // In modal viewing a video - move to modal container
           modalContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "max-h-[100vh] max-w-full";
           videoRef.current.style.cssText = "object-fit: contain; height: auto; width: auto; display: block;";
         } else if (previewContainerRef.current && isVideo) {
-          // Not in modal but viewing video - keep in preview
           previewContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "h-full w-full object-contain";
           videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "300px"}; display: block;`;
         } else {
-          // Hide video when showing image
           videoRef.current.style.display = 'none';
         }
       }, 50);
     };
 
-    // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(moveVideo);
   }, [modalOpen, shown, activeIndex, playing]);
 
@@ -701,7 +705,6 @@ export const VideoPlayer = ({
                                 const newMutedState = !muted;
                                 setMuted(newMutedState);
                                 
-                                // Save unmuted state for current video
                                 const currentItem = getCurrentItem();
                                 if (currentItem.type && !isImageType(String(currentItem.type))) {
                                   setVideoUnmutedStates(prev => ({ 
@@ -755,7 +758,6 @@ export const VideoPlayer = ({
       <video
         ref={videoRef}
         className="h-full w-full object-contain"
-        autoPlay={playing}
         muted={muted}
         loop
         onTimeUpdate={(e) => {
@@ -775,7 +777,7 @@ export const VideoPlayer = ({
             cancelAnimationFrame(progressAnimationRef.current);
           }
         }}
-        style={{ display: 'none' }} // Hidden initially, will be moved by useEffect
+        style={{ display: 'none' }} 
       />
       <div
         ref={(node) => {
@@ -904,7 +906,6 @@ export const VideoPlayer = ({
                     const newMutedState = !muted;
                     setMuted(newMutedState);
                     
-                    // Save unmuted state for current video
                     const currentItem = getCurrentItem();
                     if (currentItem.type && !isImageType(String(currentItem.type))) {
                       setVideoUnmutedStates(prev => ({ 

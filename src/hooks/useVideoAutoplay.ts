@@ -38,15 +38,21 @@ export function useVideoAutoplay(
   const pauseCallbackRef = useRef<(() => void) | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const isAutoplaying = useRef(false);
+  const getUnmutedStateRef = useRef<(() => boolean) | null>(null);
 
   const registerAutoplayCallbacks = useCallback(
-    (playCallback: () => void, pauseCallback: () => void) => {
+    (playCallback: () => void, pauseCallback: () => void, getUnmutedState?: () => boolean) => {
       playCallbackRef.current = playCallback;
       pauseCallbackRef.current = pauseCallback;
+      getUnmutedStateRef.current = getUnmutedState || null;
       
       registerPlayer(() => {
-        pauseCallback();
-        isAutoplaying.current = false;
+        // Check if video is unmuted before pausing
+        const isUnmuted = getUnmutedStateRef.current ? getUnmutedStateRef.current() : false;
+        if (!isUnmuted) {
+          pauseCallback();
+          isAutoplaying.current = false;
+        }
       });
     },
     [registerPlayer]
@@ -72,8 +78,12 @@ export function useVideoAutoplay(
         }
       }, debounceMs);
     } else if (!shouldPlay && isAutoplaying.current) {
-      pauseCallbackRef.current?.();
-      isAutoplaying.current = false;
+      // Don't pause if video is unmuted
+      const isUnmuted = getUnmutedStateRef.current ? getUnmutedStateRef.current() : false;
+      if (!isUnmuted) {
+        pauseCallbackRef.current?.();
+        isAutoplaying.current = false;
+      }
     }
 
     return () => {
