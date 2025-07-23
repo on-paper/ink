@@ -668,8 +668,13 @@ export const VideoPlayer = ({
                               <div className="max-w-2xl mx-auto w-full">
                                 <div
                                   className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                  }}
                                   onMouseDown={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     setIsProgressClicked(true);
                                     if (videoRef.current) {
                                       const rect = e.currentTarget.getBoundingClientRect();
@@ -684,6 +689,7 @@ export const VideoPlayer = ({
                                   }}
                                   onMouseUp={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     setIsProgressClicked(false);
                                   }}
                                 >
@@ -864,7 +870,7 @@ export const VideoPlayer = ({
                         <img
                           src={videoPreview}
                           alt="Video preview"
-                          className="max-h-[500px] object-contain rounded-xl mx-auto"
+                          className="max-h-[300px] object-contain rounded-xl mx-auto"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
@@ -896,7 +902,7 @@ export const VideoPlayer = ({
               })()}
             </div>
 
-            {shown && !modalOpen && (
+            {!modalOpen && (
               <div className="z-10 absolute bottom-0 right-0 p-1">
                 <button
                   type="button"
