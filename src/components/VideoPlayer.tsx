@@ -111,18 +111,18 @@ export const VideoPlayer = ({
 
     const currentItem = galleryItems[activeIndex];
     const nextItem = galleryItems[newIndex];
-    
+
     if (currentItem?.type && !isImageType(String(currentItem.type)) && !muted) {
-      setVideoUnmutedStates(prev => ({ ...prev, [activeIndex]: true }));
+      setVideoUnmutedStates((prev) => ({ ...prev, [activeIndex]: true }));
     }
 
     setActiveIndex(newIndex);
-    setImageScale(1); 
+    setImageScale(1);
 
     if (nextItem.type && !isImageType(String(nextItem.type))) {
       setShown(true);
       setPlaying(true);
-      
+
       const wasVideoUnmuted = videoUnmutedStates[newIndex];
       if (wasVideoUnmuted) {
         setMuted(false);
@@ -246,7 +246,7 @@ export const VideoPlayer = ({
       },
       () => {
         setMuted(true);
-      }
+      },
     );
 
     registerAutoplayCallbacks(
@@ -263,7 +263,7 @@ export const VideoPlayer = ({
           setPlaying(false);
         }
       },
-      () => !muted 
+      () => !muted,
     );
 
     return () => {
@@ -275,17 +275,17 @@ export const VideoPlayer = ({
 
   useEffect(() => {
     if (!videoRef.current || !shown) return;
-    
+
     const timeoutId = setTimeout(() => {
       if (!videoRef.current) return;
-      
+
       if (playing && videoRef.current.paused) {
         videoRef.current.play().catch(console.error);
       } else if (!playing && !videoRef.current.paused) {
         videoRef.current.pause();
       }
     }, 50);
-    
+
     return () => clearTimeout(timeoutId);
   }, [playing, shown]);
 
@@ -418,10 +418,9 @@ export const VideoPlayer = ({
   };
 
   useEffect(() => {
-    
     if (modalOpen && galleryItems) {
       const currentItem = galleryItems[activeIndex];
-      if (currentItem && currentItem.type && !isImageType(String(currentItem.type))) {
+      if (currentItem?.type && !isImageType(String(currentItem.type))) {
         if (videoRef.current) {
           videoRef.current.play().catch(console.error);
         }
@@ -518,9 +517,9 @@ export const VideoPlayer = ({
         } else if (previewContainerRef.current && isVideo) {
           previewContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "h-full w-full object-contain";
-          videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "300px"}; display: block;`;
+          videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "320px"}; display: block;`;
         } else {
-          videoRef.current.style.display = 'none';
+          videoRef.current.style.display = "none";
         }
       }, 50);
     };
@@ -540,8 +539,7 @@ export const VideoPlayer = ({
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            setModalOpen(false);
-            setIsFullscreen(false);
+            return false;
           }}
         >
           {/* Close button - always top right */}
@@ -564,7 +562,7 @@ export const VideoPlayer = ({
           {(() => {
             const currentItem = getCurrentItem();
             const isCurrentImage = currentItem.type && isImageType(String(currentItem.type));
-            
+
             return isCurrentImage ? (
               <div className="absolute z-[60] right-16 top-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
                 <button
@@ -635,107 +633,106 @@ export const VideoPlayer = ({
           )}
 
           <div className="flex items-center justify-start h-full min-w-full overflow-hidden">
-          {(galleryItems || [{ item: url, type: "video" }]).map((item, index) => (
-            <motion.div key={index}
-            className="flex items-center justify-center h-full min-w-[100vw]"
-            animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            style={{ width: `${(galleryItems?.length || 1) * 100}vw` }}
-          >
-            {item.type && isImageType(String(item.type)) ? (
-                    <motion.img
-                      src={item.item}
-                      alt="Gallery item"
-                      className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
-                      animate={{ scale: index === activeIndex ? imageScale : 1 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (index === activeIndex) {
-                          toggleZoom();
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className="relative max-h-full max-w-full">
-                        <div
-                          className="relative max-h-full max-w-full"
-                          ref={index === activeIndex ? modalContainerRef : null}
-                        />
-                          <>
-                            <div className="absolute bottom-0 w-full p-3 z-[65]">
-                              <div className="max-w-2xl mx-auto w-full">
-                                <div
-                                  className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setIsProgressClicked(true);
-                                    if (videoRef.current) {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const clickX = e.clientX - rect.left;
-                                      const clickRatio = clickX / rect.width;
-                                      const newTime = clickRatio * videoRef.current.duration;
-                                      videoRef.current.currentTime = Math.max(
-                                        0,
-                                        Math.min(newTime, videoRef.current.duration),
-                                      );
-                                    }
-                                  }}
-                                  onMouseUp={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setIsProgressClicked(false);
-                                  }}
-                                >
-                                  <div
-                                    className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                      isProgressClicked ? "duration-75" : "duration-300"
-                                    }`}
-                                    style={{ width: `${videoProgress * 100}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
+            {(galleryItems || [{ item: url, type: "video" }]).map((item, index) => (
+              <motion.div
+                key={index}
+                className="flex items-center justify-center h-full min-w-[100vw]"
+                animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                style={{ width: `${(galleryItems?.length || 1) * 100}vw` }}
+              >
+                {item.type && isImageType(String(item.type)) ? (
+                  <motion.img
+                    src={item.item}
+                    alt="Gallery item"
+                    className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
+                    animate={{ scale: index === activeIndex ? imageScale : 1 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (index === activeIndex) {
+                        toggleZoom();
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <div className="relative max-h-full max-w-full">
+                      <div
+                        className="relative max-h-full max-w-full"
+                        ref={index === activeIndex ? modalContainerRef : null}
+                      />
 
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                const newMutedState = !muted;
-                                setMuted(newMutedState);
-                                
-                                const currentItem = getCurrentItem();
-                                if (currentItem.type && !isImageType(String(currentItem.type))) {
-                                  setVideoUnmutedStates(prev => ({ 
-                                    ...prev, 
-                                    [activeIndex]: !newMutedState 
-                                  }));
-                                }
-                                
-                                if (muted) {
-                                  stopAudio();
-                                  pauseAllOtherVideos();
-                                }
-                              }}
-                              className="absolute bottom-5 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-4"
-                            >
-                              {muted ? <VolumeOff className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                            </button>
-                          </>
+                      <div className="absolute bottom-0 w-full p-3 z-[65]">
+                        <div className="max-w-2xl mx-auto w-full">
+                          <div
+                            className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setIsProgressClicked(true);
+                              if (videoRef.current) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const clickX = e.clientX - rect.left;
+                                const clickRatio = clickX / rect.width;
+                                const newTime = clickRatio * videoRef.current.duration;
+                                videoRef.current.currentTime = Math.max(
+                                  0,
+                                  Math.min(newTime, videoRef.current.duration),
+                                );
+                              }
+                            }}
+                            onMouseUp={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setIsProgressClicked(false);
+                            }}
+                          >
+                            <div
+                              className={`bg-white h-full transition-all rounded-full ease-linear ${
+                                isProgressClicked ? "duration-75" : "duration-300"
+                              }`}
+                              style={{ width: `${videoProgress * 100}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          const newMutedState = !muted;
+                          setMuted(newMutedState);
+
+                          const currentItem = getCurrentItem();
+                          if (currentItem.type && !isImageType(String(currentItem.type))) {
+                            setVideoUnmutedStates((prev) => ({
+                              ...prev,
+                              [activeIndex]: !newMutedState,
+                            }));
+                          }
+
+                          if (muted) {
+                            stopAudio();
+                            pauseAllOtherVideos();
+                          }
+                        }}
+                        className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
+                      >
+                        {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      </button>
                     </div>
-                  )}
-            {/* <div className="h-80 bg-red-300 min-w-[100vw]" key={index}>item {index}</div> */}
-            </motion.div>
-          ))}
-          
+                  </div>
+                )}
+                {/* <div className="h-80 bg-red-300 min-w-[100vw]" key={index}>item {index}</div> */}
+              </motion.div>
+            ))}
           </div>
 
           {galleryItems && galleryItems.length > 1 && (
@@ -783,15 +780,15 @@ export const VideoPlayer = ({
             cancelAnimationFrame(progressAnimationRef.current);
           }
         }}
-        style={{ display: 'none' }} 
+        style={{ display: "none" }}
       />
       <div
         ref={(node) => {
           playerWithControlsRef.current = node;
           autoplayRef.current = node;
         }}
-        className={`relative flex justify-center items-center rounded-lg overflow-hidden active:scale-[98%] transition-all
-        ${preview !== "" ? "max-h-[400px] w-fit" : "h-fit"}
+        className={`relative flex justify-center items-center rounded-lg overflow-hidden active:scale-[99%] transition-all
+        ${preview !== "" ? "max-h-[320px] w-fit" : "h-fit"}
       `}
         onClick={handleFullscreen}
         onKeyDown={(e) => {
@@ -857,8 +854,8 @@ export const VideoPlayer = ({
                 const currentItem = getCurrentItem();
                 if (currentItem.type && isImageType(String(currentItem.type))) {
                   return (
-                    <div className="h-full max-h-[300px] w-auto relative">
-                      <img src={currentItem.item} alt="" className="w-auto h-[300px] object-cover rounded-xl mx-auto" />
+                    <div className="h-full max-h-[320px] w-auto relative">
+                      <img src={currentItem.item} alt="" className="w-auto h-[320px] object-cover rounded-xl mx-auto" />
                     </div>
                   );
                 }
@@ -870,7 +867,7 @@ export const VideoPlayer = ({
                         <img
                           src={videoPreview}
                           alt="Video preview"
-                          className="max-h-[300px] object-contain rounded-xl mx-auto"
+                          className="max-h-[320px] object-contain rounded-xl mx-auto"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
@@ -880,7 +877,7 @@ export const VideoPlayer = ({
                       </>
                     ) : generatedThumbnail && activeIndex === (currentIndex || 0) ? (
                       <>
-                        <img src={generatedThumbnail} alt="" className="h-[300px] rounded-xl" />
+                        <img src={generatedThumbnail} alt="" className="h-[320px] rounded-xl" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
@@ -911,27 +908,24 @@ export const VideoPlayer = ({
                     e.preventDefault();
                     const newMutedState = !muted;
                     setMuted(newMutedState);
-                    
+
                     const currentItem = getCurrentItem();
                     if (currentItem.type && !isImageType(String(currentItem.type))) {
-                      setVideoUnmutedStates(prev => ({ 
-                        ...prev, 
-                        [activeIndex]: !newMutedState 
+                      setVideoUnmutedStates((prev) => ({
+                        ...prev,
+                        [activeIndex]: !newMutedState,
                       }));
                     }
-                    
+
                     if (muted) {
                       stopAudio();
                       pauseAllOtherVideos();
                     }
                   }}
                   className="rounded-full p-1.5 group/mutebutton"
-                  >
-                  <div
-                  className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2"
-                  >
-
-                  {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                >
+                  <div className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2">
+                    {muted ? <VolumeOff className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </div>
                 </button>
               </div>
