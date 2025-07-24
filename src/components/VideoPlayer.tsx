@@ -91,6 +91,7 @@ export const VideoPlayer = ({
   const [videoUnmutedStates, setVideoUnmutedStates] = useState<{ [index: number]: boolean }>({});
   const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
   const [virtualIndex, setVirtualIndex] = useState(currentIndex || 0);
+  const [isClickingMutePreview, setIsClickingMutePreview] = useState(false);
   const progressAnimationRef = useRef<number>();
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
@@ -685,6 +686,7 @@ export const VideoPlayer = ({
                               toggleZoom();
                             }
                           }}
+                          draggable={false}
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">
@@ -826,7 +828,9 @@ export const VideoPlayer = ({
           playerWithControlsRef.current = node;
           autoplayRef.current = node;
         }}
-        className={`relative flex justify-center items-center rounded-lg overflow-hidden active:scale-[99%] transition-all
+        className={`relative flex justify-center items-center rounded-lg overflow-hidden 
+           ${isClickingMutePreview ? "" : "active:scale-[99%]"}
+           transition-all
         ${preview !== "" ? "max-h-[320px] w-fit" : "h-fit"}
       `}
         onClick={handleFullscreen}
@@ -863,7 +867,7 @@ export const VideoPlayer = ({
                 (() => {
                   const currentItem = getCurrentItem();
                   return currentItem.type && isImageType(String(currentItem.type)) ? (
-                    <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" />
+                    <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" draggable={false} />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
                       <div ref={previewContainerRef} className="h-full w-full flex items-center justify-center">
@@ -894,7 +898,7 @@ export const VideoPlayer = ({
                 if (currentItem.type && isImageType(String(currentItem.type))) {
                   return (
                     <div className="h-full max-h-[320px] w-auto relative">
-                      <img src={currentItem.item} alt="" className="w-auto h-[320px] object-cover rounded-xl mx-auto" />
+                      <img src={currentItem.item} alt="" className="w-auto h-[320px] object-cover rounded-xl mx-auto" draggable={false} />
                     </div>
                   );
                 }
@@ -907,6 +911,7 @@ export const VideoPlayer = ({
                           src={videoPreview}
                           alt="Video preview"
                           className="max-h-[320px] object-contain rounded-xl mx-auto"
+                          draggable={false}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
@@ -916,7 +921,7 @@ export const VideoPlayer = ({
                       </>
                     ) : generatedThumbnail && activeIndex === (currentIndex || 0) ? (
                       <>
-                        <img src={generatedThumbnail} alt="" className="h-[320px] rounded-xl" />
+                        <img src={generatedThumbnail} alt="" className="h-[320px] rounded-xl" draggable={false} />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
@@ -961,6 +966,8 @@ export const VideoPlayer = ({
                       pauseAllOtherVideos();
                     }
                   }}
+                  onMouseDown={() => setIsClickingMutePreview(true)}
+                  onMouseUp={() => setIsClickingMutePreview(false)}
                   className="rounded-full p-1.5 group/mutebutton"
                 >
                   <div className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2">
