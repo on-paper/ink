@@ -89,6 +89,8 @@ export const VideoPlayer = ({
   const [isProgressClicked, setIsProgressClicked] = useState(false);
   const [imageScale, setImageScale] = useState(1);
   const [videoUnmutedStates, setVideoUnmutedStates] = useState<{ [index: number]: boolean }>({});
+  const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
+  const [virtualIndex, setVirtualIndex] = useState(currentIndex || 0);
   const progressAnimationRef = useRef<number>();
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
@@ -106,7 +108,7 @@ export const VideoPlayer = ({
     return type.startsWith("image/") || imageTypes.includes(type);
   };
 
-  const navigateToItem = (newIndex: number) => {
+  const navigateToItem = (newIndex: number, direction?: "left" | "right") => {
     if (!galleryItems || galleryItems.length <= 1) return;
 
     const currentItem = galleryItems[activeIndex];
@@ -140,15 +142,19 @@ export const VideoPlayer = ({
 
   const goToPrevious = () => {
     if (galleryItems && galleryItems.length > 1) {
+      setSlideDirection("left");
+      setVirtualIndex((prev) => prev - 1);
       const newIndex = (activeIndex - 1 + galleryItems.length) % galleryItems.length;
-      navigateToItem(newIndex);
+      navigateToItem(newIndex, "left");
     }
   };
 
   const goToNext = () => {
     if (galleryItems && galleryItems.length > 1) {
+      setSlideDirection("right");
+      setVirtualIndex((prev) => prev + 1);
       const newIndex = (activeIndex + 1) % galleryItems.length;
-      navigateToItem(newIndex);
+      navigateToItem(newIndex, "right");
     }
   };
 
@@ -480,9 +486,9 @@ export const VideoPlayer = ({
         e.preventDefault();
 
         const threshold = 10;
-        if (e.deltaX > threshold && activeIndex < galleryItems.length - 1) {
+        if (e.deltaX > threshold) {
           goToNext();
-        } else if (e.deltaX < -threshold && activeIndex > 0) {
+        } else if (e.deltaX < -threshold) {
           goToPrevious();
         }
       }
@@ -633,78 +639,106 @@ export const VideoPlayer = ({
           )}
 
           <div className="flex items-center justify-start h-full min-w-full overflow-hidden">
-            {(galleryItems || [{ item: url, type: "video" }]).map((item, index) => (
-              <motion.div
-                key={index}
-                className="flex items-center justify-center h-full min-w-[100vw]"
-                animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
-                transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-                style={{ width: `${(galleryItems?.length || 1) * 100}vw` }}
-              >
-                {item.type && isImageType(String(item.type)) ? (
-                  <motion.img
-                    src={item.item}
-                    alt="Gallery item"
-                    className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
-                    animate={{ scale: index === activeIndex ? imageScale : 1 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (index === activeIndex) {
-                        toggleZoom();
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center">
-                    <div className="relative max-h-full max-w-full">
-                      <div
-                        className="relative max-h-full max-w-full"
-                        ref={index === activeIndex ? modalContainerRef : null}
-                      />
-
-                      <div className="absolute bottom-0 w-full p-3 z-[65]">
-                        <div className="max-w-2xl mx-auto w-full">
-                          <div
-                            className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setIsProgressClicked(true);
-                              if (videoRef.current) {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const clickX = e.clientX - rect.left;
-                                const clickRatio = clickX / rect.width;
-                                const newTime = clickRatio * videoRef.current.duration;
-                                videoRef.current.currentTime = Math.max(
-                                  0,
-                                  Math.min(newTime, videoRef.current.duration),
-                                );
-                              }
-                            }}
-                            onMouseUp={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setIsProgressClicked(false);
-                            }}
-                          >
+            <AnimatePresence initial={false}>
+              {(() => {
+                const items = galleryItems || [{ item: url, type: "video" }];
+                const itemsLength = items.length;
+                
+                // Create virtual items for smooth infinite scrolling
+                const virtualItems = [];
+                const baseOffset = Math.floor(virtualIndex / itemsLength) * itemsLength;
+                
+                // Show 3 sets of items for smooth wrapping
+                for (let i = -itemsLength; i < itemsLength * 2; i++) {
+                  const realIndex = ((i % itemsLength) + itemsLength) % itemsLength;
+                  virtualItems.push({
+                    item: items[realIndex],
+                    virtualIndex: baseOffset + i,
+                    realIndex: realIndex
+                  });
+                }
+                
+                return virtualItems.map((virtualItem) => {
+                  const item = virtualItem.item;
+                  const isActive = virtualItem.realIndex === activeIndex;
+                  
+                  return (
+                    <motion.div
+                      key={`${virtualItem.virtualIndex}-${virtualItem.realIndex}`}
+                      className="absolute flex items-center justify-center h-full w-[100vw]"
+                      initial={false}
+                      animate={{ 
+                        x: `calc(${(virtualItem.virtualIndex - virtualIndex) * 100}vw + 50vw - 50%)` 
+                      }}
+                      transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+                    >
+                      {item.type && isImageType(String(item.type)) ? (
+                        <motion.img
+                          src={item.item}
+                          alt="Gallery item"
+                          className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
+                          animate={{ scale: isActive ? imageScale : 1 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isActive) {
+                              toggleZoom();
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center">
+                          <div className="relative max-h-full max-w-full">
                             <div
-                              className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                isProgressClicked ? "duration-75" : "duration-300"
-                              }`}
-                              style={{ width: `${videoProgress * 100}%` }}
+                              className="relative max-h-full max-w-full"
+                              ref={isActive ? modalContainerRef : null}
                             />
-                          </div>
-                        </div>
-                      </div>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
+                            {isActive && (
+                              <div className="absolute bottom-0 w-full p-3 z-[65]">
+                                <div className="max-w-2xl mx-auto w-full">
+                                  <div
+                                    className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                    }}
+                                    onMouseDown={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      setIsProgressClicked(true);
+                                      if (videoRef.current) {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const clickX = e.clientX - rect.left;
+                                        const clickRatio = clickX / rect.width;
+                                        const newTime = clickRatio * videoRef.current.duration;
+                                        videoRef.current.currentTime = Math.max(
+                                          0,
+                                          Math.min(newTime, videoRef.current.duration),
+                                        );
+                                      }
+                                    }}
+                                    onMouseUp={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      setIsProgressClicked(false);
+                                    }}
+                                  >
+                                    <div
+                                      className={`bg-white h-full transition-all rounded-full ease-linear ${
+                                        isProgressClicked ? "duration-75" : "duration-300"
+                                      }`}
+                                      style={{ width: `${videoProgress * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {isActive && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
                           const newMutedState = !muted;
@@ -723,16 +757,19 @@ export const VideoPlayer = ({
                             pauseAllOtherVideos();
                           }
                         }}
-                        className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
-                      >
-                        {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {/* <div className="h-80 bg-red-300 min-w-[100vw]" key={index}>item {index}</div> */}
-              </motion.div>
-            ))}
+                                className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
+                              >
+                                {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                });
+              })()}
+            </AnimatePresence>
           </div>
 
           {galleryItems && galleryItems.length > 1 && (
@@ -742,6 +779,8 @@ export const VideoPlayer = ({
                   key={index}
                   onClick={(e) => {
                     e.stopPropagation();
+                    const diff = index - activeIndex;
+                    setVirtualIndex((prev) => prev + diff);
                     setActiveIndex(index);
                     navigateToItem(index);
                   }}
