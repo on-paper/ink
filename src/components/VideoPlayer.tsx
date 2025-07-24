@@ -638,7 +638,7 @@ export const VideoPlayer = ({
                 key={index}
                 className="flex items-center justify-center h-full min-w-[100vw]"
                 animate={{ x: `calc(50vw - ${activeIndex * 100 + 50}vw)` }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
                 style={{ width: `${(galleryItems?.length || 1) * 100}vw` }}
               >
                 {item.type && isImageType(String(item.type)) ? (
