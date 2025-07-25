@@ -96,14 +96,13 @@ export const VideoPlayer = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
-  const { registerPlayer, pauseAllOtherVideos, setUnmutedState } = useVideoState(videoId);
+  const { registerPlayer, setUnmutedState } = useVideoState(videoId);
   const autoplayRef = useRef<HTMLElement>(null);
   const stopAudio = useSetAtom(stopAudioAtom);
 
   // Viewport manager integration
   const viewportCallbacks = useRef({
     play: () => {
-      pauseAllOtherVideos();
       setShown(true);
       setPlaying(true);
       if (!muted) {
@@ -120,7 +119,7 @@ export const VideoPlayer = ({
   useEffect(() => {
     viewportCallbacks.current = {
       play: () => {
-        pauseAllOtherVideos();
+        // pauseAllOtherVideos();
         setShown(true);
         setPlaying(true);
         if (!muted) {
@@ -132,7 +131,11 @@ export const VideoPlayer = ({
       },
       isUnmuted: () => !muted,
     };
-  }, [muted, pauseAllOtherVideos, stopAudio]);
+  }, [
+    muted,
+    //  pauseAllOtherVideos,
+    stopAudio,
+  ]);
 
   const { register: registerViewport, unregister: unregisterViewport } = useVideoViewportManager(
     videoId,
@@ -170,7 +173,6 @@ export const VideoPlayer = ({
       if (shouldUnmute) {
         setMuted(false);
         stopAudio();
-        pauseAllOtherVideos();
       } else {
         setMuted(true);
       }
@@ -309,7 +311,7 @@ export const VideoPlayer = ({
         cancelAnimationFrame(progressAnimationRef.current);
       }
     };
-  }, [registerPlayer, modalOpen, pauseAllOtherVideos, muted]);
+  }, [registerPlayer, modalOpen, muted]);
 
   useEffect(() => {
     if (!videoRef.current || !shown) return;
@@ -356,7 +358,6 @@ export const VideoPlayer = ({
           setPlaying(true);
           if (!muted) {
             stopAudio();
-            pauseAllOtherVideos();
           }
         }
       });
@@ -405,16 +406,20 @@ export const VideoPlayer = ({
         navigator.mediaSession.setActionHandler("seekto", null);
       }
     };
-  }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, pauseAllOtherVideos, modalOpen]);
+  }, [shown, playing, muted, preview, generatedThumbnail, stopAudio, modalOpen]);
 
   const handleFullscreen = () => {
     if (!modalOpen) {
+      // First unregister from viewport manager to prevent conflicts
+      if (autoplay) {
+        unregisterViewport();
+      }
+
       setModalOpen(true);
       setIsFullscreen(true);
       setShown(true);
       setPlaying(true);
       // Always pause other videos when opening fullscreen, regardless of mute state
-      pauseAllOtherVideos();
       if (!muted) {
         stopAudio();
       }
@@ -426,6 +431,14 @@ export const VideoPlayer = ({
       setIsFullscreen(false);
       // Reset modal session preference when closing
       setModalSessionWantsAudio(false);
+
+      // Re-register with viewport manager when closing fullscreen if autoplay is enabled
+      if (autoplay) {
+        // Small delay to ensure modal state is fully updated
+        setTimeout(() => {
+          registerViewport();
+        }, 100);
+      }
     }
     return false;
   };
@@ -453,7 +466,7 @@ export const VideoPlayer = ({
             videoRef.current.src = currentItem.item;
             videoRef.current.load();
           }
-          
+
           // Play after a short delay to ensure everything is ready
           setTimeout(() => {
             if (videoRef.current && modalOpen) {
@@ -767,7 +780,6 @@ export const VideoPlayer = ({
                           </div>
                         </div>
 
-
                         <div className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 rounded-full">
                           <AnimatePresence>
                             {modalOpen && shown && (
@@ -799,7 +811,6 @@ export const VideoPlayer = ({
 
                                     if (muted) {
                                       stopAudio();
-                                      pauseAllOtherVideos();
                                     }
                                   }}
                                   className="p-2 rounded-full text-white bg-zinc-500/30 backdrop-blur-sm"
@@ -1028,15 +1039,16 @@ export const VideoPlayer = ({
 
                     if (muted) {
                       stopAudio();
-                      pauseAllOtherVideos();
                     }
                   }}
                   onMouseDown={() => setIsClickingMutePreview(true)}
                   onMouseUp={() => setIsClickingMutePreview(false)}
                   className="rounded-full p-1.5 group/mutebutton"
                 >
-                  <div className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95
-                  select-none transition-all duration-200 text-white bg-zinc-500/30 backdrop-blur-sm rounded-full p-2">
+                  <div
+                    className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95
+                  select-none transition-all duration-200 text-white bg-zinc-500/30 backdrop-blur-sm rounded-full p-2"
+                  >
                     {muted ? <VolumeOff className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </div>
                 </button>
