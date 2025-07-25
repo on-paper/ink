@@ -14,7 +14,6 @@ import { HistoryIndicator } from "~/components/HistoryIndicator";
 import { Menu } from "~/components/menu/Menu";
 import { NavigationShortcuts } from "~/components/NavigationShortcuts";
 import { RouteTracker } from "~/components/RouteTracker";
-import { VideoDebugOverlay } from "~/components/VideoDebugOverlay";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink"),
@@ -45,7 +44,6 @@ export default async function RootLayout({ children }) {
                   <RouteTracker />
                   <NavigationShortcuts />
                   <HistoryIndicator />
-                  <VideoDebugOverlay />
                   <Toaster position="top-center" offset={16} />
                   <Menu isAuthenticated={isAuthenticated} user={user} handle={handle} />
 

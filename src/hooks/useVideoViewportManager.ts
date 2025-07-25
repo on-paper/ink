@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createVideoDebugger } from "../utils/videoDebug";
 
-const debugLog = createVideoDebugger("viewport");
 
 interface VideoEntry {
   id: string;
@@ -26,13 +24,6 @@ const VIEWPORT_CONFIG = {
   rootMargin: "-25% 0px", // Create a center zone
 };
 
-const updateDebugStats = () => {
-  const stats = document.getElementById("video-debug-stats");
-  if (stats) {
-    const videosInUpperHalf = Array.from(videoRegistry.values()).filter((v) => v.isInUpperHalf);
-    stats.textContent = `Videos in upper half: ${videosInUpperHalf.length}`;
-  }
-};
 
 const getVideoPosition = (element: HTMLElement): { isInUpperHalf: boolean; positionFromTop: number } => {
   const rect = element.getBoundingClientRect();
@@ -49,10 +40,6 @@ const getVideoPosition = (element: HTMLElement): { isInUpperHalf: boolean; posit
 };
 
 const updateVideoStates = () => {
-  debugLog("viewport", "Updating video states", {
-    totalVideos: videoRegistry.size,
-    activeVideo: activeVideoId.current,
-  });
 
   // Update position status for all videos
   const videosInUpperHalf: VideoEntry[] = [];
@@ -70,11 +57,6 @@ const updateVideoStates = () => {
   // Sort videos by their position from top (lowest in upper half first)
   videosInUpperHalf.sort((a, b) => b.positionFromTop - a.positionFromTop);
 
-  debugLog("viewport", "Videos in upper half", {
-    count: videosInUpperHalf.length,
-    ids: videosInUpperHalf.map((v) => v.id),
-    positions: videosInUpperHalf.map((v) => v.positionFromTop.toFixed(0)),
-  });
 
   // Determine which video should be playing
   let newActiveId: string | null = null;
@@ -86,20 +68,14 @@ const updateVideoStates = () => {
     if (currentActive?.isInUpperHalf && currentActive.isUnmuted()) {
       // Keep current video playing if it's unmuted and still in upper half
       newActiveId = activeVideoId.current;
-      debugLog("viewport", "Keeping unmuted video active", { id: newActiveId });
     } else {
       // Otherwise, play the lowest video in upper half (closest to center line)
       newActiveId = videosInUpperHalf[0].id;
-      debugLog("viewport", "Selecting lowest video in upper half", { id: newActiveId });
     }
   }
 
   // Update playing states
   if (newActiveId !== activeVideoId.current) {
-    debugLog("viewport", "Active video changed", {
-      from: activeVideoId.current,
-      to: newActiveId,
-    });
 
     const oldActiveId = activeVideoId.current;
 
@@ -145,8 +121,6 @@ const updateVideoStates = () => {
     }),
   );
 
-  // Update debug display
-  updateDebugStats();
 };
 
 const debouncedUpdate = () => {
@@ -195,7 +169,6 @@ const cleanupGlobalState = () => {
     }
 
     activeVideoId.current = null;
-    debugLog("viewport", "Cleaned up global state");
   }
 };
 
@@ -220,7 +193,6 @@ export const useVideoViewportManager = (
   const register = useCallback(() => {
     if (!elementRef.current) return;
 
-    debugLog(videoId, "Registering video", { element: elementRef.current });
 
     // Add data attribute for intersection observer
     elementRef.current.setAttribute("data-video-id", videoId);
@@ -244,7 +216,6 @@ export const useVideoViewportManager = (
   }, [videoId, elementRef]);
 
   const unregister = useCallback(() => {
-    debugLog(videoId, "Unregistering video");
 
     const video = videoRegistry.get(videoId);
     if (video && globalObserver) {
@@ -267,7 +238,6 @@ export const useVideoViewportManager = (
   useEffect(() => {
     if (videoRegistry.size === 1) {
       // Only setup once
-      debugLog("viewport", "Setting up global listeners");
 
       const handleScroll = () => debouncedUpdate();
       const handleResize = () => debouncedUpdate();
@@ -282,7 +252,6 @@ export const useVideoViewportManager = (
       }
 
       return () => {
-        debugLog("viewport", "Cleaning up global listeners");
         window.removeEventListener("scroll", handleScroll);
         window.removeEventListener("resize", handleResize);
         if (viewport) {
