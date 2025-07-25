@@ -411,6 +411,8 @@ export const VideoPlayer = ({
     if (!modalOpen) {
       setModalOpen(true);
       setIsFullscreen(true);
+      setShown(true);
+      setPlaying(true);
       if (!muted) {
         stopAudio();
         pauseAllOtherVideos();
@@ -929,14 +931,7 @@ export const VideoPlayer = ({
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setModalOpen(true);
-                setIsFullscreen(true);
-                setShown(true);
-                setPlaying(true);
-                if (!muted) {
-                  stopAudio();
-                  pauseAllOtherVideos();
-                }
+                handleFullscreen();
               }}
             >
               {(() => {
