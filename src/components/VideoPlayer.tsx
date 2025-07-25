@@ -767,36 +767,49 @@ export const VideoPlayer = ({
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            const newMutedState = !muted;
-                            setMuted(newMutedState);
 
-                            // Update modal session preference when in modal
-                            if (modalOpen) {
-                              setModalSessionWantsAudio(!newMutedState);
-                            }
+                        <div className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 rounded-full">
+                          <AnimatePresence>
+                            {modalOpen && shown && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.2 }}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    const newMutedState = !muted;
+                                    setMuted(newMutedState);
 
-                            const currentItem = getCurrentItem();
-                            if (currentItem.type && !isImageType(String(currentItem.type))) {
-                              setVideoUnmutedStates((prev) => ({
-                                ...prev,
-                                [activeIndex]: !newMutedState,
-                              }));
-                            }
+                                    // Update modal session preference when in modal
+                                    if (modalOpen) {
+                                      setModalSessionWantsAudio(!newMutedState);
+                                    }
 
-                            if (muted) {
-                              stopAudio();
-                              pauseAllOtherVideos();
-                            }
-                          }}
-                          className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
-                        >
-                          {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                        </button>
+                                    const currentItem = getCurrentItem();
+                                    if (currentItem.type && !isImageType(String(currentItem.type))) {
+                                      setVideoUnmutedStates((prev) => ({
+                                        ...prev,
+                                        [activeIndex]: !newMutedState,
+                                      }));
+                                    }
+
+                                    if (muted) {
+                                      stopAudio();
+                                      pauseAllOtherVideos();
+                                    }
+                                  }}
+                                  className="p-2 rounded-full text-white bg-zinc-500/30 backdrop-blur-sm"
+                                >
+                                  {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1022,7 +1035,8 @@ export const VideoPlayer = ({
                   onMouseUp={() => setIsClickingMutePreview(false)}
                   className="rounded-full p-1.5 group/mutebutton"
                 >
-                  <div className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-500/30 backdrop-blur-sm rounded-full p-2">
+                  <div className="group-hover/mutebutton:scale-110 group-active/mutebutton:opacity-60 group-active/mutebutton:scale-95
+                  select-none transition-all duration-200 text-white bg-zinc-500/30 backdrop-blur-sm rounded-full p-2">
                     {muted ? <VolumeOff className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </div>
                 </button>

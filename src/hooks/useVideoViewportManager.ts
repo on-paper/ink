@@ -27,11 +27,11 @@ const VIEWPORT_CONFIG = {
 
 const getVideoPosition = (element: HTMLElement): { isInUpperHalf: boolean; positionFromTop: number } => {
   const rect = element.getBoundingClientRect();
-  const viewportCenterY = window.innerHeight / 2;
+  const viewportThresholdY = window.innerHeight * 0.66; // 66% from top (33% from bottom)
   const videoCenterY = rect.top + rect.height / 2;
 
-  // Video is in upper half if its center is above the viewport center
-  const isInUpperHalf = videoCenterY < viewportCenterY;
+  // Video is in upper portion if its center is above the 66% threshold line
+  const isInUpperHalf = videoCenterY < viewportThresholdY;
 
   // Position from top of viewport (used for sorting)
   const positionFromTop = videoCenterY;
