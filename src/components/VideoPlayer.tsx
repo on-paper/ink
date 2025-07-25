@@ -413,9 +413,10 @@ export const VideoPlayer = ({
       setIsFullscreen(true);
       setShown(true);
       setPlaying(true);
+      // Always pause other videos when opening fullscreen, regardless of mute state
+      pauseAllOtherVideos();
       if (!muted) {
         stopAudio();
-        pauseAllOtherVideos();
       }
     } else {
       if (progressAnimationRef.current) {
