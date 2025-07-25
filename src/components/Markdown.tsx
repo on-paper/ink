@@ -2,6 +2,7 @@ import type { PostMention } from "@cartel-sh/ui";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown/lib/ast-to-react";
+import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { getBaseUrl } from "~/utils/getBaseUrl";
@@ -151,6 +152,7 @@ const Markdown: React.FC<{
     li: ({ children }) => <li className="lexical-listitem">{children}</li>,
     a: createCustomLink(colorClasses, mentions),
     img: CustomImage,
+    u: ({ children }) => <u className="lexical-text-underline">{children}</u>,
   };
 
   const extractedUrls = useMemo(() => {
@@ -159,7 +161,12 @@ const Markdown: React.FC<{
 
   return (
     <>
-      <ReactMarkdown className={`${className}`} remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
+      <ReactMarkdown 
+        className={`${className}`} 
+        remarkPlugins={[remarkGfm, remarkBreaks]} 
+        rehypePlugins={[rehypeRaw as any]}
+        components={components}
+      >
         {processedText}
       </ReactMarkdown>
       {showLinkPreviews && extractedUrls.length > 0 && (
