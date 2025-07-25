@@ -170,7 +170,7 @@ const getImageMediaContent = (metadata: ImageMetadataDetails, authorHandle?: str
       <ImageViewer
         src={allMedia[0].item}
         alt={alt || title}
-        className="object-contain border rounded-xl max-h-[340px] w-auto"
+        className="object-contain border rounded-xl max-h-[300px] w-auto"
       />
     </div>
   ) : null;
@@ -209,7 +209,7 @@ const getVideoMediaContent = (metadata: VideoMetadataDetails, authorHandle?: str
   return allMedia.length > 1 ? (
     <MediaGallery items={allMedia} authorHandle={authorHandle} />
   ) : allMedia.length === 1 ? (
-    <div className="mt-2" style={{ maxHeight: "min(100%, 340px)" }}>
+    <div className="mt-2" style={{ maxHeight: "min(100%, 300px)" }}>
       <VideoPlayer url={allMedia[0].item} preview={cover} autoplay={true} authorHandle={authorHandle} />
     </div>
   ) : null;
@@ -340,7 +340,7 @@ const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; autho
   const firstVideoIndex = items.findIndex(item => item.type && !isImageMimeType(String(item.type)));
   
   return (
-    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" style={{ height: "340px" }}>
+    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" style={{ height: "300px" }}>
       <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
         {items.map((item, index) => {
           const isFirstVideo = index === firstVideoIndex;
@@ -351,12 +351,12 @@ const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; autho
                 <ImageViewer
                   src={item.item}
                   alt={`Gallery image ${index + 1}`}
-                  className="h-full max-h-[340px] w-auto object-contain border rounded-xl cursor-pointer"
+                  className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
                   galleryItems={items}
                   currentIndex={index}
                 />
               ) : (
-                <div className="h-full flex items-center" style={{ height: "340px" }}>
+                <div className="h-full flex items-center" style={{ height: "300px" }}>
                   <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={isFirstVideo} authorHandle={authorHandle} useModal={hasMixedMedia} />
                 </div>
               )}

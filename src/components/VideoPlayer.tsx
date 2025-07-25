@@ -17,8 +17,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { stopAudioAtom } from "../atoms/audio";
-import { useVideoAutoplay } from "../hooks/useVideoAutoplay";
 import { useVideoState } from "../hooks/useVideoState";
+import { useVideoViewportManager } from "../hooks/useVideoViewportManager";
 
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
   return new Promise((resolve, reject) => {
@@ -84,32 +84,68 @@ export const VideoPlayer = ({
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
   const [modalOpen, setModalOpen] = useState(false);
-  const [initialAutoplayDone, setInitialAutoplayDone] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [isProgressClicked, setIsProgressClicked] = useState(false);
   const [imageScale, setImageScale] = useState(1);
   const [videoUnmutedStates, setVideoUnmutedStates] = useState<{ [index: number]: boolean }>({});
-  const [slideDirection, setSlideDirection] = useState<"left" | "right">("right");
+  const [direction, setDirection] = useState(0);
   const [virtualIndex, setVirtualIndex] = useState(currentIndex || 0);
   const [isClickingMutePreview, setIsClickingMutePreview] = useState(false);
+  const [modalSessionWantsAudio, setModalSessionWantsAudio] = useState(false);
   const progressAnimationRef = useRef<number>();
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
   const { registerPlayer, pauseAllOtherVideos, setUnmutedState } = useVideoState(videoId);
-  const { ref: autoplayRef, registerAutoplayCallbacks } = useVideoAutoplay(videoId, {
-    enabled: autoplay,
-    threshold: autoplayThreshold,
-    rootMargin: autoplayRootMargin,
-  });
+  const autoplayRef = useRef<HTMLElement>(null);
   const stopAudio = useSetAtom(stopAudioAtom);
+
+  // Viewport manager integration
+  const viewportCallbacks = useRef({
+    play: () => {
+      pauseAllOtherVideos();
+      setShown(true);
+      setPlaying(true);
+      if (!muted) {
+        stopAudio();
+      }
+    },
+    pause: () => {
+      setPlaying(false);
+    },
+    isUnmuted: () => !muted,
+  });
+
+  // Update callbacks when state changes
+  useEffect(() => {
+    viewportCallbacks.current = {
+      play: () => {
+        pauseAllOtherVideos();
+        setShown(true);
+        setPlaying(true);
+        if (!muted) {
+          stopAudio();
+        }
+      },
+      pause: () => {
+        setPlaying(false);
+      },
+      isUnmuted: () => !muted,
+    };
+  }, [muted, pauseAllOtherVideos, stopAudio]);
+
+  const { register: registerViewport, unregister: unregisterViewport } = useVideoViewportManager(
+    videoId,
+    playerWithControlsRef,
+    viewportCallbacks.current,
+  );
 
   const isImageType = (type: string): boolean => {
     const imageTypes = ["PNG", "JPEG", "GIF", "BMP", "WEBP", "SVG_XML", "TIFF", "AVIF", "HEIC", "X_MS_BMP"];
     return type.startsWith("image/") || imageTypes.includes(type);
   };
 
-  const navigateToItem = (newIndex: number, direction?: "left" | "right") => {
+  const navigateToItem = (newIndex: number, dir?: number) => {
     if (!galleryItems || galleryItems.length <= 1) return;
 
     const currentItem = galleryItems[activeIndex];
@@ -119,6 +155,7 @@ export const VideoPlayer = ({
       setVideoUnmutedStates((prev) => ({ ...prev, [activeIndex]: true }));
     }
 
+    setDirection(dir || 0);
     setActiveIndex(newIndex);
     setImageScale(1);
 
@@ -126,13 +163,26 @@ export const VideoPlayer = ({
       setShown(true);
       setPlaying(true);
 
+      // Determine if next video should be unmuted based on session preference or individual video memory
       const wasVideoUnmuted = videoUnmutedStates[newIndex];
-      if (wasVideoUnmuted) {
+      const shouldUnmute = modalOpen ? modalSessionWantsAudio || wasVideoUnmuted : wasVideoUnmuted;
+
+      if (shouldUnmute) {
         setMuted(false);
         stopAudio();
         pauseAllOtherVideos();
       } else {
         setMuted(true);
+      }
+
+      // Ensure video plays immediately when in modal
+      if (modalOpen && videoRef.current) {
+        // Small delay to allow video src to update
+        setTimeout(() => {
+          if (videoRef.current && modalOpen) {
+            videoRef.current.play().catch(console.error);
+          }
+        }, 100);
       }
     } else {
       setShown(true);
@@ -143,19 +193,17 @@ export const VideoPlayer = ({
 
   const goToPrevious = () => {
     if (galleryItems && galleryItems.length > 1) {
-      setSlideDirection("left");
-      setVirtualIndex((prev) => prev - 1);
       const newIndex = (activeIndex - 1 + galleryItems.length) % galleryItems.length;
-      navigateToItem(newIndex, "left");
+      setVirtualIndex((prev) => prev - 1);
+      navigateToItem(newIndex, -1);
     }
   };
 
   const goToNext = () => {
     if (galleryItems && galleryItems.length > 1) {
-      setSlideDirection("right");
-      setVirtualIndex((prev) => prev + 1);
       const newIndex = (activeIndex + 1) % galleryItems.length;
-      navigateToItem(newIndex, "right");
+      setVirtualIndex((prev) => prev + 1);
+      navigateToItem(newIndex, 1);
     }
   };
 
@@ -256,29 +304,12 @@ export const VideoPlayer = ({
       },
     );
 
-    registerAutoplayCallbacks(
-      () => {
-        if (!modalOpen) {
-          pauseAllOtherVideos();
-          setShown(true);
-          setPlaying(true);
-          setMuted(true);
-        }
-      },
-      () => {
-        if (!modalOpen) {
-          setPlaying(false);
-        }
-      },
-      () => !muted,
-    );
-
     return () => {
       if (progressAnimationRef.current) {
         cancelAnimationFrame(progressAnimationRef.current);
       }
     };
-  }, [registerPlayer, registerAutoplayCallbacks, modalOpen, pauseAllOtherVideos, muted]);
+  }, [registerPlayer, modalOpen, pauseAllOtherVideos, muted]);
 
   useEffect(() => {
     if (!videoRef.current || !shown) return;
@@ -302,32 +333,15 @@ export const VideoPlayer = ({
     }
   }, [muted, setUnmutedState, shown, playing]);
 
+  // Register with viewport manager when autoplay is enabled
   useEffect(() => {
-    if (!autoplay || !autoplayRef.current) return;
-
-    const checkInitialVisibility = () => {
-      if (!autoplayRef.current) return;
-
-      const rect = autoplayRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-      const visibleRatio = visibleHeight / rect.height;
-
-      if (visibleRatio >= autoplayThreshold && rect.top < windowHeight && rect.bottom > 0 && !initialAutoplayDone) {
-        pauseAllOtherVideos();
-        setShown(true);
-        setPlaying(true);
-        setMuted(true);
-        setInitialAutoplayDone(true);
-      }
-    };
-
-    checkInitialVisibility();
-
-    const timeoutId = setTimeout(checkInitialVisibility, 200);
-
-    return () => clearTimeout(timeoutId);
-  }, [autoplay, autoplayThreshold, pauseAllOtherVideos, initialAutoplayDone]);
+    if (autoplay && playerWithControlsRef.current && !modalOpen) {
+      registerViewport();
+      return () => {
+        unregisterViewport();
+      };
+    }
+  }, [autoplay, modalOpen, registerViewport, unregisterViewport]);
 
   useEffect(() => {
     if ("mediaSession" in navigator && shown) {
@@ -407,6 +421,8 @@ export const VideoPlayer = ({
       }
       setModalOpen(false);
       setIsFullscreen(false);
+      // Reset modal session preference when closing
+      setModalSessionWantsAudio(false);
     }
     return false;
   };
@@ -429,7 +445,18 @@ export const VideoPlayer = ({
       const currentItem = galleryItems[activeIndex];
       if (currentItem?.type && !isImageType(String(currentItem.type))) {
         if (videoRef.current) {
-          videoRef.current.play().catch(console.error);
+          // Ensure video is loaded with correct src first
+          if (videoRef.current.src !== currentItem.item) {
+            videoRef.current.src = currentItem.item;
+            videoRef.current.load();
+          }
+          
+          // Play after a short delay to ensure everything is ready
+          setTimeout(() => {
+            if (videoRef.current && modalOpen) {
+              videoRef.current.play().catch(console.error);
+            }
+          }, 150);
         }
       }
     }
@@ -457,6 +484,8 @@ export const VideoPlayer = ({
       if (e.key === "Escape") {
         setModalOpen(false);
         setIsFullscreen(false);
+        // Reset modal session preference when closing
+        setModalSessionWantsAudio(false);
       }
 
       if (e.key === "ArrowLeft" && galleryItems && galleryItems.length > 1) {
@@ -487,9 +516,9 @@ export const VideoPlayer = ({
         e.preventDefault();
 
         const threshold = 10;
-        if (e.deltaX > threshold) {
+        if (e.deltaX > threshold && activeIndex < galleryItems.length - 1) {
           goToNext();
-        } else if (e.deltaX < -threshold) {
+        } else if (e.deltaX < -threshold && activeIndex > 0) {
           goToPrevious();
         }
       }
@@ -524,7 +553,7 @@ export const VideoPlayer = ({
         } else if (previewContainerRef.current && isVideo) {
           previewContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "h-full w-full object-contain";
-          videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "320px"}; display: block;`;
+          videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "300px"}; display: block;`;
         } else {
           videoRef.current.style.display = "none";
         }
@@ -558,6 +587,8 @@ export const VideoPlayer = ({
                 e.preventDefault();
                 setModalOpen(false);
                 setIsFullscreen(false);
+                // Reset modal session preference when closing
+                setModalSessionWantsAudio(false);
               }}
               className="w-10 h-10 rounded-full bg-zinc-500/50 hover:bg-zinc-800/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
             >
@@ -639,138 +670,135 @@ export const VideoPlayer = ({
             </>
           )}
 
-          <div className="flex items-center justify-start h-full min-w-full overflow-hidden">
-            <AnimatePresence initial={false}>
-              {(() => {
-                const items = galleryItems || [{ item: url, type: "video" }];
-                const itemsLength = items.length;
-                
-                // Create virtual items for smooth infinite scrolling
-                const virtualItems = [];
-                const baseOffset = Math.floor(virtualIndex / itemsLength) * itemsLength;
-                
-                // Show 3 sets of items for smooth wrapping
-                for (let i = -itemsLength; i < itemsLength * 2; i++) {
-                  const realIndex = ((i % itemsLength) + itemsLength) % itemsLength;
-                  virtualItems.push({
-                    item: items[realIndex],
-                    virtualIndex: baseOffset + i,
-                    realIndex: realIndex
-                  });
-                }
-                
-                return virtualItems.map((virtualItem) => {
-                  const item = virtualItem.item;
-                  const isActive = virtualItem.realIndex === activeIndex;
-                  
-                  return (
-                    <motion.div
-                      key={`${virtualItem.virtualIndex}-${virtualItem.realIndex}`}
-                      className="absolute flex items-center justify-center h-full w-[100vw]"
-                      initial={false}
-                      animate={{ 
-                        x: `calc(${(virtualItem.virtualIndex - virtualIndex) * 100}vw + 50vw - 50%)` 
-                      }}
-                      transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-                    >
-                      {item.type && isImageType(String(item.type)) ? (
-                        <motion.img
-                          src={item.item}
-                          alt="Gallery item"
-                          className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
-                          animate={{ scale: isActive ? imageScale : 1 }}
-                          transition={{ duration: 0.2, ease: "easeInOut" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isActive) {
-                              toggleZoom();
-                            }
-                          }}
-                          draggable={false}
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center">
-                          <div className="relative max-h-full max-w-full">
-                            <div
-                              className="relative max-h-full max-w-full"
-                              ref={isActive ? modalContainerRef : null}
-                            />
-
-                            {isActive && (
-                              <div className="absolute bottom-0 w-full p-3 z-[65]">
-                                <div className="max-w-2xl mx-auto w-full">
-                                  <div
-                                    className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      e.preventDefault();
-                                    }}
-                                    onMouseDown={(e) => {
-                                      e.stopPropagation();
-                                      e.preventDefault();
-                                      setIsProgressClicked(true);
-                                      if (videoRef.current) {
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        const clickX = e.clientX - rect.left;
-                                        const clickRatio = clickX / rect.width;
-                                        const newTime = clickRatio * videoRef.current.duration;
-                                        videoRef.current.currentTime = Math.max(
-                                          0,
-                                          Math.min(newTime, videoRef.current.duration),
-                                        );
-                                      }
-                                    }}
-                                    onMouseUp={(e) => {
-                                      e.stopPropagation();
-                                      e.preventDefault();
-                                      setIsProgressClicked(false);
-                                    }}
-                                  >
-                                    <div
-                                      className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                        isProgressClicked ? "duration-75" : "duration-300"
-                                      }`}
-                                      style={{ width: `${videoProgress * 100}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {isActive && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
+          <div className="relative flex items-center justify-center h-full w-full overflow-hidden">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={virtualIndex}
+                custom={direction}
+                variants={{
+                  enter: (direction: number) => ({
+                    x: direction > 0 ? "100%" : "-100%",
+                    opacity: 0,
+                  }),
+                  center: {
+                    zIndex: 1,
+                    x: 0,
+                    opacity: 1,
+                  },
+                  exit: (direction: number) => ({
+                    zIndex: 0,
+                    x: direction < 0 ? "100%" : "-100%",
+                    opacity: 0,
+                  }),
+                }}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "tween", duration: 0.3, ease: "easeOut" },
+                  opacity: { duration: 0.2 },
+                }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                {(() => {
+                  const currentItem = getCurrentItem();
+                  if (currentItem.type && isImageType(String(currentItem.type))) {
+                    return (
+                      <motion.img
+                        src={currentItem.item}
+                        alt="Gallery item"
+                        className={`max-h-full max-w-full object-contain ${imageScale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
+                        animate={{ scale: imageScale }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        onClick={(e) => {
                           e.stopPropagation();
-                          e.preventDefault();
-                          const newMutedState = !muted;
-                          setMuted(newMutedState);
-
-                          const currentItem = getCurrentItem();
-                          if (currentItem.type && !isImageType(String(currentItem.type))) {
-                            setVideoUnmutedStates((prev) => ({
-                              ...prev,
-                              [activeIndex]: !newMutedState,
-                            }));
-                          }
-
-                          if (muted) {
-                            stopAudio();
-                            pauseAllOtherVideos();
-                          }
+                          toggleZoom();
                         }}
-                                className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
-                              >
-                                {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                              </button>
-                            )}
+                      />
+                    );
+                  }
+                  return (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <div className="relative max-h-full max-w-full">
+                        <div
+                          className="relative max-h-full max-w-full cursor-pointer active:opacity-95 transition-all duration-100"
+                          ref={modalContainerRef}
+                        />
+
+                        <div className="absolute bottom-0 w-full p-3 z-[65]">
+                          <div className="max-w-2xl mx-auto w-full">
+                            <div
+                              className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setIsProgressClicked(true);
+                                if (videoRef.current) {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const clickX = e.clientX - rect.left;
+                                  const clickRatio = clickX / rect.width;
+                                  const newTime = clickRatio * videoRef.current.duration;
+                                  videoRef.current.currentTime = Math.max(
+                                    0,
+                                    Math.min(newTime, videoRef.current.duration),
+                                  );
+                                }
+                              }}
+                              onMouseUp={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setIsProgressClicked(false);
+                              }}
+                            >
+                              <div
+                                className={`bg-white h-full transition-all rounded-full ease-linear ${
+                                  isProgressClicked ? "duration-75" : "duration-300"
+                                }`}
+                                style={{ width: `${videoProgress * 100}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </motion.div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            const newMutedState = !muted;
+                            setMuted(newMutedState);
+
+                            // Update modal session preference when in modal
+                            if (modalOpen) {
+                              setModalSessionWantsAudio(!newMutedState);
+                            }
+
+                            const currentItem = getCurrentItem();
+                            if (currentItem.type && !isImageType(String(currentItem.type))) {
+                              setVideoUnmutedStates((prev) => ({
+                                ...prev,
+                                [activeIndex]: !newMutedState,
+                              }));
+                            }
+
+                            if (muted) {
+                              stopAudio();
+                              pauseAllOtherVideos();
+                            }
+                          }}
+                          className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 text-zinc-200 bg-zinc-400/10 backdrop-blur-sm rounded-full p-2"
+                        >
+                          {muted ? <VolumeOff className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
                   );
-                });
-              })()}
+                })()}
+              </motion.div>
             </AnimatePresence>
           </div>
 
@@ -781,10 +809,9 @@ export const VideoPlayer = ({
                   key={index}
                   onClick={(e) => {
                     e.stopPropagation();
-                    const diff = index - activeIndex;
-                    setVirtualIndex((prev) => prev + diff);
-                    setActiveIndex(index);
-                    navigateToItem(index);
+                    const dir = index > activeIndex ? 1 : index < activeIndex ? -1 : 0;
+                    setVirtualIndex((prev) => prev + (index - activeIndex));
+                    navigateToItem(index, dir);
                   }}
                   className={`w-2 h-2 rounded-full transition-all ${index === activeIndex ? "bg-white" : "bg-white/50"}`}
                 />
@@ -821,6 +848,20 @@ export const VideoPlayer = ({
             cancelAnimationFrame(progressAnimationRef.current);
           }
         }}
+        onClick={(e) => {
+          if (!modalOpen) return;
+          e.stopPropagation();
+          e.preventDefault();
+
+          if (videoRef.current) {
+            if (videoRef.current.paused) {
+              videoRef.current.play();
+            } else {
+              videoRef.current.pause();
+            }
+          }
+          return false;
+        }}
         style={{ display: "none" }}
       />
       <div
@@ -831,7 +872,7 @@ export const VideoPlayer = ({
         className={`relative flex justify-center items-center rounded-lg overflow-hidden 
            ${isClickingMutePreview ? "" : "active:scale-[99%]"}
            transition-all
-        ${preview !== "" ? "max-h-[320px] w-fit" : "h-fit"}
+        ${preview !== "" ? "max-h-[300px] w-fit" : "h-fit"}
       `}
         onClick={handleFullscreen}
         onKeyDown={(e) => {
@@ -867,7 +908,12 @@ export const VideoPlayer = ({
                 (() => {
                   const currentItem = getCurrentItem();
                   return currentItem.type && isImageType(String(currentItem.type)) ? (
-                    <img src={currentItem.item} alt="Gallery item" className="h-full w-full object-contain" draggable={false} />
+                    <img
+                      src={currentItem.item}
+                      alt="Gallery item"
+                      className="h-full w-full object-contain"
+                      draggable={false}
+                    />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
                       <div ref={previewContainerRef} className="h-full w-full flex items-center justify-center">
@@ -879,7 +925,7 @@ export const VideoPlayer = ({
             </div>
 
             <div
-              className={`${shown ? "opacity-0" : "opacity-100"} transition-opacity flex items-center justify-center relative h-full w-full cursor-pointer`}
+              className={`${shown ? "opacity-0" : "opacity-100"} transition-opacity duration-300 flex items-center justify-center relative h-full w-full cursor-pointer`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -897,8 +943,13 @@ export const VideoPlayer = ({
                 const currentItem = getCurrentItem();
                 if (currentItem.type && isImageType(String(currentItem.type))) {
                   return (
-                    <div className="h-full max-h-[320px] w-auto relative">
-                      <img src={currentItem.item} alt="" className="w-auto h-[320px] object-cover rounded-xl mx-auto" draggable={false} />
+                    <div className="h-full max-h-[300px] w-auto relative">
+                      <img
+                        src={currentItem.item}
+                        alt=""
+                        className="w-auto h-[300px] object-cover rounded-xl mx-auto"
+                        draggable={false}
+                      />
                     </div>
                   );
                 }
@@ -910,7 +961,7 @@ export const VideoPlayer = ({
                         <img
                           src={videoPreview}
                           alt="Video preview"
-                          className="max-h-[320px] object-contain rounded-xl mx-auto"
+                          className="max-h-[300px] object-contain rounded-xl mx-auto"
                           draggable={false}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
@@ -921,7 +972,7 @@ export const VideoPlayer = ({
                       </>
                     ) : generatedThumbnail && activeIndex === (currentIndex || 0) ? (
                       <>
-                        <img src={generatedThumbnail} alt="" className="h-[320px] rounded-xl" draggable={false} />
+                        <img src={generatedThumbnail} alt="" className="h-[300px] rounded-xl" draggable={false} />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
@@ -952,6 +1003,11 @@ export const VideoPlayer = ({
                     e.preventDefault();
                     const newMutedState = !muted;
                     setMuted(newMutedState);
+
+                    // Update modal session preference when in modal
+                    if (modalOpen) {
+                      setModalSessionWantsAudio(!newMutedState);
+                    }
 
                     const currentItem = getCurrentItem();
                     if (currentItem.type && !isImageType(String(currentItem.type))) {
