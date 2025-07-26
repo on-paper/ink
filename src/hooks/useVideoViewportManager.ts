@@ -62,16 +62,7 @@ const updateVideoStates = () => {
   let newActiveId: string | null = null;
 
   if (videosInUpperHalf.length > 0) {
-    // Check if current active video is still in upper half and unmuted
-    const currentActive = activeVideoId.current ? videoRegistry.get(activeVideoId.current) : null;
-
-    if (currentActive?.isInUpperHalf && currentActive.isUnmuted()) {
-      // Keep current video playing if it's unmuted and still in upper half
-      newActiveId = activeVideoId.current;
-    } else {
-      // Otherwise, play the lowest video in upper half (closest to center line)
-      newActiveId = videosInUpperHalf[0].id;
-    }
+    newActiveId = videosInUpperHalf[0].id;
   }
 
   // Update playing states
@@ -82,9 +73,7 @@ const updateVideoStates = () => {
     // Pause old active video (if not unmuted)
     if (oldActiveId) {
       const oldVideo = videoRegistry.get(oldActiveId);
-      if (oldVideo && !oldVideo.isUnmuted()) {
-        oldVideo.pause();
-      }
+      if (oldVideo) oldVideo.pause();
     }
 
     // Play new active video
