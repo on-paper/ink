@@ -737,7 +737,7 @@ export const VideoPlayer = ({
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="relative max-h-full max-w-full">
                         <div
-                          className="relative max-h-full max-w-full cursor-pointer active:opacity-95 transition-all duration-100"
+                          className="relative max-h-full max-w-full cursor-pointer transition-all duration-100"
                           ref={modalContainerRef}
                         />
 
@@ -771,16 +771,15 @@ export const VideoPlayer = ({
                               }}
                             >
                               <div
-                                className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                  isProgressClicked ? "duration-75" : "duration-300"
-                                }`}
+                                className={`bg-white h-full transition-all rounded-full ease-linear ${isProgressClicked ? "duration-75" : "duration-300"
+                                  }`}
                                 style={{ width: `${videoProgress * 100}%` }}
                               />
                             </div>
                           </div>
                         </div>
 
-                        <div className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:opacity-60 active:scale-95 select-none transition-all duration-200 rounded-full">
+                        <div className="absolute bottom-7 right-5 z-[60] hover:scale-110 active:scale-95 select-none transition-all duration-200 rounded-full">
                           <AnimatePresence>
                             {modalOpen && shown && (
                               <motion.div
