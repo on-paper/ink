@@ -1,5 +1,5 @@
 import { fetchPostsToExplore } from "@lens-protocol/client/actions";
-import { PageSize } from "@lens-protocol/react";
+import { PageSize } from "@lens-protocol/graphql";
 import { type NextRequest, NextResponse } from "next/server";
 import { getServerAuth } from "~/utils/getServerAuth";
 import { lensItemToPost } from "~/utils/lens/converters/postConverter";
