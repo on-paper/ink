@@ -1,9 +1,9 @@
+import type { User } from "@cartel-sh/ui";
 import { AnyClient, SessionClient } from "@lens-protocol/client";
 import { fetchMeDetails } from "@lens-protocol/client/actions";
-import type { User } from "~/lib/types/user";
 import { lensAccountToUser } from "~/utils/lens/converters/userConverter";
-import { getLensClient } from "./lens/getLensClient";
 import { getCookieAuth } from "./getCookieAuth";
+import { getLensClient } from "./lens/getLensClient";
 
 interface ServerAuthResult {
   isAuthenticated: boolean;
@@ -16,7 +16,7 @@ interface ServerAuthResult {
 
 export const getServerAuth = async (): Promise<ServerAuthResult> => {
   const client = await getLensClient();
-  
+
   const unauthenticatedResult: ServerAuthResult = {
     isAuthenticated: false,
     address: null,

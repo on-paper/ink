@@ -1,12 +1,12 @@
 "use client";
 
-import { usePostSearch } from "~/hooks/usePostSearch";
 import { ChevronLeft } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { FeedSuspense } from "~/components/FeedSuspense";
 import Link from "~/components/Link";
 import { SearchBar } from "~/components/menu/Search";
 import { Button } from "~/components/ui/button";
+import { usePostSearch } from "~/hooks/usePostSearch";
 import { PostView } from "./post/PostView";
 
 export function Search() {

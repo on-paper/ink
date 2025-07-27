@@ -1,5 +1,5 @@
+import type { Post, PostMention, PostReactions } from "@cartel-sh/ui";
 import type { AnyPost, Post as LensPost, TimelineItem } from "@lens-protocol/client";
-import type { Post, PostMention, PostReactions } from "~/lib/types/post";
 import { lensAccountToUser } from "./userConverter";
 
 export function lensItemToPost(item: AnyPost | TimelineItem): Post | null {

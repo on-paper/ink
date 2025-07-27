@@ -1,8 +1,7 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
-import type { Post } from "~/lib/types/post";
-import type { User } from "~/lib/types/user";
+import type { Post, User } from "@cartel-sh/ui";
+import { createContext, type ReactNode, useContext } from "react";
 
 interface ComposerContextValue {
   user?: User;
@@ -19,13 +18,7 @@ interface ComposerContextValue {
 
 const ComposerContext = createContext<ComposerContextValue | undefined>(undefined);
 
-export const ComposerProvider = ({
-  children,
-  value,
-}: {
-  children: ReactNode;
-  value: ComposerContextValue;
-}) => {
+export const ComposerProvider = ({ children, value }: { children: ReactNode; value: ComposerContextValue }) => {
   return <ComposerContext.Provider value={value}>{children}</ComposerContext.Provider>;
 };
 

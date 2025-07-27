@@ -1,8 +1,8 @@
 "use client";
 
+import type { Post } from "@cartel-sh/ui";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Post } from "~/lib/types/post";
 import { useDeletedPosts } from "../DeletedPostsContext";
 import { DissolveFilter } from "../DissolveFilter";
 import { useFilteredUsers } from "../FilteredUsersContext";
@@ -207,12 +207,9 @@ export const PostView = ({
                   <PostInfo post={item} onReply={handleReply} />
                   <PostContent ref={postContentRef} post={item} collapsed={collapsed} setCollapsed={setCollapsed} />
                   {settings?.showBadges && (
-                    <ReactionsList
-                      isComment={settings.isComment}
-                      collapsed={collapsed}
-                      post={item}
-                      isReplyOpen={isReplyWizardOpen}
-                    />
+                    <div className="mt-1">
+                      <ReactionsList isComment={settings.isComment} post={item} isReplyOpen={isReplyWizardOpen} />
+                    </div>
                   )}
                 </div>
               </CardContent>

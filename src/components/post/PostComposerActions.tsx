@@ -1,7 +1,6 @@
-import EmojiPicker, { type Theme } from "emoji-picker-react";
 import { ImageIcon, SmileIcon } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useState } from "react";
+import { EmojiPicker } from "../emoji/EmojiPicker";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
@@ -12,7 +11,12 @@ interface PostComposerActionsProps {
 
 export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposerActionsProps) {
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
-  const { theme } = useTheme();
+
+  const handleEmojiClick = (emoji: any) => {
+    console.log('Emoji clicked:', emoji);
+    onEmojiClick(emoji);
+    // Keep the picker open so users can add multiple emojis
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -25,19 +29,30 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
       >
         <ImageIcon className="h-5 w-5 text-muted-foreground" />
       </Button>
-      <DropdownMenu modal={false}>
+      <DropdownMenu open={isEmojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
             className="rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal"
-            onClick={() => setEmojiPickerOpen(!isEmojiPickerOpen)}
           >
             <SmileIcon className="h-5 w-5 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <EmojiPicker theme={theme as Theme} className="bg-card text-card-foreground" onEmojiClick={onEmojiClick} />
+        <DropdownMenuContent 
+          className="p-0"
+          onInteractOutside={(event) => {
+            // Close when clicking outside
+            setEmojiPickerOpen(false);
+          }}
+          onPointerDownOutside={(event) => {
+            // Also handle pointer down outside for immediate response
+            setEmojiPickerOpen(false);
+          }}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

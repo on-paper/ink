@@ -1,8 +1,8 @@
 "use client";
 
+import type { Post } from "@cartel-sh/ui";
 import { createContext, type PropsWithChildren, useContext } from "react";
 import { usePostState } from "~/hooks/usePostState";
-import type { Post } from "~/lib/types/post";
 
 type PostStateContextType = ReturnType<typeof usePostState> | null;
 

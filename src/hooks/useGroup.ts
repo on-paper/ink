@@ -1,5 +1,5 @@
+import type { Group } from "@cartel-sh/ui";
 import { useQuery } from "@tanstack/react-query";
-import type { Group } from "~/lib/types/group";
 
 export type GroupWithOperations = Group;
 

@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { Edit2Icon } from "lucide-react";
-import type { Post } from "~/lib/types/post";
 import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 

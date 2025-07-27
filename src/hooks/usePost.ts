@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { useQuery } from "@tanstack/react-query";
-import type { Post } from "~/lib/types/post";
 
 const fetchPost = async (postId: string): Promise<Post> => {
   const response = await fetch(`/api/posts/${postId}`);

@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useCallback } from "react";
+import type { User } from "@cartel-sh/ui";
 import { useRouter } from "next/navigation";
-import type { User } from "~/lib/types/user";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
 
 interface UserContextType {
   user: User | null;
@@ -28,11 +28,11 @@ export function UserProvider({ children, user }: { children: ReactNode; user: Us
   );
 
   return (
-    <UserContext.Provider 
-      value={{ 
+    <UserContext.Provider
+      value={{
         user,
         isAuthenticated: !!user,
-        requireAuth
+        requireAuth,
       }}
     >
       {children}

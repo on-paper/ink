@@ -1,4 +1,4 @@
-import type { Post } from "~/lib/types/post";
+import type { Post } from "@cartel-sh/ui";
 import { UserAvatar } from "../user/UserAvatar";
 import { getPostMediaContent, getPostTextContent } from "./PostMetadataView";
 
@@ -15,9 +15,7 @@ export function QuotedPostPreview({ quotedPost }: QuotedPostPreviewProps) {
         <div className="w-4 h-4">
           <UserAvatar user={quotedPost.author} link={false} card={false} />
         </div>
-        <span className="text-sm text-bold text-muted-foreground">
-          {quotedPost.author.username}
-        </span>
+        <span className="text-sm text-bold text-muted-foreground">{quotedPost.author.username}</span>
       </div>
       <p className="text-sm line-clamp-3">{getPostTextContent(quotedPost.metadata, quotedPost.mentions, false)}</p>
       {mediaContent && (

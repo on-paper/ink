@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { useQuery } from "@tanstack/react-query";
-import type { Post } from "~/lib/types/post";
 
 export function useCachedPost(post: Post): Post {
   const { data } = useQuery({

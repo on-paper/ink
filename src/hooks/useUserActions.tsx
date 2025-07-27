@@ -1,7 +1,7 @@
+import type { User } from "@cartel-sh/ui";
 import { ShieldIcon, ShieldOffIcon, Volume2Icon, VolumeXIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useFilteredUsers } from "~/components/FilteredUsersContext";
-import type { User } from "~/lib/types/user";
 
 export const useUserActions = (user: User, onComplete?: () => void) => {
   const { addMutedUser, removeMutedUser, addBlockedUser, removeBlockedUser } = useFilteredUsers();

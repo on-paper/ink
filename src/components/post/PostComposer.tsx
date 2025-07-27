@@ -1,5 +1,6 @@
 "use client";
 
+import type { Post, User } from "@cartel-sh/ui";
 import {
   closestCenter,
   DndContext,
@@ -22,10 +23,13 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem } from "@/src/components/ui/form";
 import { useUser } from "~/components/user/UserContext";
 import { MAX_CONTENT_LENGTH, usePostSubmission } from "~/hooks/usePostSubmission";
-import type { Post } from "~/lib/types/post";
-import type { User } from "~/lib/types/user";
 import { storageClient } from "~/utils/lens/storage";
-import { castToMediaImageType, castToMediaVideoType, normalizeImageMimeType, normalizeVideoMimeType } from "~/utils/mimeTypes";
+import {
+  castToMediaImageType,
+  castToMediaVideoType,
+  normalizeImageMimeType,
+  normalizeVideoMimeType,
+} from "~/utils/mimeTypes";
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
@@ -36,9 +40,7 @@ import { QuotedPostPreview } from "./QuotedPostPreview";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
-type MediaItem =
-  | { type: "file"; file: File; id: string }
-  | { type: "url"; url: string; mimeType: string; id: string };
+type MediaItem = { type: "file"; file: File; id: string } | { type: "url"; url: string; mimeType: string; id: string };
 
 const FormSchema = z.object({
   content: z.string().max(MAX_CONTENT_LENGTH, {
@@ -262,60 +264,68 @@ function ComposerContent() {
     });
   }, []);
 
-  const processMediaForSubmission = useCallback(async (toastId?: string) => {
-    if (mediaFiles.length === 0) {
-      return { primaryMedia: null, attachments: undefined };
-    }
-
-    try {
-      if (toastId) {
-        toast.loading(`Uploading ${mediaFiles.length} file${mediaFiles.length > 1 ? 's' : ''}...`, { id: toastId });
+  const processMediaForSubmission = useCallback(
+    async (toastId?: string) => {
+      if (mediaFiles.length === 0) {
+        return { primaryMedia: null, attachments: undefined };
       }
 
-      const uploadPromises = mediaFiles.map(async (item, index) => {
-        try {
-          if (item.type === "file") {
-            const { uri } = await storageClient.uploadFile(item.file);
-            return { uri, type: item.file.type, originalId: item.id };
-          }
-          return { uri: item.url, type: item.mimeType, originalId: item.id };
-        } catch (error) {
-          console.error(`Failed to upload file ${index + 1}:`, error);
-          throw new Error(`Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error.message}`);
+      try {
+        if (toastId) {
+          toast.loading(`Uploading ${mediaFiles.length} file${mediaFiles.length > 1 ? "s" : ""}...`, { id: toastId });
         }
-      });
 
-      const uploadedMedia = await Promise.all(uploadPromises);
-
-      const primaryMedia = uploadedMedia[0] || null;
-      const attachments = uploadedMedia.length > 1
-        ? uploadedMedia.slice(1).map((m) => {
-          if (m.type.startsWith("image/")) {
-            return {
-              item: m.uri,
-              type: castToMediaImageType(m.type),
-            };
-          } else if (m.type.startsWith("video/")) {
-            return {
-              item: m.uri,
-              type: castToMediaVideoType(m.type),
-            };
+        const uploadPromises = mediaFiles.map(async (item, index) => {
+          try {
+            if (item.type === "file") {
+              const { uri } = await storageClient.uploadFile(item.file);
+              return { uri, type: item.file.type, originalId: item.id };
+            }
+            return { uri: item.url, type: item.mimeType, originalId: item.id };
+          } catch (error) {
+            console.error(`Failed to upload file ${index + 1}:`, error);
+            throw new Error(`Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error.message}`);
           }
-          return null;
-        }).filter(Boolean)
-        : undefined;
+        });
 
-      return {
-        primaryMedia,
-        attachments: attachments && attachments.length > 0 ? attachments : undefined
-      };
-    } catch (error) {
-      if (toastId) {
-        toast.dismiss(toastId);
+        const uploadedMedia = await Promise.all(uploadPromises);
+
+        const primaryMedia = uploadedMedia[0] || null;
+        const attachments =
+          uploadedMedia.length > 1
+            ? uploadedMedia
+                .slice(1)
+                .map((m) => {
+                  if (m.type.startsWith("image/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaImageType(m.type),
+                    };
+                  }
+                  if (m.type.startsWith("video/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaVideoType(m.type),
+                    };
+                  }
+                  return null;
+                })
+                .filter(Boolean)
+            : undefined;
+
+        return {
+          primaryMedia,
+          attachments: attachments && attachments.length > 0 ? attachments : undefined,
+        };
+      } catch (error) {
+        if (toastId) {
+          toast.dismiss(toastId);
+        }
+        throw error;
       }
-      throw error;
-    }
-  }, [mediaFiles]);
+    },
+    [mediaFiles],
+  );
 
   // Dropzone setup
   const onDrop = useCallback((acceptedFiles: File[]) => handleAddFiles(acceptedFiles), [handleAddFiles]);
@@ -393,9 +403,7 @@ function ComposerContent() {
               <div className="flex h-5 justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs sm:text-sm">{currentUser?.username}</span>
-                  {editingPost && (
-                    <span className="text-muted-foreground text-xs sm:text-sm">editing</span>
-                  )}
+                  {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>
                 {editingPost && onCancel && (
                   <Button

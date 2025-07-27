@@ -1,10 +1,10 @@
+import type { Post } from "@cartel-sh/ui";
 import { BookmarkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useDeletedPosts } from "~/components/DeletedPostsContext";
 import { useUserActions } from "~/hooks/useUserActions";
-import type { Post } from "~/lib/types/post";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import type { MenuContext, MenuItem } from "../components/post/PostMenuConfig";
 import { Button } from "../components/ui/button";
@@ -72,14 +72,7 @@ export const usePostState = (
   };
 
   const share = () => {
-    navigator.clipboard.writeText(shareLink).then(
-      () => {
-        toast.success("Copied link to clipboard");
-      },
-      () => {
-        toast.error("Error copying link to clipboard!");
-      },
-    );
+    // Share functionality is now handled in PostInfo.tsx as a submenu
     onMenuAction?.();
   };
 

@@ -1,7 +1,7 @@
+import type { Post } from "@cartel-sh/ui";
 import { ChevronDownIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { Post } from "~/lib/types/post";
 import { Button } from "../ui/button";
 import { CommentSkeleton } from "./PostCommentSkeleton";
 import { PostView } from "./PostView";

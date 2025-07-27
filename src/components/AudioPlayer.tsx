@@ -4,19 +4,19 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
+  type AudioMetadata,
   audioDisplayTimeAtom,
+  audioDurationAtom,
+  audioPlayingAtom,
   audioProgressPercentageAtom,
   currentAudioAtom,
-  audioPlayingAtom,
-  playAudioAtom,
-  pauseAudioAtom,
-  seekAudioAtom,
-  toggleTimeDisplayAtom,
   hideMiniPlayerAtom,
+  pauseAudioAtom,
+  playAudioAtom,
+  seekAudioAtom,
   showMiniPlayerAtom,
-  audioDurationAtom,
+  toggleTimeDisplayAtom,
   visibleAudioPlayerUrlAtom,
-  type AudioMetadata,
 } from "../atoms/audio";
 
 export const AudioPlayer = ({
@@ -67,9 +67,9 @@ export const AudioPlayer = ({
       },
       {
         root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-      }
+        rootMargin: "0px",
+        threshold: 0.1,
+      },
     );
 
     if (audioPlayerRef.current) {
@@ -113,7 +113,7 @@ export const AudioPlayer = ({
         title,
         artist: author,
         cover,
-        postId: postId || '',
+        postId: postId || "",
       };
       playAudio(audioData);
 
@@ -139,10 +139,13 @@ export const AudioPlayer = ({
     setIsDragging(false);
   };
 
-  const currentProgressPercentage = isDragging ? dragValue : (isCurrentAudio ? progressPercentage : 0);
+  const currentProgressPercentage = isDragging ? dragValue : isCurrentAudio ? progressPercentage : 0;
 
   return (
-    <div ref={audioPlayerRef} className="w-full bg-gradient-to-r from-zinc-100/20 dark:from-zinc-800/50 to-zinc-200/30 dark:to-zinc-900/50 backdrop-blur-md rounded-md overflow-hidden flex items-center gap-4 relative max-h-24">
+    <div
+      ref={audioPlayerRef}
+      className="w-full bg-gradient-to-r from-zinc-100/20 dark:from-zinc-800/50 to-zinc-200/30 dark:to-zinc-900/50 backdrop-blur-md rounded-md overflow-hidden flex items-center gap-4 relative max-h-24"
+    >
       <div className="h-24 aspect-square overflow-hidden flex-shrink-0">
         <img src={cover} alt={title} className="w-full h-full object-cover" />
       </div>
@@ -167,7 +170,7 @@ export const AudioPlayer = ({
             <div className="dark:text-zinc-400 text-zinc-600 text-sm truncate">{author}</div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex-1 relative h-2 bg-black/20 dark:bg-white/20 rounded-full overflow-hidden">
             <div

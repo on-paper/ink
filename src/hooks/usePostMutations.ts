@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Post } from "~/lib/types/post";
 
 interface PostMutationContext {
   previousPost?: Post;

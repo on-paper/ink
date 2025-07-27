@@ -1,10 +1,10 @@
 "use client";
 
+import type { User } from "@cartel-sh/ui";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useUser } from "~/components/user/UserContext";
 import { useUserMutations } from "~/hooks/useUserMutations";
-import type { User } from "~/lib/types/user";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { UserAvatar } from "./user/UserAvatar";

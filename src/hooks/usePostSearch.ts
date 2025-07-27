@@ -1,5 +1,5 @@
-import { usePosts as useLensPosts } from "@lens-protocol/react";
 import type { AnyPost } from "@lens-protocol/client";
+import { usePosts as useLensPosts } from "@lens-protocol/react";
 import { lensItemToPost } from "~/utils/lens/converters/postConverter";
 
 export function usePostSearch(query?: string) {

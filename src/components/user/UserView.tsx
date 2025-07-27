@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "~/lib/types/user";
+import { User } from "@cartel-sh/ui";
 import Link from "../Link";
 import { Card } from "../ui/card";
 import { UserAvatar } from "./UserAvatar";

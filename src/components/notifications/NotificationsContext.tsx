@@ -1,9 +1,9 @@
 "use client";
 
+import type { Notification } from "@cartel-sh/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
-import type { Notification } from "~/lib/types/notification";
 import { useUser } from "../user/UserContext";
 
 interface NotificationsContextValue {
@@ -25,10 +25,10 @@ function parseNotification(raw: any): Notification {
     createdAt: new Date(raw.createdAt),
     actedOn: raw.actedOn
       ? {
-        ...raw.actedOn,
-        createdAt: new Date(raw.actedOn.createdAt),
-        updatedAt: raw.actedOn.updatedAt ? new Date(raw.actedOn.updatedAt) : undefined,
-      }
+          ...raw.actedOn,
+          createdAt: new Date(raw.actedOn.createdAt),
+          updatedAt: raw.actedOn.updatedAt ? new Date(raw.actedOn.updatedAt) : undefined,
+        }
       : undefined,
   } as Notification;
 }

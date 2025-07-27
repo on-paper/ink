@@ -1,13 +1,14 @@
 "use client";
 
+import type { User } from "@cartel-sh/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { uri } from "@lens-protocol/client";
 import { setAccountMetadata } from "@lens-protocol/client/actions";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { account, MetadataAttributeType } from "@lens-protocol/metadata";
-import { ImageIcon, Loader2, Lock, Plus, X } from "lucide-react";
+import { ImageIcon, Loader2, Lock, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useWalletClient } from "wagmi";
@@ -16,32 +17,12 @@ import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { Textarea } from "~/components/ui/textarea";
-import type { User } from "~/lib/types/user";
+import { detectPlatform, socialPlatforms } from "~/lib/socialPlatforms";
 import { getLensClient } from "~/utils/lens/getLensClient";
 import { storageClient } from "~/utils/lens/storage";
 import { AvatarViewer } from "./AvatarViewer";
-
-const socialPlatforms = [
-  { value: "x", label: "X", placeholder: "username", prefix: "x.com/" },
-  { value: "website", label: "Website", placeholder: "example.com", prefix: "https://" },
-  { value: "telegram", label: "Telegram", placeholder: "username", prefix: "@" },
-  { value: "discord", label: "Discord", placeholder: "username", prefix: "@" },
-  { value: "instagram", label: "Instagram", placeholder: "username", prefix: "instagram.com/" },
-  { value: "tiktok", label: "TikTok", placeholder: "username", prefix: "tiktok.com/" },
-  { value: "youtube", label: "YouTube", placeholder: "username", prefix: "youtube.com/" },
-  { value: "twitch", label: "Twitch", placeholder: "username", prefix: "twitch.tv/" },
-  { value: "facebook", label: "Facebook", placeholder: "username", prefix: "facebook.com/" },
-  { value: "linkedin", label: "LinkedIn", placeholder: "username", prefix: "linkedin.com/" },
-  { value: "pinterest", label: "Pinterest", placeholder: "username", prefix: "pinterest.com/" },
-  { value: "reddit", label: "Reddit", placeholder: "username", prefix: "reddit.com/" },
-  { value: "snapchat", label: "Snapchat", placeholder: "username", prefix: "snapchat.com/" },
-  { value: "spotify", label: "Spotify", placeholder: "username", prefix: "spotify.com/" },
-  { value: "tiktok", label: "TikTok", placeholder: "username", prefix: "tiktok.com/" },
-  { value: "twitch", label: "Twitch", placeholder: "username", prefix: "twitch.tv/" },
-  { value: "bluesky", label: "Bluesky", placeholder: "username", prefix: "bsky.app/" },
-];
 
 const FormSchema = z.object({
   bio: z
@@ -50,11 +31,11 @@ const FormSchema = z.object({
       message: "Bio must not exceed 300 characters.",
     })
     .optional(),
+  website: z.string().optional(),
   socialLinks: z
     .array(
       z.object({
         id: z.string(),
-        platform: z.string(),
         value: z.string(),
       }),
     )
@@ -69,42 +50,39 @@ interface EditProfileModalProps {
 }
 
 function SocialLinkInput({
-  platform,
   value,
   onChange,
+  onRemove,
+  showRemove,
 }: {
-  platform?: (typeof socialPlatforms)[0];
   value: string;
   onChange: (value: string) => void;
+  onRemove?: () => void;
+  showRemove?: boolean;
 }) {
-  const [paddingLeft, setPaddingLeft] = useState("0.5rem");
-  const prefixRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (prefixRef.current && platform?.prefix) {
-      const width = prefixRef.current.offsetWidth;
-      setPaddingLeft(`${width + 16}px`);
-    } else {
-      setPaddingLeft("0.5rem");
-    }
-  }, [platform?.prefix]);
+  const detectedPlatform = detectPlatform(value);
+  const Icon = detectedPlatform?.icon;
 
   return (
-    <div className="flex-1 relative flex items-center">
-      {platform?.prefix && (
-        <span
-          ref={prefixRef}
-          className="absolute left-2 text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded z-10"
-        >
-          {platform.prefix}
-        </span>
+    <div className="flex gap-2 items-center">
+      <div className="relative flex-1">
+        {Icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
+        <Input
+          placeholder="Add a link"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={Icon ? "pl-10" : ""}
+        />
+      </div>
+      {showRemove && (
+        <Button type="button" variant="ghost" size="icon" onClick={onRemove} className="h-9 w-9">
+          <X className="h-4 w-4" />
+        </Button>
       )}
-      <Input
-        placeholder={platform?.placeholder || "Value"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ paddingLeft }}
-      />
     </div>
   );
 }
@@ -120,6 +98,7 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
     resolver: zodResolver(FormSchema),
     defaultValues: {
       bio: user.description || "",
+      website: "",
       socialLinks: [],
     },
   });
@@ -129,30 +108,31 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
   useEffect(() => {
     if (open) {
       const existingSocialLinks = [];
+      let websiteValue = "";
+
       if (user.metadata?.attributes) {
         for (const attr of user.metadata.attributes) {
-          const platform = socialPlatforms.find((p) => p.value === attr.key);
-          if (platform) {
-            let value = attr.value;
-            if (attr.key === "website" && value.startsWith("https://")) {
-              value = value.replace("https://", "");
-            } else if (attr.key === "x" && value.startsWith("https://x.com/")) {
-              value = value.replace("https://x.com/", "");
-            } else if (attr.key === "telegram" && value.startsWith("@")) {
-              value = value.substring(1);
-            }
-
+          if (attr.key === "website") {
+            websiteValue = attr.value.replace(/^https?:\/\//, "");
+          } else {
             existingSocialLinks.push({
-              id: `existing-${attr.key}`,
-              platform: attr.key,
-              value: value,
+              id: `existing-${attr.key}-${Date.now()}`,
+              value: attr.value,
             });
           }
         }
       }
 
+      if (existingSocialLinks.length === 0 || existingSocialLinks[existingSocialLinks.length - 1].value !== "") {
+        existingSocialLinks.push({
+          id: Date.now().toString(),
+          value: "",
+        });
+      }
+
       form.reset({
         bio: user.description || "",
+        website: websiteValue,
         socialLinks: existingSocialLinks,
       });
       setProfilePicture(null);
@@ -160,17 +140,24 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
     }
   }, [open, user, form]);
 
-  const addSocialLink = () => {
-    const currentLinks = form.getValues("socialLinks") || [];
-    form.setValue("socialLinks", [...currentLinks, { id: Date.now().toString(), platform: "", value: "" }]);
-  };
-
   const removeSocialLink = (index: number) => {
     const currentLinks = form.getValues("socialLinks") || [];
     form.setValue(
       "socialLinks",
       currentLinks.filter((_, i) => i !== index),
     );
+  };
+
+  const handleSocialLinkChange = (index: number, value: string) => {
+    const currentLinks = form.getValues("socialLinks") || [];
+    currentLinks[index] = { ...currentLinks[index], value };
+
+    // Auto-add new field if this is the last field and it has content
+    if (index === currentLinks.length - 1 && value !== "") {
+      currentLinks.push({ id: Date.now().toString(), value: "" });
+    }
+
+    form.setValue("socialLinks", currentLinks);
   };
 
   const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,39 +174,6 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const formatSocialValue = (platform: string, value: string): string => {
-    const platformConfig = socialPlatforms.find((p) => p.value === platform);
-    if (!platformConfig) return value;
-
-    if (platform === "website") {
-      const cleanValue = value.replace(/^https?:\/\//, "");
-      return cleanValue;
-    }
-
-    if (platform === "x") {
-      return value.replace(/^@/, "");
-    }
-
-    return value;
-  };
-
-  const getSocialLinkWithPrefix = (platform: string, value: string): string => {
-    const platformConfig = socialPlatforms.find((p) => p.value === platform);
-    if (!platformConfig) return value;
-
-    if (platform === "website" && value && !value.startsWith("http")) {
-      return `https://${value}`;
-    }
-    if (platform === "x" && value) {
-      return `https://x.com/${value}`;
-    }
-    if (platform === "telegram" && value) {
-      return value.startsWith("@") ? value : `@${value}`;
-    }
-
-    return value;
   };
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -253,15 +207,39 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
 
       const attributes = [];
 
+      // Add website if provided
+      if (data.website) {
+        const websiteUrl = data.website.startsWith("http") ? data.website : `https://${data.website}`;
+        attributes.push({
+          key: "website",
+          type: MetadataAttributeType.STRING,
+          value: websiteUrl,
+        });
+      }
+
+      // Add social links
       if (data.socialLinks) {
         for (const link of data.socialLinks) {
-          if (link.platform && link.value) {
-            const formattedValue = getSocialLinkWithPrefix(link.platform, link.value);
-            attributes.push({
-              key: link.platform,
-              type: MetadataAttributeType.STRING,
-              value: formattedValue,
-            });
+          if (link.value) {
+            const platform = detectPlatform(link.value);
+            if (platform) {
+              attributes.push({
+                key: platform.value,
+                type: MetadataAttributeType.STRING,
+                value: platform.getUrl(link.value),
+              });
+            } else {
+              // Store as raw value if platform not detected
+              const cleanValue = link.value.trim();
+              if (cleanValue) {
+                // Store unrecognized links with 'link' key
+                attributes.push({
+                  key: "link",
+                  type: MetadataAttributeType.STRING,
+                  value: cleanValue,
+                });
+              }
+            }
           }
         }
       }
@@ -312,7 +290,7 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full space-y-6">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-20 h-20">
@@ -367,65 +345,60 @@ export function EditProfileModal({ user, open, onOpenChange, onSuccess }: EditPr
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        {(() => {
+                          const WebsiteIcon = socialPlatforms.find((p) => p.value === "website")?.icon;
+                          return WebsiteIcon ? <WebsiteIcon className="h-4 w-4" /> : null;
+                        })()}
+                      </div>
+                      <Input placeholder="example.com" {...field} className="pl-10" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Social Links</h3>
-                <Button type="button" variant="outline" size="sm" onClick={addSocialLink} className="h-7 px-2">
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add
-                </Button>
-              </div>
-
-              {socialLinks.map((link, index) => {
-                const platform = socialPlatforms.find((p) => p.value === link.platform);
-
-                return (
-                  <div key={link.id} className="flex gap-2">
-                    <Select
-                      value={link.platform}
-                      onValueChange={(value: string) => {
-                        const currentLinks = form.getValues("socialLinks") || [];
-                        currentLinks[index] = { ...currentLinks[index], platform: value };
-                        form.setValue("socialLinks", currentLinks);
-                      }}
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Platform" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {socialPlatforms.map((platform) => (
-                          <SelectItem key={platform.value} value={platform.value}>
-                            {platform.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <SocialLinkInput
-                      platform={platform}
-                      value={formatSocialValue(link.platform, link.value)}
-                      onChange={(value) => {
-                        const currentLinks = form.getValues("socialLinks") || [];
-                        currentLinks[index] = { ...currentLinks[index], value };
-                        form.setValue("socialLinks", currentLinks);
-                      }}
-                    />
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeSocialLink(index)}
-                      className="h-9 w-9"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+              <h3 className="text-sm font-medium">Social Links</h3>
+              {socialLinks.length > 3 ? (
+                <ScrollArea className="h-[150px] pr-4">
+                  <div className="space-y-2">
+                    {socialLinks.map((link, index) => (
+                      <SocialLinkInput
+                        key={link.id}
+                        value={link.value}
+                        onChange={(value) => handleSocialLinkChange(index, value)}
+                        onRemove={() => removeSocialLink(index)}
+                        showRemove={index < socialLinks.length - 1 || link.value !== ""}
+                      />
+                    ))}
                   </div>
-                );
-              })}
+                </ScrollArea>
+              ) : (
+                <div className="space-y-2">
+                  {socialLinks.map((link, index) => (
+                    <SocialLinkInput
+                      key={link.id}
+                      value={link.value}
+                      onChange={(value) => handleSocialLinkChange(index, value)}
+                      onRemove={() => removeSocialLink(index)}
+                      showRemove={index < socialLinks.length - 1 || link.value !== ""}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+            <Button type="submit" disabled={isSubmitting} className="w-full mt-6">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>

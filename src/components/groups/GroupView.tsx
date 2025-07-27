@@ -1,6 +1,6 @@
 "use client";
 
-import type { Group } from "~/lib/types/group";
+import type { Group } from "@cartel-sh/ui";
 import { Users } from "lucide-react";
 import Link from "~/components/Link";
 import { useUser } from "~/components/user/UserContext";

@@ -1,8 +1,8 @@
 "use client";
 
+import type { User } from "@cartel-sh/ui";
 import { useQuery } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
-import type { User } from "~/lib/types/user";
 import { FollowButton } from "../FollowButton";
 import { Badge } from "../ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";

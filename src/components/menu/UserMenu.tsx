@@ -1,11 +1,11 @@
 "use client";
 
+import type { User } from "@cartel-sh/ui";
 import { LogOutIcon, MoonIcon, SettingsIcon, SunIcon, UserIcon, UsersRoundIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAccount, useDisconnect } from "wagmi";
 import Link from "~/components/Link";
-import type { User } from "~/lib/types/user";
 import { clearCookies } from "~/utils/clearCookies";
 
 export function UserMenuButtons({ handle }: { handle: string; user: User }) {

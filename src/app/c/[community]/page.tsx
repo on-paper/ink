@@ -5,8 +5,8 @@ import { FeedSuspense } from "~/components/FeedSuspense";
 import { GroupHeader } from "~/components/groups/GroupHeader";
 import { GroupNavigation } from "~/components/groups/GroupNavigation";
 import PostComposer from "~/components/post/PostComposer";
-import { Card } from "~/components/ui/card";
 import { PostView } from "~/components/post/PostView";
+import { Card } from "~/components/ui/card";
 import { useUser } from "~/components/user/UserContext";
 import { useGroup } from "~/hooks/useGroup";
 

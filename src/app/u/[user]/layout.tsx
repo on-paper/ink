@@ -1,3 +1,4 @@
+import { lensAccountStatsToUserStats } from "@cartel-sh/ui";
 import { fetchAccountStats } from "@lens-protocol/client/actions";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -6,7 +7,6 @@ import { UserNavigation } from "~/components/user/UserNavigation";
 import { UserProfile } from "~/components/user/UserProfile";
 import { getServerAuth } from "~/utils/getServerAuth";
 import { getUserByUsername } from "~/utils/getUserByHandle";
-import { lensAccountStatsToUserStats } from "~/lib/types/user";
 
 export const maxDuration = 60;
 export const revalidate = 0;

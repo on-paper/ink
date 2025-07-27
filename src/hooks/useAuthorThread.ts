@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { useEffect, useState } from "react";
-import type { Post } from "~/lib/types/post";
 import { fetchAuthorComments } from "~/utils/postThreadApi";
 
 export function useAuthorThread(post: Post) {

@@ -17,6 +17,7 @@ import { env } from "~/env.mjs";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { ExplosionProvider } from "./ExplosionPortal";
 import "overlayscrollbars/styles/overlayscrollbars.css";
+import { Toaster } from "~/components/ui/sonner";
 
 const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 const url = getBaseUrl();
@@ -94,6 +95,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <OverlayScrollbarsComponent defer className="h-full">
                     {children}
                   </OverlayScrollbarsComponent>
+                  <Toaster position="top-center" offset={16} />
                   <ReactQueryDevtools initialIsOpen={false} />
                 </ExplosionProvider>
               </LensProvider>

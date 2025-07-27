@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 function cleanContent(content: string): string {
   if (!content) return "";
 
-  let cleanedContent = decodeURIComponent(content);
+  let cleanedContent = decodeURIComponent(content.length > 900 ? content.slice(0, 900) : content);
 
   cleanedContent = cleanedContent
     .replace(/\\n/g, "\n")
@@ -25,6 +25,21 @@ function cleanContent(content: string): string {
     .replace(/\s+\n/g, "\n")
     .trim();
 
+  // Remove markdown headers (# and ##) - keep the text
+  cleanedContent = cleanedContent.replace(/^#{1,6}\s+/gm, "");
+  
+  // Remove asterisk at beginning of lines - keep the text
+  cleanedContent = cleanedContent.replace(/^\*\s*/gm, "");
+
+  // Remove image markdown syntax, keeping the alt text
+  cleanedContent = cleanedContent.replace(/^!\[([^\]]*)\]\([^)]+\)/gm, "$1");
+
+  // Remove underscores around text
+  cleanedContent = cleanedContent.replace(/_([^_]+)_/g, "$1");
+  // Clean up markdown links
+  cleanedContent = cleanedContent.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+
+  // Remove standalone URLs
   cleanedContent = cleanedContent.replace(/https?:\/\/[^\s]+/g, (url) => {
     try {
       const urlObj = new URL(url);
@@ -117,7 +132,7 @@ export async function GET(request: Request) {
               {(() => {
                 const cleanedContent = cleanContent(content);
                 const truncatedContent =
-                  cleanedContent.length > 280 ? `${cleanedContent.slice(0, 280).trim()}...` : cleanedContent;
+                  cleanedContent.length > 400 ? `${cleanedContent.slice(0, 400).trim()}...` : cleanedContent;
                 return truncatedContent.split("\n").map((line, index) => (
                   <div key={index} tw="flex mb-2">
                     {line}

@@ -6,7 +6,6 @@ import { FloatingAudioPlayer } from "~/components/FloatingAudioPlayer";
 import { NotificationsProvider } from "~/components/notifications/NotificationsContext";
 import { PageTransition } from "~/components/PageTransition";
 import { Providers } from "~/components/Providers";
-import { Toaster } from "~/components/ui/sonner";
 import { UserProvider } from "~/components/user/UserContext";
 import { quicksand } from "~/styles/fonts";
 import { getServerAuth } from "~/utils/getServerAuth";
@@ -45,7 +44,6 @@ export default async function RootLayout({ children }) {
                   <RouteTracker />
                   <NavigationShortcuts />
                   <HistoryIndicator />
-                  <Toaster position="top-center" offset={16} />
                   <Menu isAuthenticated={isAuthenticated} user={user} handle={handle} />
 
                   <PageTransition>

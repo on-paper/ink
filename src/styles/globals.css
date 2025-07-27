@@ -61,7 +61,6 @@
 
 @layer utilities {
   @layer utilities {
-
     /* Hide scrollbar for Chrome, Safari and Opera */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
@@ -123,11 +122,13 @@
     left: -1px;
     right: -1px;
     bottom: -1px;
-    background: linear-gradient(135deg,
-        hsl(var(--card) / 0.2) 0%,
-        transparent 40%,
-        transparent 60%,
-        hsl(var(--card) / 0.1) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.2) 0%,
+      transparent 40%,
+      transparent 60%,
+      hsl(var(--card) / 0.1) 100%
+    );
     border-radius: var(--radius);
     opacity: 0.6;
     z-index: -1;
@@ -157,11 +158,13 @@
   }
 
   .dark .glass-relative::after {
-    background: linear-gradient(135deg,
-        hsl(var(--card) / 0.1) 0%,
-        transparent 40%,
-        transparent 60%,
-        hsl(var(--card) / 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.1) 0%,
+      transparent 40%,
+      transparent 60%,
+      hsl(var(--card) / 0.05) 100%
+    );
     opacity: 0.4;
   }
 
@@ -254,29 +257,10 @@
   }
 
   .button-hover-bg.active:scale-95:active::before,
-  .button-hover-bg.data-[state=open]:scale-95[data-state="open"]::before {
+  .button-hover-bg.data-[state="open"]:scale-95[data-state="open"]::before {
     transform: scale(1.053);
     /* Counteract scale(0.95) */
   }
-}
-
-/* Emoji Picker React shadcn Theme */
-
-.EmojiPickerReact {
-  --epr-emoji-size: 24px;
-  --epr-emoji-gap: 1px;
-  --epr-hover-bg-color: var(--primary);
-  --epr-bg-color: var(--card);
-  --epr-category-label-bg-color: hsla(var(--card) / 0.8);
-  --epr-text-color: var(--card-foreground);
-}
-
-/* Dark theme overrides */
-.EmojiPickerReact.epr-dark-theme {
-  --epr-hover-bg-color: var(--primary);
-  --epr-bg-color: var(--card);
-  --epr-category-label-bg-color: hsla(var(--card) / 0.8);
-  --epr-text-color: var(--card-foreground);
 }
 
 /* Dissolve animation helper - actual effect is handled by SVG filter */
@@ -285,7 +269,7 @@
   position: relative;
 }
 
-.dissolving>* {
+.dissolving > * {
   transform-origin: top center;
 }
 

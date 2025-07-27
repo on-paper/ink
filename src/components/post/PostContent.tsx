@@ -1,16 +1,16 @@
+import type { Post } from "@cartel-sh/ui";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { forwardRef } from "react";
-import type { Post } from "~/lib/types/post";
 import { LinkPreview } from "../embeds/LinkPreview";
 import { Card } from "../ui/card";
 import { UserAvatar } from "../user/UserAvatar";
 import { getPostLinkPreviews, getPostMediaContent, getPostTextContent } from "./PostMetadataView";
-import { useRouter } from "next/navigation";
 
 export const PostContent = forwardRef<
   HTMLDivElement,
   { post: Post; collapsed: boolean; setCollapsed: (value: boolean) => void }
->(({ post, collapsed }, ref) => {
+>(({ post, collapsed, setCollapsed }, ref) => {
   const router = useRouter();
 
   const textContent = getPostTextContent(post.metadata, post.mentions, false);
@@ -33,7 +33,24 @@ export const PostContent = forwardRef<
         className="overflow-hidden relative"
       >
         <div className="whitespace-wrap break-words text-sm/tight sm:text-base/tight">{textContent}</div>
+        {collapsed && (
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        )}
       </motion.div>
+      {collapsed && (
+        <div className="flex gap-2 items-center h-4 justify-center">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCollapsed(false);
+            }}
+            className="text-sm text-extrabold text-muted-foreground flex gap-2 items-center justify-center text-center w-fit focus:outline-none"
+          >
+            Click to Expand
+            {/* <ChevronDownIcon size={16} /> */}
+          </button>
+        </div>
+      )}
 
       {mediaContent}
 

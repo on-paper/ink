@@ -1,6 +1,6 @@
 "use client";
 
-import type { Group } from "~/lib/types/group";
+import type { Group } from "@cartel-sh/ui";
 import { ArrowLeft } from "lucide-react";
 import { Feed } from "~/components/Feed";
 import { GroupView } from "~/components/groups/GroupView";

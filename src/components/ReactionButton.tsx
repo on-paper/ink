@@ -1,4 +1,4 @@
-import { PostReactionType } from "~/lib/types/post";
+import { PostReactionType } from "@cartel-sh/ui";
 import ReactionIcon from "./ReactionIcon";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";

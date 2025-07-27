@@ -1,22 +1,75 @@
-import { EllipsisIcon, PenIcon } from "lucide-react";
+import type { Post } from "@cartel-sh/ui";
+import { Check, Copy, EllipsisIcon, Link2, PenIcon } from "lucide-react";
 import { useState } from "react";
+import { RiBlueskyLine } from "react-icons/ri";
+import { SiFarcaster, SiX } from "react-icons/si";
+import { toast } from "sonner";
 import Link from "~/components/Link";
 import { useUser } from "~/components/user/UserContext";
-import type { Post } from "~/lib/types/post";
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { menuItems } from "./PostMenuConfig";
 import { usePostStateContext } from "./PostStateContext";
 
 export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }) => {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { requireAuth } = useUser();
   const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
   const author = post.author;
   const handle = author.username;
   const tags = post?.metadata?.tags || [];
+  const content = "content" in post.metadata ? (post.metadata.content as string) : "";
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(postLink);
+      setCopied(true);
+      toast.success("Link copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const sharePlatforms = [
+    {
+      name: "Farcaster",
+      icon: <SiFarcaster className="w-4 h-4" />,
+      getShareUrl: (url: string, title?: string) => {
+        const text = title?.trim() ? `${title.trim()}\n\n${url}` : url;
+        return `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+      },
+    },
+    {
+      name: "Twitter",
+      icon: <SiX className="w-4 h-4" />,
+      getShareUrl: (url: string, title?: string) => {
+        // Twitter includes both text and URL in the same parameter for better control
+        const text = title?.trim() ? `${title.trim()} | ${url}` : url;
+        return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      },
+    },
+    {
+      name: "Bluesky",
+      icon: <RiBlueskyLine className="w-4 h-4" />,
+      getShareUrl: (url: string, title?: string) => {
+        // Bluesky seems to strip newlines, so we'll use a separator
+        const text = title?.trim() ? `${title.trim()} | ${url}` : url;
+        return `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`;
+      },
+    },
+  ];
 
   let community = null;
   tags.map((tag: string) => {
@@ -99,6 +152,49 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
                       {itemProps.label}
                     </Link>
                   </DropdownMenuItem>
+                );
+              }
+
+              if (item.id === "share") {
+                return (
+                  <DropdownMenuSub key={item.id}>
+                    <DropdownMenuSubTrigger className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
+                        <Icon size={16} />
+                        <span>{itemProps.label}</span>
+                      </div>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="w-48 glass" sideOffset={2} alignOffset={-5}>
+                      {sharePlatforms.map((platform) => (
+                        <DropdownMenuItem
+                          key={platform.name}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const shareUrl = platform.getShareUrl(postLink, content);
+                            window.open(shareUrl, "_blank");
+                            setOpen(false);
+                          }}
+                          className="flex items-center gap-3"
+                        >
+                          {platform.icon}
+                          {platform.name}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuItem onClick={handleCopyLink} className="flex items-center gap-3">
+                        {copied ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Link2 className="h-4 w-4" />
+                            Copy link
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
                 );
               }
 

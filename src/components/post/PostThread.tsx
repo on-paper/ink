@@ -1,10 +1,10 @@
 "use client";
 
+import type { Post } from "@cartel-sh/ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthorThread } from "~/hooks/useAuthorThread";
 import { useParentThread } from "~/hooks/useParentThread";
 import { useScrollManagement } from "~/hooks/useScrollManagement";
-import type { Post } from "~/lib/types/post";
 import { Card } from "../ui/card";
 import { PostSuspense } from "./PostSuspense";
 import { PostView } from "./PostView";

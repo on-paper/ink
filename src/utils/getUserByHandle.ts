@@ -1,5 +1,5 @@
+import type { User } from "@cartel-sh/ui";
 import { fetchAccount } from "@lens-protocol/client/actions";
-import type { User } from "~/lib/types/user";
 import { lensAccountToUser } from "~/utils/lens/converters/userConverter";
 import { getServerAuth } from "./getServerAuth";
 

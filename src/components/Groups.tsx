@@ -1,6 +1,6 @@
 "use client";
 
-import type { Group } from "~/lib/types/group";
+import type { Group } from "@cartel-sh/ui";
 import { useSearchParams } from "next/navigation";
 import { Feed } from "~/components/Feed";
 import { GroupView } from "~/components/groups/GroupView";
@@ -11,7 +11,6 @@ import { TRENDING_GROUP_ADDRESSES } from "~/constants/trendingGroups";
 interface GroupsProps {
   initialQuery?: string;
 }
-
 
 const GroupViewWrapper = ({ item }: { item: Group }) => {
   return <GroupView group={item} />;

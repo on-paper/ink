@@ -17,7 +17,7 @@ export const UserNavigation = ({ handle }: { handle: string }) => {
   const activeTab = tabs.findIndex((tab) => pathname === tab.href) || 0;
 
   return (
-    <nav className="w-full z-[40] overflow-x-auto px-4">
+    <nav className="w-full z-[40] overflow-x-auto px-4 my-2">
       <div className="flex flex-row relative justify-around">
         {tabs.map((tab, _index) => {
           const Icon = tab.icon;
@@ -27,7 +27,7 @@ export const UserNavigation = ({ handle }: { handle: string }) => {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`relative h-12 flex-1 overflow-hidden inline-flex gap-1.5 items-center justify-center text-sm font-semibold transition-colors hover:text-primary focus-visible:outline-none ${
+              className={`relative h-10 flex-1 overflow-hidden inline-flex gap-1.5 items-center justify-center text-sm font-semibold transition-colors hover:text-primary focus-visible:outline-none ${
                 isActive ? "text-primary" : "text-muted-foreground"
               }`}
             >

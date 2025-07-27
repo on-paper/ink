@@ -1,5 +1,5 @@
+import type { Post } from "@cartel-sh/ui";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import type { Post } from "~/lib/types/post";
 
 interface FeedResponse {
   data: Post[];

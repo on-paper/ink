@@ -1,4 +1,4 @@
-import type { Post } from "~/lib/types/post";
+import type { Post } from "@cartel-sh/ui";
 
 export async function fetchParentPost(id: string): Promise<Post | null> {
   try {

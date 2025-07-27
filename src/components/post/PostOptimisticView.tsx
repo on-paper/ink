@@ -1,5 +1,4 @@
-import type { Post } from "~/lib/types/post";
-import type { User } from "~/lib/types/user";
+import type { Post, User } from "@cartel-sh/ui";
 import { Card, CardContent } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { UserAvatar } from "../user/UserAvatar";
@@ -47,7 +46,7 @@ export const PostOptimisticView = ({ author, isComment = false }: { author: User
           <Skeleton className="h-4 w-full mt-2" />
 
           <PostStateProvider post={mockPost}>
-            <ReactionsList post={mockPost} collapsed={false} isComment={isComment} />
+            <ReactionsList post={mockPost} isComment={isComment} />
           </PostStateProvider>
         </div>
       </CardContent>

@@ -1,3 +1,3 @@
-import { capitalize, lensAccountToUser, parseInterests } from "~/lib/types/user";
+import { capitalize, lensAccountToUser, parseInterests } from "@cartel-sh/ui";
 
 export { lensAccountToUser, capitalize, parseInterests };

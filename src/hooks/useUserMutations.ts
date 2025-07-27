@@ -1,5 +1,5 @@
+import type { User } from "@cartel-sh/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User } from "~/lib/types/user";
 
 interface UserMutationContext {
   previousUser?: User;

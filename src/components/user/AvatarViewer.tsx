@@ -1,6 +1,6 @@
 "use client";
 
-import type { User } from "~/lib/types/user";
+import type { User } from "@cartel-sh/ui";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { UserAvatar } from "./UserAvatar";
 

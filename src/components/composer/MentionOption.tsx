@@ -1,5 +1,5 @@
+import type { User } from "@cartel-sh/ui";
 import { MenuOption } from "@lexical/react/LexicalTypeaheadMenuPlugin";
-import type { User } from "~/lib/types/user";
 import { UserAvatar } from "../user/UserAvatar";
 
 export class MentionOption extends MenuOption {

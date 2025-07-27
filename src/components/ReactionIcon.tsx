@@ -1,6 +1,6 @@
+import { PostReactionType } from "@cartel-sh/ui";
 import { BookmarkIcon, CirclePlusIcon, HeartIcon, MessageCircleIcon, Repeat2Icon } from "lucide-react";
 import { forwardRef } from "react";
-import { PostReactionType } from "~/lib/types/post";
 
 interface ReactionIconProps {
   reaction: PostReactionType | "Like";
