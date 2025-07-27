@@ -81,6 +81,7 @@ export const VideoPlayer = ({
   const [muted, setMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [shown, setShown] = useState(false);
+  const [videoStarted, setVideoStarted] = useState(false);
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
   const [modalOpen, setModalOpen] = useState(false);
@@ -161,6 +162,7 @@ export const VideoPlayer = ({
     setDirection(dir || 0);
     setActiveIndex(newIndex);
     setImageScale(1);
+    setVideoStarted(false);
 
     if (nextItem.type && !isImageType(String(nextItem.type))) {
       setShown(true);
@@ -431,6 +433,7 @@ export const VideoPlayer = ({
       setIsFullscreen(false);
       // Reset modal session preference when closing
       setModalSessionWantsAudio(false);
+      setVideoStarted(false);
 
       // Re-register with viewport manager when closing fullscreen if autoplay is enabled
       if (autoplay) {
@@ -502,6 +505,7 @@ export const VideoPlayer = ({
         setIsFullscreen(false);
         // Reset modal session preference when closing
         setModalSessionWantsAudio(false);
+        setVideoStarted(false);
       }
 
       if (e.key === "ArrowLeft" && galleryItems && galleryItems.length > 1) {
@@ -605,6 +609,7 @@ export const VideoPlayer = ({
                 setIsFullscreen(false);
                 // Reset modal session preference when closing
                 setModalSessionWantsAudio(false);
+                setVideoStarted(false);
               }}
               className="w-10 h-10 rounded-full bg-zinc-500/50 hover:bg-zinc-800/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
             >
@@ -869,6 +874,9 @@ export const VideoPlayer = ({
           }
           updateProgressSmooth();
         }}
+        onPlaying={() => {
+          setVideoStarted(true);
+        }}
         onPause={() => {
           if (progressAnimationRef.current) {
             cancelAnimationFrame(progressAnimationRef.current);
@@ -951,7 +959,7 @@ export const VideoPlayer = ({
             </div>
 
             <div
-              className={`${shown ? "opacity-0" : "opacity-100"} transition-opacity duration-300 flex items-center justify-center relative h-full w-full cursor-pointer`}
+              className={`${videoStarted ? "opacity-0" : "opacity-100"} transition-opacity duration-300 flex items-center justify-center relative h-full w-full cursor-pointer`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
