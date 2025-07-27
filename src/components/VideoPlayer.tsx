@@ -87,6 +87,7 @@ export const VideoPlayer = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [isProgressClicked, setIsProgressClicked] = useState(false);
+  const [progressRecentlyClicked, setProgressRecentlyClicked] = useState(false);
   const [imageScale, setImageScale] = useState(1);
   const [videoUnmutedStates, setVideoUnmutedStates] = useState<{ [index: number]: boolean }>({});
   const [direction, setDirection] = useState(0);
@@ -433,7 +434,7 @@ export const VideoPlayer = ({
       setIsFullscreen(false);
       // Reset modal session preference when closing
       setModalSessionWantsAudio(false);
-      setVideoStarted(false);
+      // Don't reset videoStarted - keep showing video when exiting fullscreen
 
       // Re-register with viewport manager when closing fullscreen if autoplay is enabled
       if (autoplay) {
@@ -505,7 +506,7 @@ export const VideoPlayer = ({
         setIsFullscreen(false);
         // Reset modal session preference when closing
         setModalSessionWantsAudio(false);
-        setVideoStarted(false);
+        // Don't reset videoStarted - keep showing video when exiting fullscreen
       }
 
       if (e.key === "ArrowLeft" && galleryItems && galleryItems.length > 1) {
@@ -609,7 +610,7 @@ export const VideoPlayer = ({
                 setIsFullscreen(false);
                 // Reset modal session preference when closing
                 setModalSessionWantsAudio(false);
-                setVideoStarted(false);
+                // Don't reset videoStarted - keep showing video when exiting fullscreen
               }}
               className="w-10 h-10 rounded-full bg-zinc-500/50 hover:bg-zinc-800/80 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 active:opacity-60"
             >
@@ -773,11 +774,20 @@ export const VideoPlayer = ({
                                 e.stopPropagation();
                                 e.preventDefault();
                                 setIsProgressClicked(false);
+                                setProgressRecentlyClicked(true);
+                                setTimeout(() => {
+                                  setProgressRecentlyClicked(false);
+                                }, 150);
                               }}
                             >
                               <div
-                                className={`bg-white h-full transition-all rounded-full ease-linear ${isProgressClicked ? "duration-75" : "duration-300"
-                                  }`}
+                                className={`bg-white h-full transition-all rounded-full ease-linear ${
+                                  isProgressClicked || progressRecentlyClicked 
+                                    ? "duration-75" 
+                                    : playing 
+                                      ? "duration-300" 
+                                      : "duration-75"
+                                }`}
                                 style={{ width: `${videoProgress * 100}%` }}
                               />
                             </div>
