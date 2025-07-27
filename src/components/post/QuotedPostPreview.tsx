@@ -7,7 +7,7 @@ interface QuotedPostPreviewProps {
 }
 
 export function QuotedPostPreview({ quotedPost }: QuotedPostPreviewProps) {
-  const mediaContent = getPostMediaContent(quotedPost.metadata);
+  const mediaContent = getPostMediaContent(quotedPost.metadata, quotedPost.id, quotedPost.author.username);
 
   return (
     <div className="p-3 mt-2 border rounded-lg bg-muted/50">

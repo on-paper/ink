@@ -55,12 +55,12 @@ export const getPostTextContent = (
   }
 };
 
-export const getPostMediaContent = (metadata: any, postId?: string): React.ReactNode => {
+export const getPostMediaContent = (metadata: any, postId?: string, authorHandle?: string): React.ReactNode => {
   switch (metadata.__typename) {
     case "ImageMetadata":
-      return getImageMediaContent(metadata as ImageMetadataDetails);
+      return getImageMediaContent(metadata as ImageMetadataDetails, authorHandle);
     case "VideoMetadata":
-      return getVideoMediaContent(metadata as VideoMetadataDetails);
+      return getVideoMediaContent(metadata as VideoMetadataDetails, authorHandle);
     case "AudioMetadata":
       return getAudioMediaContent(metadata as AudioMetadataDetails, postId);
     default:
@@ -145,7 +145,7 @@ export const ArticleView = ({ metadata, mentions }: { metadata: ArticleMetadataD
   return <ContentView content={metadata.content} mentions={mentions} />;
 };
 
-const getImageMediaContent = (metadata: ImageMetadataDetails): React.ReactNode => {
+const getImageMediaContent = (metadata: ImageMetadataDetails, authorHandle?: string): React.ReactNode => {
   const url = metadata?.image?.item;
   const alt = metadata?.image.altTag;
   const title = metadata?.title;
@@ -164,13 +164,13 @@ const getImageMediaContent = (metadata: ImageMetadataDetails): React.ReactNode =
   }
 
   return allMedia.length > 1 ? (
-    <MediaGallery items={allMedia} />
+    <MediaGallery items={allMedia} authorHandle={authorHandle} />
   ) : allMedia.length === 1 ? (
     <div className="relative mt-2">
       <ImageViewer
         src={allMedia[0].item}
         alt={alt || title}
-        className="object-contain border rounded-xl max-h-[400px] w-auto"
+        className="object-contain border rounded-xl max-h-[300px] w-auto"
       />
     </div>
   ) : null;
@@ -185,7 +185,7 @@ export const ImageView = ({ metadata, mentions }: { metadata: ImageMetadataDetai
   );
 };
 
-const getVideoMediaContent = (metadata: VideoMetadataDetails): React.ReactNode => {
+const getVideoMediaContent = (metadata: VideoMetadataDetails, authorHandle?: string): React.ReactNode => {
   const url = metadata?.video?.item;
   const cover = metadata?.video?.cover || undefined;
   const attachments = metadata?.attachments;
@@ -207,10 +207,10 @@ const getVideoMediaContent = (metadata: VideoMetadataDetails): React.ReactNode =
   }
 
   return allMedia.length > 1 ? (
-    <MediaGallery items={allMedia} />
+    <MediaGallery items={allMedia} authorHandle={authorHandle} />
   ) : allMedia.length === 1 ? (
-    <div className="mt-2" style={{ maxHeight: "min(100%, 400px)" }}>
-      <VideoPlayer url={allMedia[0].item} preview={cover} />
+    <div className="mt-2" style={{ maxHeight: "min(100%, 300px)" }}>
+      <VideoPlayer url={allMedia[0].item} preview={cover} autoplay={true} authorHandle={authorHandle} />
     </div>
   ) : null;
 };
@@ -334,27 +334,35 @@ type MediaAttachment = {
   type: string;
 };
 
-const MediaGallery = ({ items }: { items: MediaAttachment[] }) => {
+const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; authorHandle?: string }) => {
+  const hasMixedMedia = items.some(item => item.type && isImageMimeType(String(item.type))) && 
+                        items.some(item => item.type && !isImageMimeType(String(item.type)));
+  const firstVideoIndex = items.findIndex(item => item.type && !isImageMimeType(String(item.type)));
+  
   return (
     <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" style={{ height: "300px" }}>
       <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
-        {items.map((item, index) => (
-          <div key={`${item.item}-${index}`} className="h-full flex items-center">
-            {item.type && isImageMimeType(String(item.type)) ? (
-              <ImageViewer
-                src={item.item}
-                alt={`Gallery image ${index + 1}`}
-                className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
-                galleryItems={items}
-                currentIndex={index}
-              />
-            ) : (
-              <div className="h-full flex items-center" style={{ height: "300px" }}>
-                <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} />
-              </div>
-            )}
-          </div>
-        ))}
+        {items.map((item, index) => {
+          const isFirstVideo = index === firstVideoIndex;
+          
+          return (
+            <div key={`${item.item}-${index}`} className="h-full flex items-center">
+              {item.type && isImageMimeType(String(item.type)) ? (
+                <ImageViewer
+                  src={item.item}
+                  alt={`Gallery image ${index + 1}`}
+                  className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
+                  galleryItems={items}
+                  currentIndex={index}
+                />
+              ) : (
+                <div className="h-full flex items-center" style={{ height: "300px" }}>
+                  <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={isFirstVideo} authorHandle={authorHandle} useModal={hasMixedMedia} />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

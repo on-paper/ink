@@ -14,7 +14,7 @@ export const PostContent = forwardRef<
   const router = useRouter();
 
   const textContent = getPostTextContent(post.metadata, post.mentions, false);
-  const mediaContent = getPostMediaContent(post.metadata, post.id);
+  const mediaContent = getPostMediaContent(post.metadata, post.id, post.author.username);
   const linkPreviews = getPostLinkPreviews(post.metadata);
 
   return (
@@ -79,10 +79,10 @@ export const PostContent = forwardRef<
           <p className="text-sm line-clamp-3 text-foreground/90">
             {getPostTextContent(post.quoteOn.metadata, post.quoteOn.mentions, false)}
           </p>
-          {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id) && (
+          {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id, post.quoteOn.author.username) && (
             <div className="mt-2 max-w-full">
               <div className="[&_img]:max-h-48 [&_img]:object-cover [&_video]:max-h-48 [&_.fullscreen-video_video]:!max-h-none [&_.fullscreen-video]:!max-h-none [&_.fullscreen-video]:!h-screen [&_.image-grid]:gap-1 [&_.image-grid_img]:max-h-32 [&>div:not(.fullscreen-video)]:!h-fit [&_.h-full:not(.fullscreen-video)]:!h-fit">
-                {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id)}
+                {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id, post.quoteOn.author.username)}
               </div>
             </div>
           )}

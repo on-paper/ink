@@ -2,10 +2,13 @@
 
 import { CopyIcon, DownloadIcon, XIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import ReactPlayer from "react-player";
 import { toast } from "sonner";
+import { useVideoState } from "../hooks/useVideoState";
 import { Button } from "./ui/button";
+import { VideoPlayer } from "./VideoPlayer";
 
 export function ImageViewer({
   src,
@@ -25,6 +28,25 @@ export function ImageViewer({
   const [activeIndex, setActiveIndex] = useState(currentIndex || 0);
   const [direction, setDirection] = useState(0);
   const [isInitialOpen, setIsInitialOpen] = useState(true);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const videoId = useRef(`imageviewer-video-${Math.random().toString(36).substring(2, 11)}`).current;
+  const { pauseAllOtherVideos } = useVideoState(videoId);
+
+  // If galleryItems is provided, use VideoPlayer for unified gallery experience
+  if (galleryItems && galleryItems.length > 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <VideoPlayer
+          url={src}
+          preview=""
+          galleryItems={galleryItems}
+          currentIndex={currentIndex}
+          autoplay={false}
+          useModal={true}
+        />
+      </div>
+    );
+  }
 
   const close = (e?: React.MouseEvent) => {
     if (e) {
@@ -267,12 +289,18 @@ export function ImageViewer({
                       className={`max-h-full max-w-full object-contain ${scale === 1 ? "cursor-zoom-in" : "cursor-zoom-out"}`}
                     />
                   ) : (
-                    <div className="max-h-full max-w-full" onClick={(e) => e.stopPropagation()}>
-                      <video
-                        src={currentItem.item}
-                        controls
-                        autoPlay
-                        className="max-h-full max-w-full object-contain"
+                    <div
+                      className="h-full w-full flex items-center justify-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ReactPlayer
+                        playing={true}
+                        controls={true}
+                        muted={false}
+                        height="100%"
+                        width="100%"
+                        url={currentItem.item}
+                        loop
                         style={{ transform: `scale(${scale})` }}
                       />
                     </div>
