@@ -1,7 +1,6 @@
 import type { Post } from "@cartel-sh/ui";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 
-// ECP comment structure from the indexer API
 export interface ECPComment {
   id: string;
   author:
@@ -27,11 +26,14 @@ export interface ECPComment {
   viewerReactions?: any;
 }
 
-export async function ecpCommentToPost(comment: ECPComment, currentUserAddress?: string): Promise<Post> {
-  // Handle both nested author object and flat author string
-  const authorAddress = (
-    typeof comment.author === "string" ? comment.author : comment.author.address || ""
-  ).toLowerCase();
+export interface CommentToPostOptions {
+  currentUserAddress?: string;
+  includeReplies?: boolean;
+}
+
+export async function ecpCommentToPost(comment: ECPComment, options: CommentToPostOptions = {}): Promise<Post> {
+  const { currentUserAddress, includeReplies = false } = options;
+  const authorAddress = (typeof comment.author === "string" ? comment.author : comment.author.address || "").toLowerCase();
 
   const displayName = `${authorAddress.slice(0, 6)}...${authorAddress.slice(-4)}`;
 
@@ -55,7 +57,6 @@ export async function ecpCommentToPost(comment: ECPComment, currentUserAddress?:
       followers: 0,
     },
   };
-  console.log(comment.replies)
 
   const timestamp = comment.createdAt;
   const createdAt =
@@ -63,7 +64,7 @@ export async function ecpCommentToPost(comment: ECPComment, currentUserAddress?:
       ? new Date(timestamp * 1000) // Convert Unix timestamp to Date
       : new Date(timestamp); // Already ISO string
 
-  return {
+  const post: Post = {
     id: comment.id,
     author,
     metadata: {
@@ -90,23 +91,18 @@ export async function ecpCommentToPost(comment: ECPComment, currentUserAddress?:
       canRepost: true,
       canQuote: true,
       canDecrypt: false,
-      canEdit: false,
+      canEdit: currentUserAddress ? authorAddress === currentUserAddress.toLowerCase() : false,
       totalReactions: (comment.reactions?.upvotes || 0) + (comment.replies?.results?.length || 0),
     },
-    comments: [], // Will be populated with replies if present
+    comments: [],
     mentions: undefined,
   };
-}
 
-export async function ecpCommentToPostWithReplies(comment: ECPComment, currentUserAddress?: string): Promise<Post> {
-  const post = await ecpCommentToPost(comment, currentUserAddress);
-
-  if (comment.replies?.results && comment.replies.results.length > 0) {
+  if (includeReplies && comment.replies?.results && comment.replies.results.length > 0) {
     post.comments = await Promise.all(
-      comment.replies.results.map((reply) => ecpCommentToPost(reply, currentUserAddress)),
+      comment.replies.results.map((reply) => ecpCommentToPost(reply, { currentUserAddress, includeReplies: false })),
     );
   }
-
 
   return post;
 }

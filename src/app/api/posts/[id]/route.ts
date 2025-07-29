@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
 import { SUPPORTED_CHAIN_IDS } from "~/lib/efp/config";
-import { ecpCommentToPostWithReplies } from "~/utils/ecp/converters/commentConverter";
+import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
-  const { address: currentUserAddress } = await getServerAuth();
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
   const chainIdParam = SUPPORTED_CHAIN_IDS.join(",");
 
   try {
@@ -27,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     }
 
     const comment = await apiResponse.json();
-    const post = await ecpCommentToPostWithReplies(comment, currentUserAddress);
+    const post = await ecpCommentToPost(comment, { currentUserAddress, includeReplies: true });
 
     return NextResponse.json(post, { status: 200 });
   } catch (error) {

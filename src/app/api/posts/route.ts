@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
-import { ecpCommentToPostWithReplies } from "~/utils/ecp/converters/commentConverter";
+import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   const limit = Number.parseInt(searchParams.get("limit") || "50");
   const moderationStatus = searchParams.get("moderationStatus");
 
-  const { address: currentUserAddress } = await getServerAuth();
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
 
   try {
     console.log("Fetching posts with params:", {
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
 
     // Convert ECP comments to Post format
     const posts = await Promise.all(
-      ecpComments.map((comment: any) => ecpCommentToPostWithReplies(comment, currentUserAddress)),
+      ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress, includeReplies: true })),
     );
 
     // Use the cursor from the response for pagination
@@ -88,4 +89,26 @@ export async function GET(req: NextRequest) {
     console.error("Failed to fetch posts: ", error);
     return NextResponse.json({ error: `Failed to fetch posts: ${error.message}` }, { status: 500 });
   }
+}
+
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const postId = searchParams.get("id");
+
+  if (!postId) {
+    return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+  }
+
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address;
+
+  if (!currentUserAddress) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Note: Actual deletion happens on the blockchain via the delete hook
+  // This endpoint just validates the request and returns success
+  // The frontend will handle the actual blockchain transaction
+
+  return NextResponse.json({ success: true, message: "Post deletion initiated" }, { status: 200 });
 }

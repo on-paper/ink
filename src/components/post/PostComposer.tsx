@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem } from "@/src/components/ui/form";
 import { useUser } from "~/components/user/UserContext";
+import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
 import { storageClient } from "~/utils/lens/storage";
 
@@ -182,7 +183,7 @@ function ComposerContent() {
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
 
-  const { postMutation: post, isPosting } = useEthereumPost({
+  const { postMutation: post, isPosting: isPostingNew } = useEthereumPost({
     onSuccess: () => {
       onSuccess?.(null);
       form.setValue("content", "");
@@ -192,6 +193,17 @@ function ComposerContent() {
       }
     },
   });
+
+  const { editMutation: edit, isEditing: isEditingPost } = useEthereumEdit({
+    onSuccess: () => {
+      onSuccess?.(null);
+      form.setValue("content", "");
+      setMediaFiles([]);
+      onCancel?.();
+    },
+  });
+
+  const isPosting = editingPost ? isEditingPost : isPostingNew;
 
   const pathSegments = pathname.split("/");
   const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
@@ -383,11 +395,19 @@ function ComposerContent() {
       finalContent += `\n\nQuoting: https://pingpad.io/p/${quotedPost.id}`;
     }
 
-    post({
-      content: finalContent,
-      parentId: replyingTo?.id,
-      channelId: feed || community,
-    });
+    if (editingPost) {
+      edit({
+        postId: editingPost.id,
+        content: finalContent,
+        metadata: [], // TODO: Add metadata support if needed
+      });
+    } else {
+      post({
+        content: finalContent,
+        parentId: replyingTo?.id,
+        channelId: feed || community,
+      });
+    }
   }
 
   const handleEmojiClick = useCallback(

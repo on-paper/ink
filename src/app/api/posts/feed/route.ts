@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
-import { ecpCommentToPostWithReplies } from "~/utils/ecp/converters/commentConverter";
+import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
   const author = searchParams.get("author") || undefined;
   const moderationStatus = searchParams.get("moderationStatus") || undefined;
 
-  const { address: currentUserAddress } = await getServerAuth();
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
 
   try {
     const queryParams = new URLSearchParams({
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     const ecpComments = response.results || [];
 
     const posts = await Promise.all(
-      ecpComments.map((comment: any) => ecpCommentToPostWithReplies(comment, currentUserAddress)),
+      ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress, includeReplies: true })),
     );
     const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
 

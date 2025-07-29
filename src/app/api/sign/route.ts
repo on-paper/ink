@@ -32,13 +32,12 @@ export async function POST(req: NextRequest) {
       content,
       author,
       app: app.address,
-      ...(parentId 
-        ? { parentId } 
-        : { 
-            targetUri: channelId ? undefined : (targetUri || "app://pingpad.io"),
-            ...(channelId ? { channelId } : {})
-          }
-      ),
+      ...(parentId
+        ? { parentId }
+        : {
+            targetUri: channelId ? undefined : targetUri || "app://pingpad.io",
+            ...(channelId ? { channelId } : {}),
+          }),
     } as any);
 
     const typedCommentData = createCommentTypedData({

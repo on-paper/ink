@@ -12,7 +12,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
   const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
 
-  const { address: currentUserAddress } = await getServerAuth();
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
 
   if (!id) {
     return NextResponse.json({ error: "Missing publication id" }, { status: 400 });
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const ecpComments = response.results || [];
 
     const comments = await Promise.all(
-      ecpComments.map((comment: any) => ecpCommentToPost(comment, currentUserAddress)),
+      ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress })),
     );
 
     const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
