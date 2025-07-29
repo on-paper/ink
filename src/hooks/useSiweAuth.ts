@@ -50,7 +50,7 @@ export function useAuth() {
       const message = new SiweMessage({
         domain: window.location.host,
         address,
-        statement: "Sign in with Ethereum to Pingpad",
+        statement: "Sign in with Ethereum to Paper",
         uri: window.location.origin,
         version: "1",
         chainId,

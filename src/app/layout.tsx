@@ -16,12 +16,12 @@ import { NavigationShortcuts } from "~/components/NavigationShortcuts";
 import { RouteTracker } from "~/components/RouteTracker";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pingpad.io"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink"),
   title: {
-    default: "Pingpad",
-    template: "%s | Pingpad",
+    default: "Paper",
+    template: "%s | Paper",
   },
-  description: "reach your people on pingpad",
+  description: "reach your people on paper",
 };
 
 export const maxDuration = 60;

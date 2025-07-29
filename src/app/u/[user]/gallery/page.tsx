@@ -8,10 +8,10 @@ export async function generateMetadata({ params }: { params: { user: string } })
   const title = `${handle}`;
   return {
     title,
-    description: `@${handle}'s gallery on Pingpad`,
+    description: `@${handle}'s gallery on Paper`,
     openGraph: {
       title,
-      description: `@${handle}'s gallery on Pingpad`,
+      description: `@${handle}'s gallery on Paper`,
       images: [
         {
           url: "/logo.png",

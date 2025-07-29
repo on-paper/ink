@@ -5,7 +5,7 @@ import { getBaseUrl } from "~/utils/getBaseUrl";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const title = "Post";
-  const description = "View post on Pingpad";
+  const description = "View post on Paper";
 
   return {
     title,

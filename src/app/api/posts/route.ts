@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       queryParams.append("channelId", targetChannelId);
     } else {
       // For main feed, query our app-specific targetUri
-      queryParams.append("targetUri", "app://pingpad");
+      queryParams.append("targetUri", "https://paper.ink");
     }
 
     if (moderationStatus) {

@@ -4,10 +4,10 @@ import { PostView } from "~/components/post/PostView";
 
 export const metadata: Metadata = {
   title: "Home",
-  description: "Pingpad feed",
+  description: "Paper feed",
   openGraph: {
     title: "Home",
-    description: "Pingpad feed",
+    description: "Paper feed",
     images: [
       {
         url: "/logo.png",

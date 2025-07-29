@@ -42,10 +42,10 @@ const wagmiConfig = createConfig({
     walletConnect({
       projectId: projectId,
       metadata: {
-        name: "Pingpad",
+        name: "Paper",
         description: "minimalistic decentralized social",
         url: url,
-        icons: ["https://pingpad.io/favicon.ico"],
+        icons: ["https://paper.ink/favicon.ico"],
       },
       qrModalOptions: {
         themeMode: "dark",

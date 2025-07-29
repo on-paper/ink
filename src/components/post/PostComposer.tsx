@@ -392,7 +392,7 @@ function ComposerContent() {
     }
 
     if (quotedPost) {
-      finalContent += `\n\nQuoting: https://pingpad.io/p/${quotedPost.id}`;
+      finalContent += `\n\nQuoting: https://paper.ink/p/${quotedPost.id}`;
     }
 
     if (editingPost) {

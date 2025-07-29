@@ -72,7 +72,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Welcome to Pingpad</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Paper</CardTitle>
           <CardDescription>Connect your wallet to get started</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

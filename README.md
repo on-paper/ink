@@ -2,7 +2,7 @@
 
 **what?**
 
-clarity paves the way for brilliance. [ping](https://pingpad.io) is a minimalistic decentralized social platform, focusing on clear and efficient solutions.
+clarity paves the way for brilliance. [paper](https://paper.ink) is a minimalistic decentralized social platform, focusing on clear and efficient solutions.
 
 **how?**
 
@@ -15,7 +15,7 @@ built on top of ENS, EFP & ECP
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/pingpad-io/ping.git && cd ping
+   git clone https://github.com/on-paper/ink.git && cd ink
    ```
 
 2. Create a `.env` file:

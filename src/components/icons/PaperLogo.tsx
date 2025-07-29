@@ -1,7 +1,7 @@
 import type { LucideProps } from "lucide-react";
 import { forwardRef } from "react";
 
-const PingLogo = forwardRef<SVGSVGElement, LucideProps>(
+const PaperLogo = forwardRef<SVGSVGElement, LucideProps>(
   ({ size = 20, strokeWidth = 46, color = "currentColor", ...props }, ref) => {
     return (
       <svg
@@ -22,6 +22,6 @@ const PingLogo = forwardRef<SVGSVGElement, LucideProps>(
   },
 );
 
-PingLogo.displayName = "PingLogo";
+PaperLogo.displayName = "PaperLogo";
 
-export default PingLogo;
+export default PaperLogo;

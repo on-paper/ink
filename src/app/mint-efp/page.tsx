@@ -76,7 +76,7 @@ export default function MintEFPPage() {
             </div>
             <h1 className="text-3xl font-bold">Success!</h1>
             <p className="text-muted-foreground">
-              Your EFP List has been minted successfully. You can now follow users on Pingpad.
+              Your EFP List has been minted successfully. You can now follow users on Paper.
             </p>
           </div>
           <Button onClick={() => router.push("/")} className="w-full sm:w-auto">
@@ -106,8 +106,8 @@ export default function MintEFPPage() {
           </h1>
           <p className="text-muted-foreground">
             {hasEFPList
-              ? "You already have an EFP List NFT and can follow users on Pingpad."
-              : "To follow users on Pingpad, you need an EFP List NFT. This is a one-time setup that allows you to manage your social connections onchain."}
+              ? "You already have an EFP List NFT and can follow users on Paper."
+              : "To follow users on Paper, you need an EFP List NFT. This is a one-time setup that allows you to manage your social connections onchain."}
           </p>
         </div>
 

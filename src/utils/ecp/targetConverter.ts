@@ -3,9 +3,9 @@
  * ECP uses URL-like identifiers for comment targets
  */
 export function postIdToEcpTarget(postId: string): string {
-  // For now, we'll use the Pingpad post URL as the target
+  // For now, we'll use the Paper post URL as the target
   // This creates a unique identifier for each post
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pingpad.io";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink";
   return `${baseUrl}/p/${postId}`;
 }
 

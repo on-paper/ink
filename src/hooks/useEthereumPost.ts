@@ -53,7 +53,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
         if (channelId && !parentId) {
           requestBody.channelId = channelId;
         } else if (!parentId) {
-          requestBody.targetUri = "app://pingpad";
+          requestBody.targetUri = "app://paper";
         }
 
         const response = await fetch("/api/sign", {

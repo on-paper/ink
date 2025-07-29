@@ -207,7 +207,7 @@ export function ThemeSettings() {
                   <p className="text-xs text-muted-foreground">
                     Photo by{" "}
                     <a
-                      href={`https://unsplash.com/@${imageCredits.username}?utm_source=pingpad&utm_medium=referral`}
+                      href={`https://unsplash.com/@${imageCredits.username}?utm_source=paper&utm_medium=referral`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-foreground transition-colors"
@@ -216,7 +216,7 @@ export function ThemeSettings() {
                     </a>
                     {" on "}
                     <a
-                      href="https://unsplash.com?utm_source=pingpad&utm_medium=referral"
+                      href="https://unsplash.com?utm_source=paper&utm_medium=referral"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-foreground transition-colors"

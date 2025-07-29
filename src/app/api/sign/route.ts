@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       ...(parentId
         ? { parentId }
         : {
-            targetUri: channelId ? undefined : targetUri || "app://pingpad.io",
+            targetUri: channelId ? undefined : targetUri || "app://paper.ink",
             ...(channelId ? { channelId } : {}),
           }),
     } as any);

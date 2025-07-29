@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Pingpad is a minimalistic decentralized social platform built on:
+Paper is a minimalistic decentralized social platform built on:
 - **ENS, EFP, ECP** - Ethereum integration protocols
 - **Next.js 14** (App Router) - Web framework
 - **TypeScript** - Primary language

@@ -5,7 +5,7 @@ import { FeedSuspense } from "~/components/FeedSuspense";
 
 export const metadata: Metadata = {
   title: "Communities",
-  description: "Discover and join communities on Pingpad",
+  description: "Discover and join communities on Paper",
 };
 
 export default function CommunitiesPage({ searchParams }: { searchParams?: { q?: string } }) {

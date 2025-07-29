@@ -1,6 +1,6 @@
 # Scripts
 
-This directory contains utility scripts for the Pingpad project.
+This directory contains utility scripts for the Paper project.
 
 ## generate-app-key.ts
 
@@ -16,7 +16,7 @@ bun scripts/generate-app-key.ts
 
 ### Purpose
 
-The app signer key is used server-side to sign ECP comments on behalf of the Pingpad application. This allows users to post comments without paying gas fees directly, as the app signature validates the comment data.
+The app signer key is used server-side to sign ECP comments on behalf of the Paper application. This allows users to post comments without paying gas fees directly, as the app signature validates the comment data.
 
 ### Important Notes
 

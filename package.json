@@ -1,6 +1,6 @@
 {
-  "name": "pingpad",
-  "version": "0.9",
+  "name": "paper",
+  "version": "1.0",
   "private": true,
   "scripts": {
     "build": "bunx --bun next build",
