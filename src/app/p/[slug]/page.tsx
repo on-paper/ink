@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PostThread } from "~/components/post/PostThread";
+import { PostView } from "~/components/post/PostView";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 
-/**
- * This route resolves to universal id of the post passed in the [slug]
- */
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const title = "Post";
   const description = "View post on Pingpad";
@@ -21,7 +18,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-const post = async ({ params }: { params: { slug: string } }) => {
+export default async function PostPage({ params }: { params: { slug: string } }) {
   try {
     const response = await fetch(`${getBaseUrl()}/api/posts/${params.slug}`, {
       cache: "no-store",
@@ -34,13 +31,19 @@ const post = async ({ params }: { params: { slug: string } }) => {
       throw new Error("Failed to fetch post");
     }
 
-    const postData = await response.json();
+    const post = await response.json();
 
-    return <PostThread post={postData} />;
+    return (
+      <div className="flex flex-col gap-1 p-4">
+        <div className="flex flex-col gap-1 min-h-screen">
+          <div className="relative">
+            <PostView item={post} defaultExpanded={true} defaultReplyOpen={false} />
+          </div>
+        </div>
+      </div>
+    );
   } catch (error) {
     console.error("Error fetching post:", error);
     notFound();
   }
-};
-
-export default post;
+}
