@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
     const result = await siweMessage.verify({
       signature,
       nonce: session.nonce,
-      domain: new URL(req.url).host,
     });
 
     if (!result.success) {
@@ -23,7 +22,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Additional security checks
-    if (siweMessage.domain !== new URL(req.url).host) {
+    const expectedDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink").hostname;
+    if (siweMessage.domain !== expectedDomain) {
+      console.error(`Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}`);
       return NextResponse.json({ error: "Invalid domain" }, { status: 401 });
     }
 
