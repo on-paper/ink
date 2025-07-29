@@ -1,18 +1,6 @@
 "use client";
 
-import { 
-  Apple, 
-  Clock, 
-  Flag, 
-  Gamepad2, 
-  Hash, 
-  MapPin, 
-  Package, 
-  SearchIcon, 
-  Smile, 
-  TreePine, 
-  User 
-} from "lucide-react";
+import { Apple, Clock, Flag, Gamepad2, Hash, MapPin, Package, SearchIcon, Smile, TreePine, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
@@ -71,7 +59,7 @@ export function EmojiPicker({ onEmojiClick, className = "" }: EmojiPickerProps) 
     (emoji: EmojiWithGroup, event: React.MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      
+
       addToRecent(emoji);
       onEmojiClick({
         emoji: emoji.emoji,

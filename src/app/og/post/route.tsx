@@ -108,7 +108,7 @@ export async function GET(request: Request) {
         <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/logo-white.svg`} tw="w-full h-full" />
       </div>
       <div tw="absolute flex items-center justify-center bottom-14 right-14">
-        <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/ping-logo-drop-round.png`} tw="w-20 h-20" />
+        <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/paper-logo-drop-round.png`} tw="w-20 h-20" />
       </div>
 
       <div tw="relative flex flex-col justify-start p-14 w-full h-full">

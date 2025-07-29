@@ -1,5 +1,3 @@
-import { MediaImageMimeType, MediaVideoMimeType } from "@lens-protocol/metadata";
-
 // Normalize video MIME types to standard format
 export function normalizeVideoMimeType(type: string | undefined): string | undefined {
   if (!type) return undefined;
@@ -87,11 +85,11 @@ export function isVideoMimeType(type: string | undefined): boolean {
   return normalized?.startsWith("video/") || normalized?.startsWith("model/") || false;
 }
 
-// Cast normalized type to Lens Protocol type
-export function castToMediaImageType(type: string): MediaImageMimeType {
-  return normalizeImageMimeType(type) as MediaImageMimeType;
+// Cast normalized type to media type
+export function castToMediaImageType(type: string): string {
+  return normalizeImageMimeType(type) || type;
 }
 
-export function castToMediaVideoType(type: string): MediaVideoMimeType {
-  return normalizeVideoMimeType(type) as MediaVideoMimeType;
+export function castToMediaVideoType(type: string): string {
+  return normalizeVideoMimeType(type) || type;
 }

@@ -26,8 +26,8 @@ export const metadata: Metadata = {
 };
 
 const settings = async () => {
-  const { user } = await getServerAuth();
-  if (!user) {
+  const { isAuthenticated, address } = await getServerAuth();
+  if (!isAuthenticated) {
     redirect("/");
   }
 

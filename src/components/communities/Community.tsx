@@ -47,10 +47,7 @@ export const getCommunityTags = (community: string) => {
 export const getCommunityIcon = (community: string) => {
   let icon = null;
   switch (community) {
-    case "pingpad":
-      icon = <AtSignIcon size={18} />;
-      break;
-    case "ping":
+    case "paper":
       icon = <AtSignIcon size={18} />;
       break;
     case "lens":

@@ -9,7 +9,7 @@ const bundleAnalyzer = withBundleAnalyzer({
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  transpilePackages: ['@lens-protocol', 'lucide-react'],
+  transpilePackages: ['ethereum-identity-kit', 'lucide-react'],
 
   images: {
     remotePatterns: [
@@ -18,6 +18,12 @@ const config = {
         hostname: "**",
       },
     ],
+  },
+
+  // https://github.com/WalletConnect/walletconnect-monorepo/issues/1908#issuecomment-1487801131
+  webpack: (config) => {
+    config.externals.push("pino-pretty", "lokijs", "encoding");
+    return config;
   },
 };
 

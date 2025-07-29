@@ -11,12 +11,12 @@ export async function generateMetadata({ params }: { params: { user: string } })
   if (!user) {
     return {
       title: username,
-      description: `${username} on Pingpad`,
+      description: `${username} on Paper`,
     };
   }
 
   const title = `${username}`;
-  const description = user.description || `${username} on Pingpad`;
+  const description = user.description || `${username} on Paper`;
 
   const ogImageURL = `${process.env.NEXT_PUBLIC_SITE_URL}og/user?handle=${username}&name=${encodeURIComponent(
     username,
@@ -30,14 +30,14 @@ export async function generateMetadata({ params }: { params: { user: string } })
       title,
       description,
       type: "profile",
-      url: `https://pingpad.io/u/${username}`,
-      siteName: "Pingpad",
+      url: `https://paper.ink/u/${username}`,
+      siteName: "Paper",
       locale: "en_US",
     },
   };
 }
 
-const user = async ({ params }: { params: { user: string } }) => {
+const UserPage = async ({ params }: { params: { user: string } }) => {
   const username = params.user;
   const user = await getUserByUsername(username);
 
@@ -46,4 +46,4 @@ const user = async ({ params }: { params: { user: string } }) => {
   return <Feed ItemView={PostView} endpoint={`/api/posts?address=${user.address}&type=main`} />;
 };
 
-export default user;
+export default UserPage;

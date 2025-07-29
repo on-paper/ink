@@ -1,99 +1,49 @@
-import { PostReferenceType } from "@lens-protocol/client";
-import { fetchPost, fetchPostReferences } from "@lens-protocol/client/actions";
 import type { Metadata } from "next";
-import { PostThread } from "~/components/post/PostThread";
-import { getServerAuth } from "~/utils/getServerAuth";
-import { lensItemToPost } from "~/utils/lens/converters/postConverter";
+import { notFound } from "next/navigation";
+import { PostView } from "~/components/post/PostView";
+import { getBaseUrl } from "~/utils/getBaseUrl";
 
-/**
- * This route resolves to universal id of the post passed in the [slug]
- */
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { client } = await getServerAuth();
-
-  const id = params.slug;
-  const post = await fetchPost(client, {
-    post: id,
-  })
-    .unwrapOr(null)
-    .then((data) => lensItemToPost(data))
-    .catch(() => {
-      throw new Error("(╥_╥) Post not found");
-    });
-
-  const handle = post.author.username;
-  const content = "content" in post.metadata ? (post.metadata.content as string) : "";
-  const title = `${handle}'s post`;
-  const ending = content.length > 300 ? "..." : "";
-
-  let image: string | undefined;
-  const metadata = post.metadata as any;
-  switch (metadata?.__typename) {
-    case "ImageMetadata":
-      image = metadata?.image?.item;
-      break;
-    case "VideoMetadata":
-      image = metadata?.video?.cover;
-      break;
-    case "AudioMetadata":
-      image = metadata?.audio?.cover;
-      break;
-    default:
-      image = undefined;
-  }
-
-  const profilePictureUrl = post.author.profilePictureUrl;
-
-  const ogImageURL = `${process.env.NEXT_PUBLIC_SITE_URL}og/post?handle=${handle}&content=${encodeURIComponent(
-    content,
-  )}${image ? `&image=${encodeURIComponent(image)}` : ""}${profilePictureUrl ? `&profilePictureUrl=${encodeURIComponent(profilePictureUrl)}` : ""}`;
+  const title = "Post";
+  const description = "View post on Paper";
 
   return {
     title,
-    description: `${content.slice(0, 300)}${ending}`,
+    description,
     openGraph: {
       type: "article",
       title,
-      description: `${content.slice(0, 300)}${ending}`,
-      images: [
-        {
-          url: ogImageURL,
-          width: 1200,
-          height: 630,
-        },
-      ],
+      description,
     },
   };
 }
 
-const post = async ({ params }: { params: { slug: string } }) => {
-  const { client } = await getServerAuth();
-
-  const id = params.slug;
-  const lensPost = await fetchPost(client, {
-    post: id,
-  })
-    .unwrapOr(null)
-    .then((data) => lensItemToPost(data))
-    .catch(() => {
-      throw new Error("(╥_╥) Post not found");
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/posts/${params.slug}`, {
+      cache: "no-store",
     });
 
-  if (!lensPost) throw new Error("(╥_╥) Post not found");
+    if (!response.ok) {
+      if (response.status === 404) {
+        notFound();
+      }
+      throw new Error("Failed to fetch post");
+    }
 
-  const lensComments = await fetchPostReferences(client, {
-    referenceTypes: [PostReferenceType.CommentOn],
-    referencedPost: id,
-  })
-    .unwrapOr(null)
-    .then((data) => data.items.map((item) => lensItemToPost(item)))
-    .catch(() => {
-      throw new Error("(╥_╥) Comments not found");
-    });
+    const post = await response.json();
 
-  lensPost.comments = lensComments;
-
-  return <PostThread post={lensPost} />;
-};
-
-export default post;
+    return (
+      <div className="flex flex-col gap-1 p-4">
+        <div className="flex flex-col gap-1 min-h-screen">
+          <div className="relative">
+            <PostView item={post} defaultExpanded={true} defaultReplyOpen={false} />
+          </div>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    notFound();
+  }
+}

@@ -1,10 +1,9 @@
 "use client";
 
-import { chains } from "@lens-chain/sdk/viem";
-import { LensProvider, mainnet, PublicClient } from "@lens-protocol/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ConnectKitProvider } from "connectkit";
+import { TransactionProvider } from "ethereum-identity-kit";
 import { familyAccountsConnector } from "family";
 import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "next-themes";
@@ -13,6 +12,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { injected, walletConnect } from "wagmi/connectors";
+import { getAllChains, getAvailableChains } from "~/config/networks";
 import { env } from "~/env.mjs";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { ExplosionProvider } from "./ExplosionPortal";
@@ -22,12 +22,19 @@ import { Toaster } from "~/components/ui/sonner";
 const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 const url = getBaseUrl();
 
-const wagmiConfig = createConfig({
-  chains: [chains.mainnet],
-  transports: {
-    [chains.mainnet.id]: http(),
-    [chains.testnet.id]: http(),
+const availableChains = getAvailableChains();
+const allChains = getAllChains();
+const transports = allChains.reduce(
+  (acc, chain) => {
+    acc[chain.id] = http();
+    return acc;
   },
+  {} as Record<number, ReturnType<typeof http>>,
+);
+
+const wagmiConfig = createConfig({
+  chains: availableChains,
+  transports,
   ssr: true,
   connectors: [
     familyAccountsConnector(),
@@ -35,10 +42,10 @@ const wagmiConfig = createConfig({
     walletConnect({
       projectId: projectId,
       metadata: {
-        name: "Pingpad",
+        name: "Paper",
         description: "minimalistic decentralized social",
         url: url,
-        icons: ["https://pingpad.io/favicon.ico"],
+        icons: ["https://paper.ink/favicon.ico"],
       },
       qrModalOptions: {
         themeMode: "dark",
@@ -80,17 +87,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  const publicClient = PublicClient.create({
-    environment: mainnet,
-  });
-
   return (
     <JotaiProvider>
       <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableColorScheme>
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
             <ConnectKitProvider>
-              <LensProvider client={publicClient}>
+              <TransactionProvider>
                 <ExplosionProvider>
                   <OverlayScrollbarsComponent defer className="h-full">
                     {children}
@@ -98,7 +101,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <Toaster position="top-center" offset={16} />
                   <ReactQueryDevtools initialIsOpen={false} />
                 </ExplosionProvider>
-              </LensProvider>
+              </TransactionProvider>
             </ConnectKitProvider>
           </QueryClientProvider>
         </WagmiProvider>

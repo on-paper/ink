@@ -3,7 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface FeedResponse {
   data: Post[];
-  next?: string;
+  nextCursor?: string;
 }
 
 export function useFeed(endpoint: string, params?: Record<string, string>) {
@@ -23,7 +23,7 @@ export function useFeed(endpoint: string, params?: Record<string, string>) {
       return data;
     },
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.next,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });

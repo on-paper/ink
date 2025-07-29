@@ -1,49 +1,56 @@
-import { fetchPostsToExplore, fetchTimeline } from "@lens-protocol/client/actions";
-import { PageSize, TimelineEventItemType } from "@lens-protocol/graphql";
 import { type NextRequest, NextResponse } from "next/server";
+import { API_URLS } from "~/config/api";
+import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
-import { lensItemToPost } from "~/utils/lens/converters/postConverter";
 
 export const dynamic = "force-dynamic";
+const SUPPORTED_CHAIN_IDS = [8453, 1];
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const cursor = searchParams.get("cursor") || undefined;
+  const limit = Number.parseInt(searchParams.get("limit") || "20");
+  const author = searchParams.get("author") || undefined;
+  const moderationStatus = searchParams.get("moderationStatus") || undefined;
+
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
 
   try {
-    const { client, sessionClient, isAuthenticated, address } = await getServerAuth();
-
-    let data;
-
-    if (isAuthenticated && sessionClient) {
-      data = await fetchTimeline(sessionClient, {
-        account: address,
-        filter: {
-          eventType: [
-            TimelineEventItemType.Post,
-            TimelineEventItemType.Quote,
-            TimelineEventItemType.Comment,
-            TimelineEventItemType.Repost,
-          ],
-        },
-        cursor,
-      });
-    } else {
-      data = await fetchPostsToExplore(client, {
-        pageSize: PageSize.Ten,
-        cursor,
-      });
-    }
-
-    if (data.isErr()) {
-      return NextResponse.json({ error: data.error.message }, { status: 500 });
-    }
-
-    const posts = data.value.items.map((item) => {
-      return isAuthenticated ? lensItemToPost(item.primary) : lensItemToPost(item);
+    const queryParams = new URLSearchParams({
+      chainId: SUPPORTED_CHAIN_IDS.join(","),
+      limit: limit.toString(),
+      sort: "desc",
+      mode: "flat",
     });
 
-    return NextResponse.json({ data: posts, nextCursor: data.value.pageInfo.next }, { status: 200 });
+    if (cursor) queryParams.append("cursor", cursor);
+    if (author) queryParams.append("author", author);
+    if (moderationStatus) queryParams.append("moderationStatus", moderationStatus);
+
+    const apiResponse = await fetch(`${API_URLS.ECP}/api/comments?${queryParams}`, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!apiResponse.ok) {
+      throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`);
+    }
+
+    const response = await apiResponse.json();
+    const ecpComments = response.results || [];
+
+    const posts = await Promise.all(
+      ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress, includeReplies: true })),
+    );
+    const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
+
+    return NextResponse.json(
+      {
+        data: posts,
+        nextCursor,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Failed to fetch feed: ", error);
     return NextResponse.json({ error: `Failed to fetch feed: ${error.message}` }, { status: 500 });

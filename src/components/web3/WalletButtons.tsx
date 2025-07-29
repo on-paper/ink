@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { type PropsWithChildren } from "react";
 import { toast } from "sonner";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { clearCookies } from "../../utils/clearCookies";
 import { FamilyIcon, GlobeIcon, WalletConnectIcon } from "../Icons";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
@@ -121,7 +120,7 @@ export function LogoutButton() {
         if (isConnected) {
           disconnectWallet();
         }
-        await clearCookies();
+        await fetch("/api/siwe/logout", { method: "POST" });
         router.push("/home");
         router.refresh();
       }}

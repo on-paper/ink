@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://pingpad.io/sitemap.xml",
+    sitemap: "https://paper.ink/sitemap.xml",
   };
 }

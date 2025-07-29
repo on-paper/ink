@@ -1,5 +1,5 @@
 import type { PostMention } from "@cartel-sh/ui";
-import {
+import type {
   ArticleMetadataDetails,
   AudioMetadataDetails,
   CheckingInMetadataDetails,
@@ -15,7 +15,7 @@ import {
   ThreeDMetadataDetails,
   TransactionMetadataDetails,
   VideoMetadataDetails,
-} from "@lens-protocol/metadata";
+} from "~/types/metadata";
 import { castToMediaImageType, castToMediaVideoType, isImageMimeType } from "~/utils/mimeTypes";
 import { AudioPlayer } from "../AudioPlayer";
 import { LinkPreview } from "../embeds/LinkPreview";

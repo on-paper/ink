@@ -1,28 +1,36 @@
-import { fetchPost } from "@lens-protocol/client/actions";
 import { type NextRequest, NextResponse } from "next/server";
+import { API_URLS } from "~/config/api";
+import { SUPPORTED_CHAIN_IDS } from "~/lib/efp/config";
+import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
-import { lensItemToPost } from "~/utils/lens/converters/postConverter";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
+  const auth = await getServerAuth();
+  const currentUserAddress = auth.address || "";
+  const chainIdParam = SUPPORTED_CHAIN_IDS.join(",");
 
   try {
-    const { client } = await getServerAuth();
-
-    const result = await fetchPost(client, {
-      post: id,
+    const apiResponse = await fetch(`${API_URLS.ECP}/api/comments/${id}?chainId=${chainIdParam}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
     });
 
-    if (result.isErr()) {
-      return NextResponse.json({ error: "Failed to fetch post" }, { status: 500 });
+    if (!apiResponse.ok) {
+      if (apiResponse.status === 404) {
+        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+      }
+      throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`);
     }
 
-    const lensPost = result.value;
-    const nativePost = lensItemToPost(lensPost);
+    const comment = await apiResponse.json();
+    const post = await ecpCommentToPost(comment, { currentUserAddress, includeReplies: true });
 
-    return NextResponse.json({ lensPost, nativePost }, { status: 200 });
+    return NextResponse.json(post, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch post: ", error);
     return NextResponse.json({ error: `Failed to fetch post: ${error.message}` }, { status: 500 });

@@ -9,20 +9,24 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import { Skeleton } from "../ui/skeleton";
 import { UserAvatar } from "./UserAvatar";
 
-const fetchUserByHandle = async (handle: string): Promise<User> => {
-  const response = await fetch(`/api/user/handle/${handle}`);
+const fetchUser = async (addressOrEns: string): Promise<User> => {
+  const response = await fetch(`/api/user/ens/${addressOrEns}`);
   const data = await response.json();
 
   if (!response.ok) {
     throw new Error(data.error || "Failed to load user");
   }
 
-  return data.user;
+  return data;
 };
 
-export const UserCard = ({ children, handle }: PropsWithChildren & { handle?: string }) => {
-  const lowercasedHandle = handle?.toLowerCase();
+export const UserCard = ({ children, handle, address }: PropsWithChildren & { handle?: string; address?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const identifier = handle || address;
+
+  if (!identifier) {
+    return <>{children}</>;
+  }
 
   const {
     data: user,
@@ -30,9 +34,9 @@ export const UserCard = ({ children, handle }: PropsWithChildren & { handle?: st
     isError,
     error,
   } = useQuery({
-    queryKey: ["user", "handle", lowercasedHandle],
-    queryFn: () => fetchUserByHandle(lowercasedHandle!),
-    enabled: !!lowercasedHandle && isOpen,
+    queryKey: ["user", "ens", identifier],
+    queryFn: () => fetchUser(identifier),
+    enabled: !!identifier && isOpen,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });

@@ -4,9 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Pingpad is a minimalistic decentralized social platform built on:
-- **Lens Protocol** - Decentralized social graph
-- **Grove** and **Arweave** - Media storage
+Paper is a minimalistic decentralized social platform built on:
+- **ENS, EFP, ECP** - Ethereum integration protocols
 - **Next.js 14** (App Router) - Web framework
 - **TypeScript** - Primary language
 - **Bun** - Package manager (v1.2.5)
@@ -16,21 +15,6 @@ Pingpad is a minimalistic decentralized social platform built on:
 ```bash
 # Install dependencies
 bun install
-
-# Run development server
-bun dev
-# or
-npm run dev
-
-# Build for production
-bun build
-# or
-npm run build
-
-# Start production server
-bun start
-# or
-npm run start
 
 # Format and lint code (required before commits)
 bun x @biomejs/biome check --write --unsafe ./src/*
@@ -51,23 +35,21 @@ npm run check
 - `/src/components/` - React components organized by domain
   - `auth/` - Authentication components
   - `communities/` - Community-related components
-  - `menu/` - Navigation and menu components
   - `notifications/` - Notification system
+  - `menu/` - Navigation and menu components
   - `post/` - Post-related components (PostView, PostWizard, etc.)
   - `ui/` - Shadcn/UI base components
   - `user/` - User profile and avatar components
   - `web3/` - Web3 wallet connection components
 
-- `/src/hooks/` - Custom React hooks
-- `/src/utils/` - Utility functions
-  - `lens/` - Lens Protocol client utilities
-
 ### Key Technologies
 
 **Web3 Integration:**
-- Lens Protocol SDK (canary version) for social features
-- Wagmi v2 for Ethereum interactions
-- WalletConnect, Coinbase Wallet SDK for wallet connections
+- ENS (Ethereum Name Service) - for name resolution
+- ECP (Ethereum Comments Protocol) - for decentralized comments
+- EFP (Ethereum Follow Protocol) - for social graph management
+- Ethereum Identity Kit - for interactions with EFP
+- Wagmi for Ethereum interactions
 - Viem for blockchain utilities
 
 **UI/Styling:**
@@ -81,37 +63,15 @@ npm run check
 - React Query (TanStack Query) for server state
 - React Hook Form for forms
 
-### Environment Configuration
-
-Required environment variables (see `.env.example`):
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - WalletConnect project ID
-- `NEXT_PUBLIC_APP_ADDRESS` - Production Lens app address
-- `NEXT_PUBLIC_APP_ADDRESS_TESTNET` - Testnet Lens app address
-- `NEXT_PUBLIC_NODE_ENV` - Environment (development/test/production)
-
-Optional environment variables:
-- `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` - Unsplash API key for background images
-  - Copy `.env.example` to `.env` and add your key
-  - Get a free key at https://unsplash.com/developers
-
-Environment validation is handled by Zod schemas in `/src/env.mjs`.
-
 ### Code Style and Quality
 
 - **Biome** is used for formatting and linting (replaces ESLint/Prettier)
-- Configuration in `biome.json`:
-  - 2 spaces indentation
-  - 120 character line width
-  - Some rules disabled for React/Next.js compatibility
 - Run `bun x @biomejs/biome check --write --unsafe ./src/*` before committing
 
 ### Important Patterns
 
 1. **API Routes**: Follow RESTful conventions in `/src/app/api/`
 2. **Components**: Use domain-based organization (post/, user/, etc.)
-3. **Lens Integration**: Client utilities in `/src/utils/lens/`
-4. **Theme System**: Custom background gradients stored in localStorage
-5. **Authentication**: Server-side auth utilities in `/src/utils/getServerAuth.ts`
 
 ### Commit Message Guidelines
 - Use lowercase commit messages
@@ -124,3 +84,35 @@ Environment validation is handled by Zod schemas in `/src/env.mjs`.
 
 ## Code Style
 Prioritize having fewer files. Only create new files when absolutely necessary. Only use individual exports in files, do not create index files.
+
+## External Protocol Documentation
+
+### EFP (Ethereum Follow Protocol)
+- **Documentation**: https://docs.efp.app/intro/
+- **LLM-optimized docs**:
+  - Minimal: https://docs.efp.app/llms.txt - Quick reference for basic EFP concepts
+  - Full: https://docs.efp.app/llms-full.txt - Comprehensive documentation
+  
+**Using EFP docs**: When working with EFP integration, first check the minimal LLM docs for quick answers. For detailed implementation, use the full LLM docs which contain complete API references, examples, and integration patterns.
+
+### ECP (Ethereum Comments Protocol)
+- **Documentation**: https://docs.ethcomments.xyz/
+- **LLM-optimized docs**:
+  - Minimal: https://docs.ethcomments.xyz/llms.txt - Core ECP concepts and basic usage
+  - Full: https://docs.ethcomments.xyz/llms-full.txt - Complete protocol specification
+  
+**Using ECP docs**: Start with the minimal LLM docs to understand basic comment operations. Reference the full docs for advanced features like moderation, threading, and custom implementations.
+
+### Ethereum Identity Kit
+- **Documentation**: https://ethidentitykit.com/docs
+- **LLM-optimized docs**:
+  - Minimal: https://ethidentitykit.com/llms/complete/llms.txt 
+  - Full: https://ethidentitykit.com/llms/complete/llms-full.txt - Complete specification
+
+**Using Ethereum Identity Kit docs**: Start with the minimal LLM docs to understand basic comment operations. Reference the full docs for advanced features like moderation, threading, and custom implementations.
+
+### ENS (Ethereum Name Service)
+ENS is used for resolving human-readable names to Ethereum addresses and other resources. Key integration points:
+- Name resolution for user profiles
+- Avatar and metadata retrieval
+- Integration with social features

@@ -1,26 +1,16 @@
-import type { PropsWithChildren } from "react";
+import type { ReactNode } from "react";
 import { getServerAuth } from "~/utils/getServerAuth";
 
-interface ServerAuthProps extends PropsWithChildren {
-  whenSignedOut?: boolean;
-}
-
-export async function ServerAuth({ children, whenSignedOut = false }: ServerAuthProps) {
+export async function ServerSignedIn({ children }: { children: ReactNode }) {
   const { isAuthenticated } = await getServerAuth();
-
-  const shouldRender = whenSignedOut ? !isAuthenticated : isAuthenticated;
-
-  if (!shouldRender) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return <>{children}</>;
 }
 
-export async function ServerSignedIn(props: PropsWithChildren) {
-  return <ServerAuth {...props} />;
-}
+export async function ServerSignedOut({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = await getServerAuth();
+  if (isAuthenticated) return null;
 
-export async function ServerSignedOut(props: PropsWithChildren) {
-  return <ServerAuth {...props} whenSignedOut />;
+  return <>{children}</>;
 }

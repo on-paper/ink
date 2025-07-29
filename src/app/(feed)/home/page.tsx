@@ -4,10 +4,10 @@ import { PostView } from "~/components/post/PostView";
 
 export const metadata: Metadata = {
   title: "Home",
-  description: "Pingpad feed",
+  description: "Paper feed",
   openGraph: {
     title: "Home",
-    description: "Pingpad feed",
+    description: "Paper feed",
     images: [
       {
         url: "/logo.png",
@@ -18,10 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
-const endpoint = "api/posts/feed";
+const endpoint = "api/posts/feed?moderationStatus=approved,pending";
 
 const home = async () => {
-  return <Feed ItemView={PostView} endpoint={endpoint} />;
+  return <Feed ItemView={PostView} endpoint={endpoint} refetchInterval={300000} />;
 };
 
 export default home;

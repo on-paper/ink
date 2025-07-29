@@ -137,7 +137,6 @@ export const PostView = ({
     }
   };
 
-  // If it's an optimistic post, show skeleton
   if ((item as any).isOptimistic) {
     return <PostOptimisticView author={item.author} isComment={settings.isComment} />;
   }

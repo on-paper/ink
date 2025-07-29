@@ -5,7 +5,7 @@ import { LexicalTypeaheadMenuPlugin, MenuOption } from "@lexical/react/LexicalTy
 import { $getSelection, $isRangeSelection, TextNode } from "lexical";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
-import { useAccountSearch } from "~/hooks/useAccountSearch";
+// import { useAccountSearch } from "~/hooks/useAccountSearch";
 import { MentionMenuItem, MentionOption } from "./MentionOption";
 
 const MAX_MENTION_SUGGESTIONS = 10;
@@ -24,9 +24,11 @@ function useMentionLookup() {
   }, [queryString]);
 
   // Use account search hook
-  const { data: users, loading } = useAccountSearch(
-    debouncedQuery && debouncedQuery.length > 0 ? debouncedQuery : undefined,
-  );
+  // const { data: users, loading } = useAccountSearch(
+  //   debouncedQuery && debouncedQuery.length > 0 ? debouncedQuery : undefined,
+  // );
+  let users;
+  let loading;
 
   const options = useMemo(() => {
     if (!users || loading) {

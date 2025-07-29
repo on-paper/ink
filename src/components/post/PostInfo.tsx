@@ -1,11 +1,12 @@
 import type { Post } from "@cartel-sh/ui";
-import { Check, Copy, EllipsisIcon, Link2, PenIcon } from "lucide-react";
+import { Check, EllipsisIcon, Link2, PenIcon } from "lucide-react";
 import { useState } from "react";
 import { RiBlueskyLine } from "react-icons/ri";
 import { SiFarcaster, SiX } from "react-icons/si";
 import { toast } from "sonner";
 import Link from "~/components/Link";
 import { useUser } from "~/components/user/UserContext";
+import { formatAddress } from "../menu/UserMenu";
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
 import {
@@ -28,6 +29,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
   const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
   const author = post.author;
   const handle = author.username;
+  const displayName = handle || formatAddress(author.address);
   const tags = post?.metadata?.tags || [];
   const content = "content" in post.metadata ? (post.metadata.content as string) : "";
 
@@ -89,9 +91,9 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
       suppressHydrationWarning
       className="group flex h-5 flex-row items-center place-items-center gap-2 text-xs font-light leading-4 text-base-content sm:text-sm"
     >
-      <Link className="flex gap-2" href={`/u/${handle}`}>
+      <Link className="flex gap-2" href={`/u/${handle || author.address}`}>
         {/* <span className="w-fit truncate font-bold">{author.name}</span> */}
-        <span className="font-bold w-fit">{`${handle}`}</span>
+        <span className="font-bold w-fit">{`${displayName}`}</span>
       </Link>
       {community && (
         <>

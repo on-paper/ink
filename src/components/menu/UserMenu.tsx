@@ -1,53 +1,39 @@
 "use client";
 
 import type { User } from "@cartel-sh/ui";
-import { LogOutIcon, MoonIcon, SettingsIcon, SunIcon, UserIcon, UsersRoundIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { LogOutIcon, MoonIcon, SettingsIcon, SunIcon, UserIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useAccount, useDisconnect } from "wagmi";
 import Link from "~/components/Link";
-import { clearCookies } from "~/utils/clearCookies";
+import { useAuth } from "~/hooks/useSiweAuth";
 
-export function UserMenuButtons({ handle }: { handle: string; user: User }) {
-  const { isConnected } = useAccount();
-  const { disconnect: disconnectWallet } = useDisconnect();
-  const router = useRouter();
+export const formatAddress = (addr: string) => {
+  return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
+};
+
+export function UserMenuButtons({ user }: { user?: User | null }) {
   const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
 
   const toggleTheme = () => {
     theme === "dark" ? setTheme("light") : setTheme("dark");
   };
 
-  const logout = async () => {
-    if (isConnected) {
-      disconnectWallet();
-    }
-    await clearCookies();
-    router.push("/home");
-    router.refresh();
+  const handleLogout = async () => {
+    await signOut();
   };
 
-  const switchProfile = () => {
-    router.push("/login");
-  };
+  const displayName = user?.username || (user?.address ? formatAddress(user.address) : "User");
+  const profileLink = `/u/${user?.username || user?.address}`;
 
   return (
     <div className="flex flex-col w-48 p-1">
       <Link
-        href={`/u/${handle}`}
+        href={profileLink}
         className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground"
       >
         <UserIcon size={16} />
-        <span className="ml-3">Profile</span>
+        <span className="ml-3">{displayName}</span>
       </Link>
-      <button
-        type="button"
-        className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
-        onClick={switchProfile}
-      >
-        <UsersRoundIcon size={16} />
-        <span className="ml-3">Switch Profile</span>
-      </button>
       <Link
         href="/settings"
         className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground"
@@ -66,7 +52,7 @@ export function UserMenuButtons({ handle }: { handle: string; user: User }) {
       <button
         type="button"
         className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
-        onClick={logout}
+        onClick={handleLogout}
       >
         <LogOutIcon size={16} />
         <span className="ml-3">Log out</span>

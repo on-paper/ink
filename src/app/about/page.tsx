@@ -4,10 +4,10 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About Pingpad",
+  description: "About Paper",
   openGraph: {
     title: "About",
-    description: "About Pingpad",
+    description: "About Paper",
     images: [
       {
         url: "/logo.png",
@@ -27,7 +27,7 @@ const AboutPage = () => {
   return (
     <>
       <div className="flex flex-col max-w-2xl mx-auto items-center p-2 sm:p-4 md:p-20 gap-8">
-        <h1 className="font-bold text-4xl">About Pingpad</h1>
+        <h1 className="font-bold text-4xl">About Paper</h1>
         <h2 className="text-2xl">a focus-first decentralized social</h2>
         <div className="flex flex-col text-center  gap-8 p-2 md:p-8">
           <Card>
@@ -70,9 +70,9 @@ const AboutPage = () => {
                 <AccordionItem value="item-1">
                   <AccordionTrigger>Current status?</AccordionTrigger>
                   <AccordionContent>
-                    In development. Pingpad is live on Lens v3! <br />
+                    In development. Paper is live on Ethereum!
                     <br />
-                    <a className="underline" href="https://github.com/pingpad-io/ping">
+                    <a className="underline" href="https://github.com/on-paper/ink">
                       Contributions
                     </a>{" "}
                     are welcome.
@@ -88,7 +88,7 @@ const AboutPage = () => {
         </Card>
 
         <div className="flex flex-col md:flex-row gap-4 md:gap-8 place-items-center justify-center p-4 drop-shadow-lg dark:drop-shadow-glow my-10">
-          <Link href="https://github.com/pingpad-io/ping">
+          <Link href="https://github.com/on-paper/ink">
             <Button variant="ghost" className="p-1 px-4 text-lg gap-4 flex flex-row w-fit rounded-full">
               <Github /> github
             </Button>

@@ -22,8 +22,12 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem } from "@/src/components/ui/form";
 import { useUser } from "~/components/user/UserContext";
-import { MAX_CONTENT_LENGTH, usePostSubmission } from "~/hooks/usePostSubmission";
+import { useEthereumEdit } from "~/hooks/useEthereumEdit";
+import { useEthereumPost } from "~/hooks/useEthereumPost";
 import { storageClient } from "~/utils/lens/storage";
+
+export const MAX_CONTENT_LENGTH = 1000;
+
 import {
   castToMediaImageType,
   castToMediaVideoType,
@@ -32,6 +36,7 @@ import {
 } from "~/utils/mimeTypes";
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { formatAddress } from "../menu/UserMenu";
 import { Button } from "../ui/button";
 import { UserAvatar } from "../user/UserAvatar";
 import { ComposerProvider, useComposer } from "./ComposerContext";
@@ -160,7 +165,6 @@ export interface PostComposerProps {
 
 function ComposerContent() {
   const { user: contextUser, requireAuth } = useUser();
-  const { isPosting, submitPost } = usePostSubmission();
   const pathname = usePathname();
 
   const {
@@ -178,6 +182,28 @@ function ComposerContent() {
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+
+  const { postMutation: post, isPosting: isPostingNew } = useEthereumPost({
+    onSuccess: () => {
+      onSuccess?.(null);
+      form.setValue("content", "");
+      setMediaFiles([]);
+      if (replyingTo || quotedPost) {
+        onCancel?.();
+      }
+    },
+  });
+
+  const { editMutation: edit, isEditing: isEditingPost } = useEthereumEdit({
+    onSuccess: () => {
+      onSuccess?.(null);
+      form.setValue("content", "");
+      setMediaFiles([]);
+      onCancel?.();
+    },
+  });
+
+  const isPosting = editingPost ? isEditingPost : isPostingNew;
 
   const pathSegments = pathname.split("/");
   const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
@@ -340,28 +366,48 @@ function ComposerContent() {
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!requireAuth()) return;
 
-    await submitPost({
-      content: data.content,
-      mediaFiles,
-      processMediaForSubmission,
-      editingPost,
-      replyingTo,
-      quotedPost,
-      currentUser,
-      community: finalCommunity,
-      feed,
-      onSuccess: (post) => {
-        onSuccess?.(post);
-        if (replyingTo || quotedPost) {
-          onCancel?.();
+    let finalContent = data.content;
+
+    // Process media files
+    if (mediaFiles.length > 0) {
+      const toastId = "upload-media";
+      try {
+        toast.loading("Uploading media...", { id: toastId });
+        const { primaryMedia, attachments } = await processMediaForSubmission(toastId);
+
+        // Append media URLs to content
+        if (primaryMedia) {
+          finalContent += `\n\n${primaryMedia.uri}`;
         }
-      },
-      onClose: onCancel,
-      clearForm: () => {
-        form.setValue("content", "");
-        setMediaFiles([]);
-      },
-    });
+        if (attachments) {
+          attachments.forEach((att: any) => {
+            finalContent += `\n${att.item}`;
+          });
+        }
+        toast.dismiss(toastId);
+      } catch (error) {
+        toast.error("Failed to upload media", { id: toastId });
+        return;
+      }
+    }
+
+    if (quotedPost) {
+      finalContent += `\n\nQuoting: https://paper.ink/p/${quotedPost.id}`;
+    }
+
+    if (editingPost) {
+      edit({
+        postId: editingPost.id,
+        content: finalContent,
+        metadata: [], // TODO: Add metadata support if needed
+      });
+    } else {
+      post({
+        content: finalContent,
+        parentId: replyingTo?.id,
+        channelId: feed || community,
+      });
+    }
   }
 
   const handleEmojiClick = useCallback(
@@ -402,7 +448,9 @@ function ComposerContent() {
             <div className="grow flex-1">
               <div className="flex h-5 justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs sm:text-sm">{currentUser?.username}</span>
+                  <span className="font-bold text-xs sm:text-sm">
+                    {currentUser?.username || formatAddress(currentUser.address)}
+                  </span>
                   {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>
                 {editingPost && onCancel && (

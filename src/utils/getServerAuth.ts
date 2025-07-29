@@ -1,68 +1,43 @@
 import type { User } from "@cartel-sh/ui";
-import { AnyClient, SessionClient } from "@lens-protocol/client";
-import { fetchMeDetails } from "@lens-protocol/client/actions";
-import { lensAccountToUser } from "~/utils/lens/converters/userConverter";
-import { getCookieAuth } from "./getCookieAuth";
-import { getLensClient } from "./lens/getLensClient";
+import { getIronSession } from "iron-session";
+import { cookies } from "next/headers";
+import { type SessionData, sessionOptions } from "~/lib/siwe-session";
+import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 
-interface ServerAuthResult {
+export interface ServerAuthResult {
   isAuthenticated: boolean;
-  address: string | null;
-  handle: string | null;
-  client: AnyClient;
-  sessionClient: SessionClient | null;
-  user: User | null;
+  address?: string;
+  chainId?: number;
+  user?: User | null;
 }
 
-export const getServerAuth = async (): Promise<ServerAuthResult> => {
-  const client = await getLensClient();
-
-  const unauthenticatedResult: ServerAuthResult = {
-    isAuthenticated: false,
-    address: null,
-    handle: null,
-    client,
-    sessionClient: null,
-    user: null,
-  };
-
-  const { isValid } = getCookieAuth();
-  if (!isValid) {
-    return unauthenticatedResult;
-  }
-
+export async function getServerAuth(): Promise<ServerAuthResult> {
   try {
-    if (!client.isSessionClient()) {
-      return unauthenticatedResult;
+    const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+
+    if (!session.siwe?.address) {
+      return { isAuthenticated: false };
     }
 
-    const sessionClient = client as SessionClient;
-    const authenticatedUser = sessionClient.getAuthenticatedUser();
+    // Check if session has expired
+    const now = new Date();
+    const expirationTime = new Date(session.siwe.expirationTime);
 
-    if (authenticatedUser.isErr() || !authenticatedUser.value) {
-      return unauthenticatedResult;
+    if (now > expirationTime) {
+      session.destroy();
+      return { isAuthenticated: false };
     }
 
-    const account = await fetchMeDetails(sessionClient);
-
-    if (account.isErr()) {
-      return unauthenticatedResult;
-    }
-
-    const address = authenticatedUser.value.address;
-    const handle = account.value.loggedInAs.account.username?.localName || null;
-    const user = lensAccountToUser(account.value.loggedInAs.account);
+    const user = await fetchEnsUser(session.siwe.address, session.siwe.address);
 
     return {
       isAuthenticated: true,
-      address,
-      handle,
-      client,
-      sessionClient,
+      address: session.siwe.address,
+      chainId: session.siwe.chainId,
       user,
     };
   } catch (error) {
     console.error("Server auth error:", error);
-    return unauthenticatedResult;
+    return { isAuthenticated: false };
   }
-};
+}

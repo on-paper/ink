@@ -1,11 +1,8 @@
-import { lensAccountStatsToUserStats } from "@cartel-sh/ui";
-import { fetchAccountStats } from "@lens-protocol/client/actions";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { UserNavigation } from "~/components/user/UserNavigation";
 import { UserProfile } from "~/components/user/UserProfile";
-import { getServerAuth } from "~/utils/getServerAuth";
 import { getUserByUsername } from "~/utils/getUserByHandle";
 
 export const maxDuration = 60;
@@ -16,9 +13,11 @@ async function UserProfileSection({ handle }: { handle: string }) {
   const user = await getUserByUsername(handle);
   if (!user) return notFound();
 
-  const { client } = await getServerAuth();
-  const lensStats = await fetchAccountStats(client, { account: user.address }).unwrapOr(null);
-  const stats = lensAccountStatsToUserStats(lensStats);
+  const stats = user.stats || {
+    following: 0,
+    followers: 0,
+    interests: [],
+  };
 
   return (
     <>

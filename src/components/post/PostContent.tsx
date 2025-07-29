@@ -16,6 +16,9 @@ export const PostContent = forwardRef<
   const textContent = getPostTextContent(post.metadata, post.mentions, false);
   const mediaContent = getPostMediaContent(post.metadata, post.id, post.author.username);
   const linkPreviews = getPostLinkPreviews(post.metadata);
+  // const textContent = null;
+  // const mediaContent = null;
+  // const linkPreviews: string[] = [];
 
   return (
     <div ref={ref} className="space-y-2">
@@ -77,7 +80,7 @@ export const PostContent = forwardRef<
             </div>
           </div>
           <p className="text-sm line-clamp-3 text-foreground/90">
-            {getPostTextContent(post.quoteOn.metadata, post.quoteOn.mentions, false)}
+            {/* {getPostTextContent(post.quoteOn.metadata, post.quoteOn.mentions, false)} */}
           </p>
           {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id, post.quoteOn.author.username) && (
             <div className="mt-2 max-w-full">

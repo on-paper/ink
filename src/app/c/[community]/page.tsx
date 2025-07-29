@@ -1,23 +1,23 @@
 "use client";
 
+import { CommunityHeader } from "~/components/communities/CommunityHeader";
+import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
 import { Feed } from "~/components/Feed";
 import { FeedSuspense } from "~/components/FeedSuspense";
-import { GroupHeader } from "~/components/groups/GroupHeader";
-import { GroupNavigation } from "~/components/groups/GroupNavigation";
 import PostComposer from "~/components/post/PostComposer";
 import { PostView } from "~/components/post/PostView";
 import { Card } from "~/components/ui/card";
 import { useUser } from "~/components/user/UserContext";
-import { useGroup } from "~/hooks/useGroup";
+import { useCommunity } from "~/hooks/useCommunity";
 
-interface GroupPageProps {
+interface CommunityPageProps {
   params: {
     community: string;
   };
 }
 
-export default function GroupPage({ params }: GroupPageProps) {
-  const { data: group, isLoading, error } = useGroup(params.community);
+export default function CommunityPage({ params }: CommunityPageProps) {
+  const { data: community, isLoading, error } = useCommunity(params.community);
   const { user } = useUser();
 
   if (isLoading) {
@@ -30,30 +30,30 @@ export default function GroupPage({ params }: GroupPageProps) {
     );
   }
 
-  if (error || !group) {
+  if (error || !community) {
     return (
       <div className="z-[30] p-4 py-0">
         <div className="pt-4">
-          <div className="text-center text-muted-foreground">Group not found</div>
+          <div className="text-center text-muted-foreground">Community not found</div>
         </div>
       </div>
     );
   }
 
-  const feedAddress = group.feed?.address;
-  const endpoint = feedAddress ? `/api/posts?feed=${feedAddress}` : `/api/posts?group=${params.community}`;
+  const channelId = community.address; // The community address is the channel ID
+  const endpoint = `/api/posts?channelId=${channelId}`;
 
   return (
     <div className="z-[30] p-4 py-0">
       <div className="pt-4">
-        <GroupHeader group={group} />
-        <GroupNavigation groupAddress={params.community} />
+        <CommunityHeader community={community} />
+        <CommunityNavigation communityAddress={params.community} />
 
         {user && (
           <div className="">
-            {group.canPost && !group.isBanned && (
+            {community.canPost && !community.isBanned && (
               <Card className="p-4">
-                <PostComposer user={user} feed={feedAddress} community={params.community} />
+                <PostComposer user={user} feed={channelId} community={params.community} />
               </Card>
             )}
           </div>

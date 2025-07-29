@@ -1,20 +1,20 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
+import Communities from "~/components/Communities";
 import { FeedSuspense } from "~/components/FeedSuspense";
-import Groups from "~/components/Groups";
 
 export const metadata: Metadata = {
   title: "Communities",
-  description: "Discover and join communities on Pingpad",
+  description: "Discover and join communities on Paper",
 };
 
-export default function GroupsPage({ searchParams }: { searchParams?: { q?: string } }) {
+export default function CommunitiesPage({ searchParams }: { searchParams?: { q?: string } }) {
   const query = searchParams?.q || "";
 
   return (
     <div className="p-4">
       <Suspense fallback={<FeedSuspense />}>
-        <Groups initialQuery={query} />
+        <Communities initialQuery={query} />
       </Suspense>
     </div>
   );

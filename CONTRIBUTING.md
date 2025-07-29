@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering contributing to Pingpad! As an open source project 
+Thank you for considering contributing to Paper! As an open source project 
 we only exist by contributions from users like you.
 
 ## Code of Conduct
@@ -35,7 +35,7 @@ free to include any information you feel is relevant to the bug.
 We use GitHub issues to track bugs and errors. If you run into an issue with the
 project:
 
-- Open an [Issue](https://github.com/pingpad-io/ping/issues/new).
+- Open an [Issue](https://github.com/on-paper/ink/issues/new).
 - Explain the behavior you would expect and the actual behavior.
 - Please provide as much context as possible and describe the _reproduction
   steps_ that someone else can follow to recreate the issue on their own. This
@@ -64,7 +64,7 @@ the community to understand your suggestion and find related suggestions.
 #### Before Submitting an Enhancement
 
 - Make sure that you are using the latest version.
-- Perform a search in [GitHub](https://github.com/pingpad-io/ping/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), or the
+- Perform a search in [GitHub](https://github.com/on-paper/ink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), or the
   on Discord to see if the enhancement has already been suggested. If it has,
   add a comment to the existing issue instead of opening a new one.
 - Find out whether your idea fits with the scope and aims of the project. It's
@@ -74,7 +74,7 @@ the community to understand your suggestion and find related suggestions.
 
 #### How Do I Submit a Good Enhancement Suggestion?
 
-Enhancement suggestions are tracked as [GitHub issues](https://github.com/pingpad-io/ping/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc).
+Enhancement suggestions are tracked as [GitHub issues](https://github.com/on-paper/ink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc).
 
 - Use a **clear and descriptive title** for the issue to identify the
   suggestion.
@@ -91,7 +91,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/pingpa
 
 ### Your First Code Contribution
 
-1. Choose an issue from the [GitHub issues](https://github.com/pingpad-io/ping/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), ask a member of the team
+1. Choose an issue from the [GitHub issues](https://github.com/on-paper/ink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc), ask a member of the team
    to assign the issue to you.
 2. Fork the repository
 3. Create a branch on your fork. You should either add in the GitHub issue
@@ -101,7 +101,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/pingpa
    [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), but
    you are welcome to use one so long as the summary line accurately describes
    the overall purpose of the work and the ticket is referenced either in the PR
-   or the body of the commit message. See [Commits](https://github.com/pingpad-io/ping/commits/master) for example
+   or the body of the commit message. See [Commits](https://github.com/on-paper/ink/commits/master) for example
    commits.
 5. When ready, put up a PR that links from your fork.
 

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useDeletedPosts } from "~/components/DeletedPostsContext";
+import { useEthereumDelete } from "~/hooks/useEthereumDelete";
 import { useUserActions } from "~/hooks/useUserActions";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import type { MenuContext, MenuItem } from "../components/post/PostMenuConfig";
@@ -33,6 +34,16 @@ export const usePostState = (
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  const { deleteMutation } = useEthereumDelete({
+    onSuccess: () => {
+      onMenuAction?.();
+    },
+    onError: () => {
+      // Revert optimistic update on error
+      removeDeletedPost(post.id);
+    },
+  });
+
   const baseUrl = getBaseUrl();
   const postLink = `${baseUrl}p/${post.id}`;
   const shareLink = postLink;
@@ -50,21 +61,10 @@ export const usePostState = (
 
   const confirmDelete = async () => {
     setShowDeleteDialog(false);
+    // Add optimistic update
     addDeletedPost(post.id);
-
-    const result = await fetch(`/api/posts?id=${post.id}`, {
-      method: "DELETE",
-    });
-    const data = await result.json();
-
-    if (result.ok) {
-      toast.success("Post deleted successfully!");
-    } else {
-      // Revert on error
-      removeDeletedPost(post.id);
-      toast.error(`${data.error}`);
-    }
-    onMenuAction?.();
+    // Call the blockchain delete
+    deleteMutation({ postId: post.id });
   };
 
   const deletePost = () => {

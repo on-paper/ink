@@ -1,19 +1,19 @@
 "use client";
 
+import { CommunityHeader } from "~/components/communities/CommunityHeader";
+import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
 import { FeedSuspense } from "~/components/FeedSuspense";
-import { GroupHeader } from "~/components/groups/GroupHeader";
-import { GroupNavigation } from "~/components/groups/GroupNavigation";
 import { Card, CardContent } from "~/components/ui/card";
-import { useGroup } from "~/hooks/useGroup";
+import { useCommunity } from "~/hooks/useCommunity";
 
-interface GroupAboutPageProps {
+interface CommunityAboutPageProps {
   params: {
     community: string;
   };
 }
 
-export default function GroupAboutPage({ params }: GroupAboutPageProps) {
-  const { data: group, isLoading, error } = useGroup(params.community);
+export default function CommunityAboutPage({ params }: CommunityAboutPageProps) {
+  const { data: community, isLoading, error } = useCommunity(params.community);
 
   if (isLoading) {
     return (
@@ -25,11 +25,11 @@ export default function GroupAboutPage({ params }: GroupAboutPageProps) {
     );
   }
 
-  if (error || !group) {
+  if (error || !community) {
     return (
       <div className="z-[30] p-4 py-0">
         <div className="pt-4">
-          <div className="text-center text-muted-foreground">Group not found</div>
+          <div className="text-center text-muted-foreground">Community not found</div>
         </div>
       </div>
     );
@@ -38,39 +38,39 @@ export default function GroupAboutPage({ params }: GroupAboutPageProps) {
   return (
     <div className="z-[30] p-4 py-0">
       <div className="pt-4">
-        <GroupHeader group={group} />
-        <GroupNavigation groupAddress={params.community} />
+        <CommunityHeader community={community} />
+        <CommunityNavigation communityAddress={params.community} />
 
         <Card className="glass">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4">About</h2>
 
-            {group.metadata?.description && (
+            {community.metadata?.description && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
-                <p className="text-base">{group.metadata.description}</p>
+                <p className="text-base">{community.metadata.description}</p>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {group.address && (
+              {community.address && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Group Address</h3>
-                  <p className="text-sm font-mono break-all">{group.address}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Community Address</h3>
+                  <p className="text-sm font-mono break-all">{community.address}</p>
                 </div>
               )}
 
-              {group.timestamp && (
+              {community.timestamp && (
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Created</h3>
-                  <p className="text-sm">{new Date(group.timestamp).toLocaleDateString()}</p>
+                  <p className="text-sm">{new Date(community.timestamp).toLocaleDateString()}</p>
                 </div>
               )}
 
-              {group.owner && (
+              {community.owner && (
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Owner</h3>
-                  <p className="text-sm font-mono break-all">{group.owner}</p>
+                  <p className="text-sm font-mono break-all">{community.owner}</p>
                 </div>
               )}
             </div>

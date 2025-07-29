@@ -13,7 +13,7 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const handleEmojiClick = (emoji: any) => {
-    console.log('Emoji clicked:', emoji);
+    console.log("Emoji clicked:", emoji);
     onEmojiClick(emoji);
     // Keep the picker open so users can add multiple emojis
   };
@@ -39,13 +39,13 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
             <SmileIcon className="h-5 w-5 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
+        <DropdownMenuContent
           className="p-0"
-          onInteractOutside={(event) => {
+          onInteractOutside={(_event) => {
             // Close when clicking outside
             setEmojiPickerOpen(false);
           }}
-          onPointerDownOutside={(event) => {
+          onPointerDownOutside={(_event) => {
             // Also handle pointer down outside for immediate response
             setEmojiPickerOpen(false);
           }}

@@ -1,44 +1,42 @@
+import { getIronSession } from "iron-session";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getCookieAuth } from "./utils/getCookieAuth";
+import { type SessionData, sessionOptions } from "~/lib/siwe-session";
+
+const publicPaths = ["/", "/login", "/u", "/p"];
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const { isValid: isAuthTokenValid } = getCookieAuth();
+  const path = request.nextUrl.pathname;
 
-  // Check for the .lens postfix
-  const lensNamespace = /^\/u\/(.+)\.lens$/;
-  const postfixMatch = pathname.match(lensNamespace);
-  if (postfixMatch) {
-    const username = postfixMatch[1];
-    return NextResponse.redirect(new URL(`/u/${username}`, request.url));
+  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`));
+
+  if (isPublicPath) {
+    return NextResponse.next();
   }
 
-  // Check for the lens namespace
-  const oldLensNamespace = /^\/u\/lens\/(.+)$/;
-  const namespaceMatch = pathname.match(oldLensNamespace);
-  if (namespaceMatch) {
-    const username = namespaceMatch[1];
-    return NextResponse.redirect(new URL(`/u/${username}`, request.url));
-  }
+  try {
+    const res = NextResponse.next();
+    const session = await getIronSession<SessionData>(request, res, sessionOptions);
 
-  if (isAuthTokenValid && pathname === "/") {
-    // If authenticated redirect the / to /home
-    return NextResponse.redirect(new URL("/home", request.url));
-  }
-
-  // Routes that are always accessible
-  const publicRoutes = ["/", "/home", "/u", "/p", "/login", "/register"];
-
-  if (!isAuthTokenValid) {
-    if (!publicRoutes.some((route) => pathname.startsWith(route))) {
+    if (!session.siwe?.address) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-  }
 
-  return NextResponse.next();
+    const now = new Date();
+    const expirationTime = new Date(session.siwe.expirationTime);
+
+    if (now > expirationTime) {
+      session.destroy();
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    return res;
+  } catch (error) {
+    console.error("Middleware error:", error);
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|logo.png|home|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

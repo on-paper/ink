@@ -1,5 +1,6 @@
 import type { Post } from "@cartel-sh/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEthereumEdit } from "./useEthereumEdit";
 
 interface PostMutationContext {
   previousPost?: Post;
@@ -165,14 +166,24 @@ export function usePostMutations(postId: string, post?: Post) {
     },
   });
 
+  const { editMutation, isEditing } = useEthereumEdit({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+  });
+
   return {
     upvote: upvoteMutation.mutate,
     repost: repostMutation.mutate,
     bookmark: bookmarkMutation.mutate,
     deletePost: deleteMutation.mutate,
+    editPost: editMutation,
     isUpvoting: upvoteMutation.isPending,
     isReposting: repostMutation.isPending,
     isBookmarking: bookmarkMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isEditing,
   };
 }

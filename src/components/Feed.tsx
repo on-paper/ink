@@ -11,6 +11,7 @@ interface FeedProps<T = any> {
   endpoint: string;
   manualNextPage?: boolean;
   queryKey?: string[];
+  refetchInterval?: number;
 }
 
 interface FeedResponse<T> {
@@ -23,6 +24,7 @@ export const Feed = <T extends { id: string } = any>({
   endpoint,
   manualNextPage = false,
   queryKey,
+  refetchInterval,
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -40,6 +42,7 @@ export const Feed = <T extends { id: string } = any>({
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchInterval: refetchInterval,
   });
 
   const loadNextBatch = useCallback(() => {
