@@ -8,7 +8,7 @@ export default function error({ error, reset }: { error: Error & { digest?: stri
   const message = error.message.slice(0, 200);
 
   return (
-    <div className="max-w-screen-xl px-4 py-16">
+    <div className="max-w-screen-xl mx-auto px-4 py-16">
       <div className="max-w-screen-sm text-center">
         <h2 className="text-2xl font-bold">Something went wrong</h2>
 

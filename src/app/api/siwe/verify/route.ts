@@ -20,10 +20,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    const expectedDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink").hostname;
+    const expectedUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink");
+    const expectedDomain = expectedUrl.port ? `${expectedUrl.hostname}:${expectedUrl.port}` : expectedUrl.hostname;
     if (siweMessage.domain !== expectedDomain) {
       console.error(`Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}`);
-      return NextResponse.json({ error: "Invalid domain" }, { status: 401 });
+      return NextResponse.json({ error: `Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}` }, { status: 401 });
     }
 
     const now = new Date();

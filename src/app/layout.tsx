@@ -48,7 +48,7 @@ export default async function RootLayout({ children }) {
                   <Menu isAuthenticated={isAuthenticated} user={user} />
 
                   <PageTransition>
-                    <div className="min-w-0 max-w-2xl mx-auto grow sm:shrink lg:max-w-2xl h-full">{children}</div>
+                    <div className="min-w-0 max-w-5xl mx-auto grow sm:shrink h-full">{children}</div>
                   </PageTransition>
 
                   <FloatingAudioPlayer />

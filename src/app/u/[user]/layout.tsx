@@ -83,7 +83,7 @@ function UserProfileSkeleton() {
 
 export default function layout({ children, params }: { children: React.ReactNode; params: { user: string } }) {
   return (
-    <div className="flex flex-col p-4 py-0 overflow-x-hidden">
+    <div className="flex flex-col p-4 py-0 max-w-2xl mx-auto overflow-x-hidden">
       <Suspense fallback={<UserProfileSkeleton />}>
         <UserProfileSection handle={params.user} />
       </Suspense>

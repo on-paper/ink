@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SiEthereum } from "react-icons/si";
-import { LuGithub, LuGlobe } from "react-icons/lu";
+import { LuGithub, LuGlobe, LuZap, LuHandCoins, LuLock } from "react-icons/lu";
 
 const protocols = [
   {
@@ -33,18 +33,20 @@ export const LandingContent = () => {
 
   return (
     <div className="relative min-h-screen">
-      <div className="flex flex-col min-h-screen items-center justify-center relative z-10 gap-8">
-        <div className="text-center space-y-2 mb-20">
+      <div className="flex flex-col min-h-screen items-center justify-start relative z-10 gap-40 py-20 px-4">
+        {/* Section 1: Header */}
+        <div className="text-center space-y-2">
           <p className="text-lg text-primary/10">Welcome, you have arrived just in time</p>
-          <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight flex flex-col sm:flex-row sm:justify-center items-center">
             <span className="text-primary/30">Permanent.</span>
-            <span className="text-primary/50 ml-4">Permissionless.</span>
-            <span className="ml-4 dark:text-white dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] drop-shadow-md">Paper.</span>
+            <span className="text-primary/50 sm:ml-4">Permissionless.</span>
+            <span className="sm:ml-4 dark:text-white dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] drop-shadow-md">Paper.</span>
           </h1>
           <p className="text-lg text-primary/10">to Ethereum-native social</p>
         </div>
 
-        <div className="w-full max-w-2xl mx-auto px-4">
+        {/* Section 2: Cards */}
+        <div className="w-full max-w-xl mx-auto">
           <div className="flex flex-col gap-4">
             <div className="rounded-lg p-4 pl-8 flex items-center gap-6">
               <SiEthereum className="text-4xl text-primary flex-shrink-0 dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] drop-shadow-sm" />
@@ -98,10 +100,10 @@ export const LandingContent = () => {
                   <p className="text-sm text-primary/60 text-right">
                     Every line of code{" "}
                     <a
-                      href="https://github.com/ethos-community/paper"
+                      href="https://github.com/on-paper/ink"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline"
+                      className="text-primary hover:underline underline-offset-2"
                     >
                       is open
                     </a>
@@ -112,7 +114,7 @@ export const LandingContent = () => {
               </div>
             </div>
 
-            <div className="rounded-lg p-4 flex items-center gap-4">
+            <div className="rounded-lg p-4 pl-8 flex items-center gap-4">
               <LuGlobe className="text-3xl text-primary flex-shrink-0 dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] drop-shadow-sm" />
               <div>
                 <h3 className="text-lg font-bold">Public goods</h3>
@@ -120,6 +122,40 @@ export const LandingContent = () => {
                   No hidden fees, no data harvesting. Built for humanity.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Closing content */}
+        <div className="w-full">
+          <div className="max-w-xl mx-auto mb-12">
+            <p className="text-xl text-primary">You'll love it.</p>
+            <p className="text-xl text-primary/60">It's never been easier to communicate on-chain.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-2xl mx-auto">
+            <div className="relative">
+              <LuZap className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <p className="text-base relative">
+                <span className="text-primary font-semibold">Fast</span>
+                <span className="text-primary/60">. Inherits speed of any ethereum L2 it's deployed on</span>
+              </p>
+            </div>
+
+            <div className="relative">
+              <LuHandCoins className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <p className="text-base relative">
+                <span className="text-primary font-semibold">Cheap</span>
+                <span className="text-primary/60">. Posting costs &lt;$0.01 and the price is going down as ethereum continues to scale</span>
+              </p>
+            </div>
+
+            <div className="relative">
+              <LuLock className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <p className="text-base relative">
+                <span className="text-primary font-semibold">Secure</span>
+                <span className="text-primary/60">. Your content lives directly on chain and is forever available</span>
+              </p>
             </div>
           </div>
         </div>
