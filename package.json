@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "bunx --bun next build",
-    "dev": "bunx --bun next dev",
+    "dev": "bunx --bun next dev -p 3010",
     "start": "bunx --bun next start",
     "check": "bunx @biomejs/biome check --write --unsafe ./src/*",
     "generate-app-key": "bun scripts/generate-app-key.ts"

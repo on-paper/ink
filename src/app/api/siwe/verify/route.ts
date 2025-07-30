@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
 
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
 
-    // Verify the signature with the stored nonce
     const result = await siweMessage.verify({
       signature,
       nonce: session.nonce,
@@ -21,7 +20,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
-    // Additional security checks
     const expectedDomain = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink").hostname;
     if (siweMessage.domain !== expectedDomain) {
       console.error(`Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}`);
