@@ -52,11 +52,7 @@ const AboutPage = () => {
               <CardTitle>who?</CardTitle>
             </CardHeader>
             <CardContent>
-              made with love by{" "}
-              <a className="underline" href="https://kualta.dev">
-                {"kualta"}
-              </a>{" "}
-              and community
+              made with love by cartel
             </CardContent>
           </Card>
         </div>
