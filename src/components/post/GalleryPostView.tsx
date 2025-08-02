@@ -70,9 +70,12 @@ export const GalleryPostView = ({ item }: { item: Post }) => {
   }, [type, metadata?.video?.cover, metadata?.video?.item, generatedThumbnail]);
 
   if (!src && !isVideo) return null;
-  
+
   return (
-    <Link href={`/p/${item.id}`} className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100">
+    <Link
+      href={`/p/${item.id}`}
+      className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100"
+    >
       <Card className="overflow-hidden p-0">
         {isVideo && !metadata?.video?.cover && !generatedThumbnail ? (
           <div className="relative w-full aspect-square bg-muted flex items-center justify-center">

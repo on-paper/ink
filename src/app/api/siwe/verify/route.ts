@@ -24,7 +24,10 @@ export async function POST(req: NextRequest) {
     const expectedDomain = expectedUrl.port ? `${expectedUrl.hostname}:${expectedUrl.port}` : expectedUrl.hostname;
     if (siweMessage.domain !== expectedDomain) {
       console.error(`Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}`);
-      return NextResponse.json({ error: `Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}` }, { status: 401 });
+      return NextResponse.json(
+        { error: `Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}` },
+        { status: 401 },
+      );
     }
 
     const now = new Date();

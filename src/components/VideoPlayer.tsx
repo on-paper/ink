@@ -782,10 +782,10 @@ export const VideoPlayer = ({
                             >
                               <div
                                 className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                  isProgressClicked || progressRecentlyClicked 
-                                    ? "duration-75" 
-                                    : playing 
-                                      ? "duration-300" 
+                                  isProgressClicked || progressRecentlyClicked
+                                    ? "duration-75"
+                                    : playing
+                                      ? "duration-300"
                                       : "duration-75"
                                 }`}
                                 style={{ width: `${videoProgress * 100}%` }}

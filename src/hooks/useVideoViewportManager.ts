@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-
 interface VideoEntry {
   id: string;
   element: HTMLElement;
@@ -24,7 +23,6 @@ const VIEWPORT_CONFIG = {
   rootMargin: "-25% 0px", // Create a center zone
 };
 
-
 const getVideoPosition = (element: HTMLElement): { isInUpperHalf: boolean; positionFromTop: number } => {
   const rect = element.getBoundingClientRect();
   const viewportThresholdY = window.innerHeight * 0.66; // 66% from top (33% from bottom)
@@ -40,7 +38,6 @@ const getVideoPosition = (element: HTMLElement): { isInUpperHalf: boolean; posit
 };
 
 const updateVideoStates = () => {
-
   // Update position status for all videos
   const videosInUpperHalf: VideoEntry[] = [];
 
@@ -57,7 +54,6 @@ const updateVideoStates = () => {
   // Sort videos by their position from top (lowest in upper half first)
   videosInUpperHalf.sort((a, b) => b.positionFromTop - a.positionFromTop);
 
-
   // Determine which video should be playing
   let newActiveId: string | null = null;
 
@@ -67,7 +63,6 @@ const updateVideoStates = () => {
 
   // Update playing states
   if (newActiveId !== activeVideoId.current) {
-
     const oldActiveId = activeVideoId.current;
 
     // Pause old active video (if not unmuted)
@@ -109,7 +104,6 @@ const updateVideoStates = () => {
       detail: { global: true },
     }),
   );
-
 };
 
 const debouncedUpdate = () => {
@@ -182,7 +176,6 @@ export const useVideoViewportManager = (
   const register = useCallback(() => {
     if (!elementRef.current) return;
 
-
     // Add data attribute for intersection observer
     elementRef.current.setAttribute("data-video-id", videoId);
 
@@ -205,7 +198,6 @@ export const useVideoViewportManager = (
   }, [videoId, elementRef]);
 
   const unregister = useCallback(() => {
-
     const video = videoRegistry.get(videoId);
     if (video && globalObserver) {
       globalObserver.unobserve(video.element);

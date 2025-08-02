@@ -6,7 +6,6 @@ const pauseCallbacks = new Map<string, () => void>();
 const unmutedVideos = new Set<string>();
 const muteCallbacks = new Map<string, () => void>();
 
-
 // Cleanup function for when all videos are unmounted
 const cleanupGlobalVideoState = () => {
   if (pauseCallbacks.size === 0) {
@@ -16,25 +15,20 @@ const cleanupGlobalVideoState = () => {
   }
 };
 
-
 export const useVideoState = (videoId: string) => {
   const pauseCallbackRef = useRef<() => void>();
   const muteCallbackRef = useRef<() => void>();
 
-
   const registerPlayer = (pauseCallback: () => void, muteCallback?: () => void) => {
-
     pauseCallbackRef.current = pauseCallback;
     pauseCallbacks.set(videoId, pauseCallback);
     if (muteCallback) {
       muteCallbackRef.current = muteCallback;
       muteCallbacks.set(videoId, muteCallback);
     }
-
   };
 
   const unregisterPlayer = () => {
-
     pauseCallbacks.delete(videoId);
     muteCallbacks.delete(videoId);
     activeVideoPlayers.delete(videoId);
@@ -42,11 +36,9 @@ export const useVideoState = (videoId: string) => {
 
     // Cleanup global state if no players left
     cleanupGlobalVideoState();
-
   };
 
   const pauseAllOtherVideos = () => {
-
     const videosToPause: string[] = [];
     const videosKeptPlaying: string[] = [];
 
@@ -58,8 +50,7 @@ export const useVideoState = (videoId: string) => {
             videosToPause.push(playerId);
             // Remove from active players when paused
             activeVideoPlayers.delete(playerId);
-          } catch (error) {
-          }
+          } catch (error) {}
         } else {
           videosKeptPlaying.push(playerId);
           // Keep unmuted videos in active players
@@ -68,14 +59,11 @@ export const useVideoState = (videoId: string) => {
       }
     }
 
-
     // Add the requesting video to active players (will be playing soon)
     activeVideoPlayers.add(videoId);
-
   };
 
   const setUnmutedState = (isUnmuted: boolean) => {
-
     try {
       if (isUnmuted) {
         const mutedVideos: string[] = [];
@@ -97,9 +85,7 @@ export const useVideoState = (videoId: string) => {
       } else {
         unmutedVideos.delete(videoId);
       }
-    } catch (error) {
-    }
-
+    } catch (error) {}
   };
 
   useEffect(() => {

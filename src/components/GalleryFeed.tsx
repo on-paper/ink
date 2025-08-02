@@ -12,7 +12,6 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
   const [hasMore, setHasMore] = useState(true);
 
   const loadNextBatch = useCallback(async () => {
-    
     if (loading || !hasMore) {
       return;
     }
@@ -32,14 +31,14 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
       const { data: newData, nextCursor } = await res.json();
 
       if (data) {
-        const existingIds = new Set(data.map(item => item.id));
-        const uniqueNewData = newData.filter(item => !existingIds.has(item.id));
-        
+        const existingIds = new Set(data.map((item) => item.id));
+        const uniqueNewData = newData.filter((item) => !existingIds.has(item.id));
+
         setData((prevData) => [...prevData, ...uniqueNewData]);
       } else {
         setData(newData);
       }
-      
+
       setCursor(nextCursor);
       setHasMore(nextCursor !== null);
     } catch (err: any) {
@@ -57,7 +56,10 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
 
   const [filteredUniqueMedia, setFilteredUniqueMedia] = useState<any[]>([]);
   useEffect(() => {
-    const newFilteredUniqueMedia = data?.filter((item) => item.metadata?.__typename === "ImageMetadata" || item.metadata?.__typename === "VideoMetadata") || [];
+    const newFilteredUniqueMedia =
+      data?.filter(
+        (item) => item.metadata?.__typename === "ImageMetadata" || item.metadata?.__typename === "VideoMetadata",
+      ) || [];
     setFilteredUniqueMedia(newFilteredUniqueMedia);
   }, [data]);
 

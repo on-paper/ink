@@ -97,9 +97,9 @@ export default function LoginPage() {
                   "Sign in with Ethereum"
                 )}
               </Button>
-              <Button 
-                onClick={() => disconnect()} 
-                variant="ghost" 
+              <Button
+                onClick={() => disconnect()}
+                variant="ghost"
                 className="w-full text-muted-foreground hover:text-foreground"
                 size="sm"
               >

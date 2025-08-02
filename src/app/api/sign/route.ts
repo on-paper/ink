@@ -17,7 +17,10 @@ export async function POST(req: NextRequest) {
     const appPrivateKey = process.env.APP_SIGNER_PRIVATE_KEY;
     if (!appPrivateKey) {
       console.error("[SIGN-COMMENT] APP_SIGNER_PRIVATE_KEY is not set");
-      return NextResponse.json({ error: "Server configuration error: APP_SIGNER_PRIVATE_KEY not configured" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Server configuration error: APP_SIGNER_PRIVATE_KEY not configured" },
+        { status: 500 },
+      );
     }
 
     const formattedPrivateKey = appPrivateKey.startsWith("0x") ? appPrivateKey : `0x${appPrivateKey}`;

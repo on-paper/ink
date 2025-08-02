@@ -17,7 +17,7 @@ export const NotificationButton = () => {
   };
 
   return (
-    <Link href="/notifications" onClick={handleClick}>
+    <Link href="/activity" onClick={handleClick}>
       <Button variant="ghost" size="icon" className="w-12 h-12 relative">
         <BellIcon size={20} strokeWidth={2.5} />
         {newCount > 0 && (

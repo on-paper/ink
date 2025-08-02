@@ -33,8 +33,13 @@ function parseNotification(raw: any): Notification {
   } as Notification;
 }
 
-const fetchNotifications = async (): Promise<Notification[]> => {
-  const res = await fetch("/api/notifications");
+const fetchNotifications = async (userAddress?: string): Promise<Notification[]> => {
+  if (!userAddress) {
+    console.log("No user address - skipping notification fetch");
+    return [];
+  }
+
+  const res = await fetch(`/api/notifications?address=${userAddress}`);
   if (res.status === 401) {
     console.log("Not authenticated - skipping notification refresh");
     return [];
@@ -68,9 +73,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotifications,
-    enabled: !!user,
+    queryKey: ["notifications", user?.address],
+    queryFn: () => fetchNotifications(user?.address),
+    enabled: !!user && !!user.address,
     staleTime: 30 * 1000, // Consider data fresh for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
     refetchInterval: 60 * 1000, // Poll every 60 seconds
@@ -109,7 +114,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const setNotifications = (items: Notification[]) => {
     // Update the query cache directly
-    queryClient.setQueryData(["notifications"], items);
+    queryClient.setQueryData(["notifications", user?.address], items);
   };
 
   const refresh = useCallback(async () => {

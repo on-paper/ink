@@ -18,12 +18,10 @@ export default function Communities({ initialQuery = "" }: CommunitiesProps) {
   const query = initialQuery || searchParams.get("q") || "";
 
   return (
-    <>
-      <Feed<Group>
-        ItemView={CommunityViewWrapper}
-        endpoint={`/api/communities${query ? `?q=${encodeURIComponent(query)}` : ""}`}
-        queryKey={["communities", query]}
-      />
-    </>
+    <Feed<Group>
+      ItemView={CommunityViewWrapper}
+      endpoint={`/api/communities${query ? `?q=${encodeURIComponent(query)}` : ""}`}
+      queryKey={["communities", query]}
+    />
   );
 }

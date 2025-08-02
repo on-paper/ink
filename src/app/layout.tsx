@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { DeletedPostsProvider } from "~/components/DeletedPostsContext";
 import { FilteredUsersProvider } from "~/components/FilteredUsersContext";
 import { FloatingAudioPlayer } from "~/components/FloatingAudioPlayer";
@@ -32,8 +31,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html className={`${quicksand.variable} scroll-smooth font-sans`} lang="en">
-      <head>
-      </head>
+      <head></head>
       <body className="flex flex-col relative h-screen overflow-hidden">
         <Providers>
           <UserProvider user={user}>

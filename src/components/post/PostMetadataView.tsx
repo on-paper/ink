@@ -335,16 +335,17 @@ type MediaAttachment = {
 };
 
 const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; authorHandle?: string }) => {
-  const hasMixedMedia = items.some(item => item.type && isImageMimeType(String(item.type))) && 
-                        items.some(item => item.type && !isImageMimeType(String(item.type)));
-  const firstVideoIndex = items.findIndex(item => item.type && !isImageMimeType(String(item.type)));
-  
+  const hasMixedMedia =
+    items.some((item) => item.type && isImageMimeType(String(item.type))) &&
+    items.some((item) => item.type && !isImageMimeType(String(item.type)));
+  const firstVideoIndex = items.findIndex((item) => item.type && !isImageMimeType(String(item.type)));
+
   return (
     <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" style={{ height: "300px" }}>
       <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
         {items.map((item, index) => {
           const isFirstVideo = index === firstVideoIndex;
-          
+
           return (
             <div key={`${item.item}-${index}`} className="h-full flex items-center">
               {item.type && isImageMimeType(String(item.type)) ? (
@@ -357,7 +358,15 @@ const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; autho
                 />
               ) : (
                 <div className="h-full flex items-center" style={{ height: "300px" }}>
-                  <VideoPlayer url={item.item} preview="" galleryItems={items} currentIndex={index} autoplay={isFirstVideo} authorHandle={authorHandle} useModal={hasMixedMedia} />
+                  <VideoPlayer
+                    url={item.item}
+                    preview=""
+                    galleryItems={items}
+                    currentIndex={index}
+                    autoplay={isFirstVideo}
+                    authorHandle={authorHandle}
+                    useModal={hasMixedMedia}
+                  />
                 </div>
               )}
             </div>

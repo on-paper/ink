@@ -27,7 +27,7 @@ function cleanContent(content: string): string {
 
   // Remove markdown headers (# and ##) - keep the text
   cleanedContent = cleanedContent.replace(/^#{1,6}\s+/gm, "");
-  
+
   // Remove asterisk at beginning of lines - keep the text
   cleanedContent = cleanedContent.replace(/^\*\s*/gm, "");
 

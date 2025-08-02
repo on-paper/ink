@@ -38,8 +38,6 @@ export function bigintReplacer(_key: string, value: any) {
 }
 
 export class JSONResponse<TSchema extends z.ZodType> extends Response {
-  private __outputType!: z.output<TSchema>;
-
   constructor(
     parser: TSchema,
     data: z.input<TSchema>,

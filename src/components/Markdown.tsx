@@ -161,9 +161,9 @@ const Markdown: React.FC<{
 
   return (
     <>
-      <ReactMarkdown 
-        className={`${className}`} 
-        remarkPlugins={[remarkGfm, remarkBreaks]} 
+      <ReactMarkdown
+        className={`${className}`}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeRaw as any]}
         components={components}
       >

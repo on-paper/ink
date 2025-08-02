@@ -8,15 +8,12 @@ interface UseIntersectionObserverOptions {
 
 let observerIdCounter = 0;
 
-export function useIntersectionObserver(
-  options: UseIntersectionObserverOptions = {}
-) {
+export function useIntersectionObserver(options: UseIntersectionObserverOptions = {}) {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [intersectionRatio, setIntersectionRatio] = useState(0);
   const elementRef = useRef<Element | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const observerIdRef = useRef(++observerIdCounter);
-
 
   useEffect(() => {
     const element = elementRef.current;
@@ -31,18 +28,13 @@ export function useIntersectionObserver(
       ...options,
     };
 
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry) {
-          
-          setIsIntersecting(entry.isIntersecting);
-          setIntersectionRatio(entry.intersectionRatio);
-        }
-      },
-      defaultOptions
-    );
+    observerRef.current = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setIsIntersecting(entry.isIntersecting);
+        setIntersectionRatio(entry.intersectionRatio);
+      }
+    }, defaultOptions);
 
     observerRef.current.observe(element);
 
