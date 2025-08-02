@@ -99,7 +99,7 @@
     "next-themes": "^0.3.0",
     "overlayscrollbars": "^2.11.4",
     "overlayscrollbars-react": "^0.5.6",
-    "ox": "^0.8.6",
+    "ox": "^0.0.0-canary-20250727135108",
     "pino-pretty": "^11.3.0",
     "react": "^18.3.1",
     "react-canvas-confetti": "^2.0.7",
