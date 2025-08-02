@@ -2,7 +2,6 @@ import { WalletIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ThemeSettings } from "~/components/ThemeSettings";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { ConnectedWalletLabel } from "~/components/web3/ConnnectedWalletLabel";
@@ -41,19 +40,15 @@ const settings = async () => {
           <p className="text-sm text-muted-foreground">Manage your wallet connection</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Accordion className="w-full" type="multiple">
-            <AccordionItem value="wallet">
-              <AccordionTrigger className="py-2">
-                <h1 className="text-lg flex gap-2 items-center">
-                  <WalletIcon /> Wallet
-                </h1>
-              </AccordionTrigger>
-              <AccordionContent className="pl-4 flex flex-col gap-2">
-                <ConnectedWalletLabel />
-                <LogoutButton />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <div className="flex flex-col gap-4">
+            <h1 className="text-lg flex gap-2 items-center">
+              <WalletIcon /> Wallet
+            </h1>
+            <div className="pl-4 flex flex-col gap-2">
+              <ConnectedWalletLabel />
+              <LogoutButton />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

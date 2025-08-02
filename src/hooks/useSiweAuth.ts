@@ -1,7 +1,9 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { SiweMessage } from "siwe";
+import { toast } from "sonner";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
+import { prettifyViemError } from "~/utils/prettifyViemError";
 
 interface SessionData {
   isAuthenticated: boolean;
@@ -17,7 +19,6 @@ export function useAuth() {
   const router = useRouter();
   const [session, setSession] = useState<SessionData>({ isAuthenticated: false });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const checkSession = useCallback(async () => {
     try {
@@ -36,12 +37,11 @@ export function useAuth() {
 
   const signIn = useCallback(async () => {
     if (!address || !chainId) {
-      setError("No wallet connected");
+      toast.error("No wallet connected");
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
       const nonceRes = await fetch("/api/siwe/nonce");
@@ -85,11 +85,13 @@ export function useAuth() {
         expirationTime: sessionData.expirationTime,
       });
 
+      toast.success("Welcome to Paper!");
       router.push("/home");
       window.location.reload();
     } catch (err: any) {
       console.error("Sign in error:", err);
-      setError(err.message || "Failed to sign in");
+      const errorMessage = prettifyViemError(err);
+      toast.error("Authentication Failed", { description: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +117,6 @@ export function useAuth() {
     isAuthenticated: session.isAuthenticated,
     isConnected,
     isLoading,
-    error,
     signIn,
     signOut,
     checkSession,

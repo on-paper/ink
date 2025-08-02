@@ -4,22 +4,25 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useConnect } from "wagmi";
+import { useConnect, useDisconnect } from "wagmi";
 import { FamilyIcon, GlobeIcon, WalletConnectIcon } from "~/components/Icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { useAuth } from "~/hooks/useSiweAuth";
+import { prettifyViemError } from "~/utils/prettifyViemError";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, isConnected, isLoading, error, signIn } = useAuth();
+  const { isAuthenticated, isConnected, isLoading, signIn } = useAuth();
   const { connectors, connect } = useConnect({
     mutation: {
       onError: (error) => {
-        toast.error("Connection Failed", { description: error.message });
+        const errorMessage = prettifyViemError(error);
+        toast.error("Connection Failed", { description: errorMessage });
       },
     },
   });
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -73,7 +76,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome to Paper</CardTitle>
-          <CardDescription>Connect your wallet to get started</CardDescription>
+          <CardDescription>Sign a message to prove your identity</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {!isConnected ? (
@@ -94,7 +97,14 @@ export default function LoginPage() {
                   "Sign in with Ethereum"
                 )}
               </Button>
-              {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+              <Button 
+                onClick={() => disconnect()} 
+                variant="ghost" 
+                className="w-full text-muted-foreground hover:text-foreground"
+                size="sm"
+              >
+                Go back
+              </Button>
             </div>
           )}
         </CardContent>

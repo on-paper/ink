@@ -135,7 +135,7 @@ export const LandingContent = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-2xl mx-auto">
             <div className="relative">
-              <LuZap className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <LuZap className="absolute -top-12 -left-12 text-7xl text-primary -z-10" style={{ filter: 'opacity(0.2)' }} />
               <p className="text-base relative">
                 <span className="text-primary font-semibold">Fast</span>
                 <span className="text-primary/60">. Inherits speed of any ethereum L2 it's deployed on</span>
@@ -143,7 +143,7 @@ export const LandingContent = () => {
             </div>
 
             <div className="relative">
-              <LuHandCoins className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <LuHandCoins className="absolute -top-12 -left-12 text-7xl text-primary -z-10" style={{ filter: 'opacity(0.2)' }} />
               <p className="text-base relative">
                 <span className="text-primary font-semibold">Cheap</span>
                 <span className="text-primary/60">. Posting costs &lt;$0.01 and the price is going down as ethereum continues to scale</span>
@@ -151,7 +151,7 @@ export const LandingContent = () => {
             </div>
 
             <div className="relative">
-              <LuLock className="absolute -top-8 -left-8 text-7xl text-primary/20 -z-10" />
+              <LuLock strokeWidth={2.5} className="absolute -top-12 -left-12 text-7xl text-primary -z-10" style={{ filter: 'opacity(0.2)', transform: 'scaleX(0.85)' }} />
               <p className="text-base relative">
                 <span className="text-primary font-semibold">Secure</span>
                 <span className="text-primary/60">. Your content lives directly on chain and is forever available</span>
