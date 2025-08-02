@@ -5,12 +5,12 @@ import type { Components } from "react-markdown/lib/ast-to-react";
 import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { parseCAIP19URI } from "~/utils/caip19";
 import { getBaseUrl } from "~/utils/getBaseUrl";
+import { getScanUrl } from "~/utils/getScanUrl";
 import { parseContent } from "~/utils/parseContent";
-import { CommunityHandle } from "./communities/CommunityHandle";
 import { LinkPreview } from "./embeds/LinkPreview";
 import { ImageViewer } from "./ImageViewer";
-import { AccountMention } from "./user/AccountMention";
 import { UserLazyHandle } from "./user/UserLazyHandle";
 import "~/components/composer/lexical.css";
 
@@ -60,18 +60,8 @@ const Markdown: React.FC<{
   showLinkPreviews?: boolean;
 }> = ({ content, mentions, className = "", showLinkPreviews = false }) => {
   let processedText = content;
-  if (mentions && mentions.length > 0) {
-    mentions.forEach((mention, index) => {
-      if (mention.__typename === "AccountMention") {
-        const mentionPattern =
-          mention.replace?.from || (mention.localName ? `@lens/${mention.localName}` : `@${mention.account}`);
 
-        processedText = processedText.replace(mentionPattern, `[${mentionPattern}](${BASE_URL}mention/${index})`);
-      }
-    });
-  } else {
-    processedText = parseContent(content).replaceHandles().toString();
-  }
+  processedText = parseContent(content).replaceHandles().toString();
 
   const colorClasses =
     className
@@ -82,30 +72,55 @@ const Markdown: React.FC<{
   const createCustomLink = (colorClasses: string, mentions?: PostMention[]): Components["a"] => {
     return ({ node, ...props }) => {
       const { href, children } = props;
+
+      // Handle CAIP-19 URIs (eip155 format)
+      if (href?.match(/^eip155:\d+\/(erc20|erc721|erc1155):/)) {
+        const components = parseCAIP19URI(href);
+        if (components?.assetNamespace && components.assetReference && components.chainId) {
+          const { assetNamespace, assetReference, chainId, tokenId } = components;
+          const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId) : chainId;
+
+          // Generate appropriate scan URL
+          let scanUrl: string;
+          if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
+            // For NFTs with token ID, link to the specific token
+            scanUrl = `${getScanUrl(chainIdNum, "token", assetReference)}?a=${tokenId}`;
+          } else {
+            // For fungible tokens or collections
+            scanUrl = getScanUrl(chainIdNum, "token", assetReference);
+          }
+
+          return (
+            <a href={scanUrl} target="_blank" rel="noopener noreferrer" className={`lexical-link ${colorClasses}`}>
+              {children || href}
+            </a>
+          );
+        }
+      }
+
+      // Handle standalone ENS names and addresses
+      if (href && (href.match(/^[\w]+\.eth$/) || href.match(/^0x[a-fA-F0-9]{40}$/))) {
+        return (
+          <span className={`lexical-link ${colorClasses}`}>
+            <UserLazyHandle handle={href} />
+          </span>
+        );
+      }
+
+      // Handle legacy URLs
       if (href?.startsWith(BASE_URL)) {
         if (href.startsWith(`${BASE_URL}mention/`) && mentions) {
           const mentionIndex = Number.parseInt(href.split("/mention/")[1]);
           const mention = mentions[mentionIndex];
           if (mention && mention.__typename === "AccountMention") {
             let handle = mention.localName;
-            if (!handle && mention.replace?.from) {
-              const handleMatch = mention.replace.from.match(/@lens\/(\w+)/);
-              handle = handleMatch ? handleMatch[1] : undefined;
-            }
             if (!handle) {
-              const handleText = String(children);
-              const handleMatch = handleText.match(/@lens\/(\w+)/);
-              handle = handleMatch ? handleMatch[1] : mention.account;
+              handle = mention.account;
             }
 
             return (
               <span className={`lexical-link ${colorClasses}`}>
-                <AccountMention
-                  account={mention.account}
-                  namespace={mention.namespace}
-                  localName={handle}
-                  className={colorClasses}
-                />
+                <UserLazyHandle handle={handle} className={colorClasses} />
               </span>
             );
           }
@@ -114,13 +129,6 @@ const Markdown: React.FC<{
           return (
             <span className={`lexical-link ${colorClasses}`}>
               <UserLazyHandle handle={href.split("/u/")[1]} />
-            </span>
-          );
-        }
-        if (href.startsWith(`${BASE_URL}c/`)) {
-          return (
-            <span className={`lexical-link ${colorClasses}`}>
-              <CommunityHandle handle={href.split("/c/")[1]} />
             </span>
           );
         }

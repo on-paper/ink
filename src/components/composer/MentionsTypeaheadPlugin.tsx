@@ -5,7 +5,7 @@ import { LexicalTypeaheadMenuPlugin, MenuOption } from "@lexical/react/LexicalTy
 import { $getSelection, $isRangeSelection, TextNode } from "lexical";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
-// import { useAccountSearch } from "~/hooks/useAccountSearch";
+import { useECPAutocomplete } from "~/hooks/useECPAutocomplete";
 import { MentionMenuItem, MentionOption } from "./MentionOption";
 
 const MAX_MENTION_SUGGESTIONS = 10;
@@ -23,22 +23,32 @@ function useMentionLookup() {
     return () => clearTimeout(timer);
   }, [queryString]);
 
-  // Use account search hook
-  // const { data: users, loading } = useAccountSearch(
-  //   debouncedQuery && debouncedQuery.length > 0 ? debouncedQuery : undefined,
-  // );
-  let users;
-  let loading;
+  const { results, loading } = useECPAutocomplete(debouncedQuery && debouncedQuery.length > 0 ? debouncedQuery : null);
 
   const options = useMemo(() => {
-    if (!users || loading) {
+    if (!results || loading) {
       return [];
     }
 
-    const limitedUsers = users.slice(0, MAX_MENTION_SUGGESTIONS);
+    const limitedResults = results.slice(0, MAX_MENTION_SUGGESTIONS);
 
-    return limitedUsers.map((user) => new MentionOption(user));
-  }, [users, loading]);
+    return limitedResults
+      .map((result) => {
+        if (result.type === "ens") {
+          return new MentionOption({
+            id: result.address,
+            username: result.name,
+            address: result.address,
+            profilePictureUrl: result.avatarUrl || undefined,
+            name: result.name,
+            namespace: "ens",
+          });
+        }
+        // Skip non-ENS results
+        return null;
+      })
+      .filter((option): option is MentionOption => option !== null);
+  }, [results, loading]);
 
   const onSelectOption = useCallback(
     (selectedOption: MenuOption, nodeToRemove: TextNode | null, closeMenu: () => void) => {
@@ -54,8 +64,9 @@ function useMentionLookup() {
         }
 
         nodeToRemove.remove();
-        // Insert the mention in Lens format
-        selection.insertRawText(`@lens/${mentionOption.user.username} `);
+
+        const username = mentionOption.user.username;
+        selection.insertRawText(`@${username} `);
         closeMenu();
       });
     },
@@ -68,12 +79,13 @@ function useMentionLookup() {
     options,
     loading,
     onSelectOption,
+    debouncedQuery,
   };
 }
 
 export function MentionsTypeaheadPlugin() {
   const [editor] = useLexicalComposerContext();
-  const { setQueryString, options, loading, onSelectOption } = useMentionLookup();
+  const { setQueryString, options, loading, onSelectOption, debouncedQuery } = useMentionLookup();
 
   useEffect(() => {
     (window as any).lexicalEditor = editor;
@@ -103,7 +115,11 @@ export function MentionsTypeaheadPlugin() {
       triggerFn={checkForTriggerMatch}
       options={options}
       menuRenderFn={(anchorElementRef, { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex }) => {
-        if (!anchorElementRef.current || options.length === 0) {
+        if (!anchorElementRef.current) {
+          return null;
+        }
+
+        if (!loading && options.length === 0 && !debouncedQuery) {
           return null;
         }
 
@@ -126,10 +142,20 @@ export function MentionsTypeaheadPlugin() {
         return ReactDOM.createPortal(
           <div className="rounded-lg shadow-lg z-[100] bg-card/40 backdrop-blur-md border border-border" style={style}>
             <ul className="list-none m-0 p-0.5 flex flex-col gap-0.5">
-              {loading && options.length === 0 && (
-                <li className="px-3 py-2 text-sm text-muted-foreground text-center">Searching...</li>
+              {loading && (
+                <>
+                  {/* Show skeleton items while loading */}
+                  {[1, 2, 3].map((i) => (
+                    <li key={`skeleton-${i}`} className="flex items-center gap-2 px-3 py-1.5 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-muted" />
+                      <div className="flex-1">
+                        <div className="h-3 w-24 bg-muted rounded mb-1" />
+                      </div>
+                    </li>
+                  ))}
+                </>
               )}
-              {!loading && options.length === 0 && (
+              {!loading && options.length === 0 && debouncedQuery && (
                 <li className="px-3 py-2 text-sm text-muted-foreground text-center">No users found</li>
               )}
               {options.map((option, index) => (

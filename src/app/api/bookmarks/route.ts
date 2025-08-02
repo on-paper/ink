@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     }
 
     const chainIdParam = SUPPORTED_CHAIN_IDS.join(",");
-    
+
     const posts = await Promise.all(
       postIds.map(async (postId) => {
         try {
