@@ -1,8 +1,8 @@
 import type { Notification } from "@cartel-sh/ui";
 import { NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
-import { getServerAuth } from "~/utils/getServerAuth";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
+import { getServerAuth } from "~/utils/getServerAuth";
 
 interface EFPNotification {
   address: string;
@@ -66,7 +66,6 @@ export async function GET(request: NextRequest) {
     }
 
     const efpData: EFPNotificationResponse = await response.json();
-    console.log("efpData", efpData);
 
     const notificationsWithUsers = await Promise.all(
       efpData.notifications.map(async (efpNotif) => {
@@ -86,7 +85,7 @@ export async function GET(request: NextRequest) {
         }
 
         const user = await fetchEnsUser(efpNotif.address, userAddress);
-        
+
         if (!user) {
           return {
             __typename: "Notification" as const,
@@ -124,7 +123,7 @@ export async function GET(request: NextRequest) {
         };
 
         return notification;
-      })
+      }),
     );
 
     const notifications = notificationsWithUsers.filter(Boolean) as Notification[];

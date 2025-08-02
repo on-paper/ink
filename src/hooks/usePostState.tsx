@@ -1,8 +1,10 @@
 import type { Post } from "@cartel-sh/ui";
+import { useAtomValue, useSetAtom } from "jotai";
 import { BookmarkIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { isBookmarkedAtom, toggleBookmarkAtom } from "~/atoms/bookmarks";
 import { useDeletedPosts } from "~/components/DeletedPostsContext";
 import { useEthereumDelete } from "~/hooks/useEthereumDelete";
 import { useUserActions } from "~/hooks/useUserActions";
@@ -28,7 +30,9 @@ export const usePostState = (
     blockUser: blockUserAction,
     unblockUser: unblockUserAction,
   } = useUserActions(author, onMenuAction);
-  const [isSaved, setIsSaved] = useState(post.reactions?.isBookmarked || false);
+  const checkIsBookmarked = useAtomValue(isBookmarkedAtom);
+  const toggleBookmark = useSetAtom(toggleBookmarkAtom);
+  const isSaved = checkIsBookmarked(post.id);
   const [isMuted, setIsMuted] = useState(post.author.actions?.muted || false);
   const [isBlocked, setIsBlocked] = useState(post.author.actions?.blocked || false);
   const [isEditing, setIsEditing] = useState(false);
@@ -39,7 +43,6 @@ export const usePostState = (
       onMenuAction?.();
     },
     onError: () => {
-      // Revert optimistic update on error
       removeDeletedPost(post.id);
     },
   });
@@ -61,9 +64,7 @@ export const usePostState = (
 
   const confirmDelete = async () => {
     setShowDeleteDialog(false);
-    // Add optimistic update
     addDeletedPost(post.id);
-    // Call the blockchain delete
     deleteMutation({ postId: post.id });
   };
 
@@ -72,7 +73,6 @@ export const usePostState = (
   };
 
   const share = () => {
-    // Share functionality is now handled in PostInfo.tsx as a submenu
     onMenuAction?.();
   };
 
@@ -107,29 +107,18 @@ export const usePostState = (
   };
 
   const savePost = async () => {
-    // Optimistically update the state
-    const newSavedState = !isSaved;
-    setIsSaved(newSavedState);
+    const newSavedState = toggleBookmark(post.id);
 
-    // Show toast with bookmark icon
     toast(newSavedState ? "Post saved" : "Post unsaved", {
       icon: <BookmarkIcon size={16} fill={newSavedState ? "currentColor" : "none"} />,
     });
 
     try {
-      const response = await fetch(`/api/posts/${post.id}/bookmark`, {
+      await fetch(`/api/posts/${post.id}/bookmark`, {
         method: "POST",
       });
-      const result = await response.json();
-
-      // If the request failed, revert the optimistic update
-      if (result.result === undefined) {
-        setIsSaved(!newSavedState);
-        toast.error("Failed to save post");
-      }
     } catch (error) {
-      // Revert on error
-      setIsSaved(!newSavedState);
+      toggleBookmark(post.id);
       toast.error("Failed to save post");
     }
 
@@ -179,7 +168,6 @@ export const usePostState = (
       variant: item.variant,
     };
 
-    // Get the base onClick handler for the item
     let itemProps = baseProps;
     switch (item.id) {
       case "share":
@@ -205,7 +193,6 @@ export const usePostState = (
         break;
     }
 
-    // Apply dynamic props on top of base props
     if (item.getDynamicProps) {
       return { ...itemProps, ...item.getDynamicProps(context) };
     }
