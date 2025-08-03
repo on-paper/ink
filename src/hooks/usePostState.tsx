@@ -39,11 +39,9 @@ export const usePostState = (
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { deleteMutation } = useEthereumDelete({
-    onSuccess: () => {
+    onSuccess: (postId) => {
+      addDeletedPost(postId);
       onMenuAction?.();
-    },
-    onError: () => {
-      removeDeletedPost(post.id);
     },
   });
 
@@ -64,7 +62,6 @@ export const usePostState = (
 
   const confirmDelete = async () => {
     setShowDeleteDialog(false);
-    addDeletedPost(post.id);
     deleteMutation({ postId: post.id });
   };
 

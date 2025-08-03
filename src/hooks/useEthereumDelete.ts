@@ -8,7 +8,7 @@ import { base } from "viem/chains";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 interface UseEthereumDeleteOptions {
-  onSuccess?: () => void;
+  onSuccess?: (postId: string) => void;
   onError?: (error: Error) => void;
 }
 
@@ -68,14 +68,14 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
         toast.success("Post deleted!", { id: toastId });
 
         // Transaction will be confirmed by useWaitForTransactionReceipt
-        return hash;
+        return { hash, postId };
       } catch (error) {
         toast.error(error.message || "Failed to delete post", { id: toastId });
         throw error;
       }
     },
-    onSuccess: () => {
-      options?.onSuccess?.();
+    onSuccess: ({ postId }) => {
+      options?.onSuccess?.(postId);
       // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.invalidateQueries({ queryKey: ["post"] });
