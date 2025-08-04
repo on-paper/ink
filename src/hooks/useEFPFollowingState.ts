@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Address } from "viem";
-import { usePublicClient } from "wagmi";
 import { base } from "viem/chains";
-import { EFP_CONTRACTS } from "~/lib/efp/config";
+import { usePublicClient } from "wagmi";
 import { efpListRecordsAbi } from "~/lib/efp/abi";
 import { decodeListOp } from "~/lib/efp/operations";
 import { useEFPStorageLocation } from "./useEFPStorageLocation";
@@ -34,7 +33,12 @@ export function useEFPFollowingState({
   console.log("[useEFPFollowingState] targetAddress", targetAddress);
   console.log("[useEFPFollowingState] listId", listId);
 
-  const { data: state = "unknown", isLoading, error, refetch } = useQuery({
+  const {
+    data: state = "unknown",
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["efp-following-state", userAddress, targetAddress, listId, storageLocation?.slot.toString()],
     queryFn: async () => {
       if (!userAddress || !listId || !publicClient || !storageLocation) {
@@ -66,7 +70,7 @@ export function useEFPFollowingState({
           console.log("[useEFPFollowingState] checking address match:", {
             recordAddress: record.address.toLowerCase(),
             targetAddress: targetAddress.toLowerCase(),
-            match: record.address.toLowerCase() === targetAddress.toLowerCase()
+            match: record.address.toLowerCase() === targetAddress.toLowerCase(),
           });
 
           if (record.address.toLowerCase() === targetAddress.toLowerCase()) {

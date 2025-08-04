@@ -49,10 +49,10 @@ export function useEFPList() {
       }
     },
     enabled: !!address,
-    staleTime: 60 * 60 * 1000, 
-    gcTime: 24 * 60 * 60 * 1000, 
-    refetchOnWindowFocus: false, 
-    refetchOnMount: false, 
+    staleTime: 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const hasEFPList = !!(profileLists?.primary_list || (profileLists?.lists && profileLists.lists.length > 0));

@@ -1,11 +1,10 @@
-import { useState, useCallback } from "react";
-import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { base } from "viem/chains";
-import { type Address, type Hash } from "viem";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { EFP_CONTRACTS } from "~/lib/efp/config";
+import { type Address, type Hash } from "viem";
+import { base } from "viem/chains";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { efpListRecordsAbi } from "~/lib/efp/abi";
-import { encodeFollowOperation, encodeUnfollowOperation, encodeBatchOperations } from "~/lib/efp/operations";
+import { encodeBatchOperations, encodeFollowOperation, encodeUnfollowOperation } from "~/lib/efp/operations";
 import { useEFPStorageLocation } from "./useEFPStorageLocation";
 
 export interface UseEFPFollowOptions {
@@ -23,15 +22,10 @@ export interface UseEFPFollowReturn {
   error: Error | null;
 }
 
-export function useEFPFollow({
-  listId,
-  targetAddress,
-  onSuccess,
-  onError,
-}: UseEFPFollowOptions): UseEFPFollowReturn {
+export function useEFPFollow({ listId, targetAddress, onSuccess, onError }: UseEFPFollowOptions): UseEFPFollowReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   const { address: accountAddress } = useAccount();
   const publicClient = usePublicClient({ chainId: base.id });
   const { data: walletClient } = useWalletClient({ chainId: base.id });
@@ -80,9 +74,8 @@ export function useEFPFollow({
       try {
         // Use the slot from storage location, not the list ID
         const slot = storageLocation.slot;
-        const opBytes = operation === "follow" 
-          ? encodeFollowOperation(targetAddress)
-          : encodeUnfollowOperation(targetAddress);
+        const opBytes =
+          operation === "follow" ? encodeFollowOperation(targetAddress) : encodeUnfollowOperation(targetAddress);
 
         console.log("[useEFPFollow] Executing", operation, "operation");
         console.log("[useEFPFollow] Target address:", targetAddress);
@@ -99,22 +92,19 @@ export function useEFPFollow({
           account: accountAddress,
         });
 
-        toast.promise(
-          publicClient.waitForTransactionReceipt({ hash }),
-          {
-            loading: operation === "follow" ? "Following..." : "Unfollowing...",
-            success: () => {
-              onSuccess?.(hash);
-              return operation === "follow" ? "Followed successfully!" : "Unfollowed successfully!";
-            },
-            error: (err) => {
-              const errorMessage = err?.message || `Failed to ${operation}`;
-              setError(new Error(errorMessage));
-              onError?.(new Error(errorMessage));
-              return errorMessage;
-            },
-          }
-        );
+        toast.promise(publicClient.waitForTransactionReceipt({ hash }), {
+          loading: operation === "follow" ? "Following..." : "Unfollowing...",
+          success: () => {
+            onSuccess?.(hash);
+            return operation === "follow" ? "Followed successfully!" : "Unfollowed successfully!";
+          },
+          error: (err) => {
+            const errorMessage = err?.message || `Failed to ${operation}`;
+            setError(new Error(errorMessage));
+            onError?.(new Error(errorMessage));
+            return errorMessage;
+          },
+        });
 
         await publicClient.waitForTransactionReceipt({ hash });
       } catch (err) {
@@ -127,7 +117,7 @@ export function useEFPFollow({
         setIsLoading(false);
       }
     },
-    [accountAddress, listId, targetAddress, walletClient, publicClient, storageLocation, onSuccess, onError]
+    [accountAddress, listId, targetAddress, walletClient, publicClient, storageLocation, onSuccess, onError],
   );
 
   const follow = useCallback(() => executeOperation("follow"), [executeOperation]);
@@ -162,22 +152,19 @@ export function useEFPFollow({
           account: accountAddress,
         });
 
-        toast.promise(
-          publicClient.waitForTransactionReceipt({ hash }),
-          {
-            loading: `Processing ${operations.length} operations...`,
-            success: () => {
-              onSuccess?.(hash);
-              return `Successfully processed ${operations.length} operations!`;
-            },
-            error: (err) => {
-              const errorMessage = err?.message || "Failed to process batch operations";
-              setError(new Error(errorMessage));
-              onError?.(new Error(errorMessage));
-              return errorMessage;
-            },
-          }
-        );
+        toast.promise(publicClient.waitForTransactionReceipt({ hash }), {
+          loading: `Processing ${operations.length} operations...`,
+          success: () => {
+            onSuccess?.(hash);
+            return `Successfully processed ${operations.length} operations!`;
+          },
+          error: (err) => {
+            const errorMessage = err?.message || "Failed to process batch operations";
+            setError(new Error(errorMessage));
+            onError?.(new Error(errorMessage));
+            return errorMessage;
+          },
+        });
 
         await publicClient.waitForTransactionReceipt({ hash });
       } catch (err) {
@@ -190,7 +177,7 @@ export function useEFPFollow({
         setIsLoading(false);
       }
     },
-    [accountAddress, listId, walletClient, publicClient, storageLocation, onSuccess, onError]
+    [accountAddress, listId, walletClient, publicClient, storageLocation, onSuccess, onError],
   );
 
   return {

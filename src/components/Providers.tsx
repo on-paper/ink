@@ -11,7 +11,7 @@ import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { injected, walletConnect } from "wagmi/connectors";
+import { baseAccount, injected, walletConnect } from "wagmi/connectors";
 import { getAllChains, getAvailableChains } from "~/config/networks";
 import { env } from "~/env.mjs";
 import { getBaseUrl } from "~/utils/getBaseUrl";
@@ -39,6 +39,7 @@ const wagmiConfig = createConfig({
   connectors: [
     familyAccountsConnector(),
     injected(),
+    baseAccount(),
     walletConnect({
       projectId: projectId,
       metadata: {

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { usePublicClient } from "wagmi";
 import { base } from "viem/chains";
-import { EFP_CONTRACTS } from "~/lib/efp/config";
+import { usePublicClient } from "wagmi";
 import { efpListRegistryAbi } from "~/lib/efp/abi";
+import { EFP_CONTRACTS } from "~/lib/efp/config";
 
 export interface StorageLocation {
   version: number;
@@ -22,7 +22,7 @@ export function useEFPStorageLocation(listId: string | null) {
 
       try {
         const listIdBigInt = BigInt(listId);
-        
+
         const storageLocationHex = await publicClient.readContract({
           address: EFP_CONTRACTS.EFPListRegistry,
           abi: efpListRegistryAbi,
@@ -32,12 +32,12 @@ export function useEFPStorageLocation(listId: string | null) {
 
         // Decode according to spec: version (1) + list type (1) + chain_id (32) + contract (20) + slot (remaining)
         const bytes = Buffer.from(storageLocationHex.slice(2), "hex");
-        
+
         const version = bytes[0];
         const listType = bytes[1];
-        const chainId = BigInt("0x" + bytes.slice(2, 34).toString("hex"));
-        const contractAddress = ("0x" + bytes.slice(34, 54).toString("hex")) as `0x${string}`;
-        const slot = BigInt("0x" + bytes.slice(54, 86).toString("hex")); // Slot is exactly 32 bytes
+        const chainId = BigInt(`0x${bytes.slice(2, 34).toString("hex")}`);
+        const contractAddress = `0x${bytes.slice(34, 54).toString("hex")}` as `0x${string}`;
+        const slot = BigInt(`0x${bytes.slice(54, 86).toString("hex")}`); // Slot is exactly 32 bytes
 
         console.log("[useEFPStorageLocation] Decoded storage location:", {
           version,
@@ -45,7 +45,7 @@ export function useEFPStorageLocation(listId: string | null) {
           chainId: chainId.toString(),
           contractAddress,
           slot: slot.toString(),
-          slotHex: "0x" + slot.toString(16),
+          slotHex: `0x${slot.toString(16)}`,
         });
 
         return {

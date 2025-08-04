@@ -82,8 +82,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "unsplash-js": "^7.0.19",
-    "viem": "2.21.54",
-    "wagmi": "2.14.6",
+    "viem": "^2.33.2",
+    "wagmi": "^2.16.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

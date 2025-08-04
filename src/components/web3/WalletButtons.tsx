@@ -1,6 +1,6 @@
 "use client";
 
-import { UserMinusIcon } from "lucide-react";
+import { Square, UserMinusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type PropsWithChildren } from "react";
 import { toast } from "sonner";
@@ -33,7 +33,12 @@ export function ConnectWalletButton({ open, setOpen }: ConnectWalletButtonProps)
   });
 
   const connectorList = connectors.map((connector) => {
-    if (connector.id !== "injected" && connector.id !== "walletConnect" && connector.id !== "familyAccountsProvider")
+    if (
+      connector.id !== "injected" &&
+      connector.id !== "walletConnect" &&
+      connector.id !== "familyAccountsProvider" &&
+      connector.id !== "baseAccount"
+    )
       return null;
 
     let name: string;
@@ -56,6 +61,9 @@ export function ConnectWalletButton({ open, setOpen }: ConnectWalletButtonProps)
           <FamilyIcon key={connector.uid} />
         </div>
       );
+    } else if (connector.id === "baseAccount") {
+      name = "Base Account";
+      icon = <Square key={connector.uid} className="w-5 h-5" />;
     } else {
       return null;
     }

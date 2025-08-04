@@ -141,3 +141,21 @@ export const FamilyIcon = () => {
     </svg>
   );
 };
+
+export const BaseIcon = () => {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="10" fill="#0052FF" />
+      <path
+        d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z"
+        fill="#0052FF"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M10 3.5C10.4854 3.5 10.8785 3.89307 10.8785 4.37854V15.6215C10.8785 16.1069 10.4854 16.5 10 16.5C9.51463 16.5 9.12156 16.1069 9.12156 15.6215V4.37854C9.12156 3.89307 9.51463 3.5 10 3.5Z"
+        fill="white"
+      />
+    </svg>
+  );
+};
