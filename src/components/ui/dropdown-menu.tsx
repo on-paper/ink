@@ -4,7 +4,6 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
-import { GlassEffect } from "@/src/components/ui/glass-effect";
 import { cn } from "@/src/utils";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
@@ -44,27 +43,28 @@ const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
 >(({ className, children, ...props }, ref) => (
-  <AnimatePresence>
-    <DropdownMenuPrimitive.SubContent asChild ref={ref} {...props}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8, height: 0 }}
-        animate={{ opacity: 1, scale: 1, height: "auto" }}
-        exit={{ opacity: 0, scale: 0.8, height: 0 }}
-        transition={{
-          duration: 0.15,
-          scale: { type: "spring", damping: 20, stiffness: 300 },
-          opacity: { duration: 0.15 },
-          height: { type: "spring", damping: 20, stiffness: 300 },
-        }}
-        className={cn(
-          "z-50 min-w-[8rem] overflow-hidden rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg",
-          className,
-        )}
-      >
-        {children}
-      </motion.div>
-    </DropdownMenuPrimitive.SubContent>
-  </AnimatePresence>
+  <DropdownMenuPrimitive.Portal>
+    <AnimatePresence>
+      <DropdownMenuPrimitive.SubContent asChild ref={ref} {...props}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{
+            duration: 0.1,
+            scale: { type: "spring", damping: 30, stiffness: 500 },
+            opacity: { duration: 0.1 },
+          }}
+          className={cn(
+            "z-50 min-w-[8rem] overflow-hidden rounded-lg glass text-popover-foreground shadow-lg p-1",
+            className,
+          )}
+        >
+          {children}
+        </motion.div>
+      </DropdownMenuPrimitive.SubContent>
+    </AnimatePresence>
+  </DropdownMenuPrimitive.Portal>
 ));
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
@@ -74,31 +74,24 @@ const DropdownMenuContent = React.forwardRef<
 >(({ className, sideOffset = 4, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <AnimatePresence>
-      <DropdownMenuPrimitive.Content asChild ref={ref} avoidCollisions={true} collisionPadding={8} {...props}>
-        <GlassEffect
+      <DropdownMenuPrimitive.Content asChild ref={ref} avoidCollisions={true} collisionPadding={8} sideOffset={sideOffset} {...props}>
+        <motion.div
           className={cn(
-            "z-50 min-w-[8rem] rounded-lg border text-popover-foreground shadow-md overflow-hidden",
+            "z-50 min-w-[8rem] rounded-lg glass text-popover-foreground shadow-md overflow-hidden p-1",
             className,
           )}
-          initial={{ scale: 0.95, y: -10 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.95, y: -10 }}
+          initial={{ scale: 0.95, y: -10, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: -10, opacity: 0 }}
           transition={{
             duration: 0.15,
             scale: { type: "spring", damping: 25, stiffness: 400 },
             y: { type: "spring", damping: 25, stiffness: 400 },
+            opacity: { duration: 0.1 }
           }}
         >
-          <motion.div
-            className="p-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
-          >
-            {children}
-          </motion.div>
-        </GlassEffect>
+          {children}
+        </motion.div>
       </DropdownMenuPrimitive.Content>
     </AnimatePresence>
   </DropdownMenuPrimitive.Portal>

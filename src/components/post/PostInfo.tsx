@@ -161,7 +161,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
                         <span>{itemProps.label}</span>
                       </div>
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48 glass" sideOffset={2} alignOffset={-5}>
+                    <DropdownMenuSubContent className="w-48" sideOffset={2} alignOffset={-5}>
                       {sharePlatforms.map((platform) => (
                         <DropdownMenuItem
                           key={platform.name}

@@ -4,7 +4,6 @@ import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
 import { Check, ChevronRight, Circle } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
-import { GlassEffect } from "@/src/components/ui/glass-effect";
 import { cn } from "@/src/utils";
 
 const ContextMenu = ContextMenuPrimitive.Root;
@@ -75,31 +74,23 @@ const ContextMenuContent = React.forwardRef<
   <ContextMenuPrimitive.Portal>
     <AnimatePresence>
       <ContextMenuPrimitive.Content asChild ref={ref} avoidCollisions={true} collisionPadding={8} {...props}>
-        <GlassEffect
+        <motion.div
           className={cn(
-            "z-50 min-w-[10rem] rounded-lg border text-popover-foreground shadow-md overflow-hidden",
+            "z-50 min-w-[10rem] rounded-lg glass text-popover-foreground shadow-md overflow-hidden p-1",
             className,
           )}
-          borderRadius={12}
-          initial={{ scale: 0.95, y: -10 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.95, y: -10 }}
+          initial={{ scale: 0.95, y: -10, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.95, y: -10, opacity: 0 }}
           transition={{
             duration: 0.15,
             scale: { type: "spring", damping: 25, stiffness: 400 },
             y: { type: "spring", damping: 25, stiffness: 400 },
+            opacity: { duration: 0.1 }
           }}
         >
-          <motion.div
-            className="p-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
-          >
-            {props.children}
-          </motion.div>
-        </GlassEffect>
+          {props.children}
+        </motion.div>
       </ContextMenuPrimitive.Content>
     </AnimatePresence>
   </ContextMenuPrimitive.Portal>
