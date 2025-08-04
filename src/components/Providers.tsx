@@ -39,7 +39,10 @@ const wagmiConfig = createConfig({
   connectors: [
     familyAccountsConnector(),
     injected(),
-    baseAccount(),
+    baseAccount({
+      appName: "Paper",
+      appLogoUrl: "https://paper.ink/favicon.ico",
+    }),
     walletConnect({
       projectId: projectId,
       metadata: {

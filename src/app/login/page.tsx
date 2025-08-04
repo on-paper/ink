@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -48,12 +48,15 @@ export default function LoginPage() {
       name = "Wallet Connect";
       icon = <WalletConnectIcon />;
     } else if (connector.id === "familyAccountsProvider") {
-      name = "Continue with Family";
+      name = "Family Wallet";
       icon = (
         <div className="w-5 h-5">
           <FamilyIcon />
         </div>
       );
+    } else if (connector.id === "baseAccount") {
+      name = "Base Account";
+      icon = <Square strokeWidth={1} className="w-5 h-5" />;
     } else {
       return null;
     }
@@ -81,6 +84,7 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           {!isConnected ? (
             <div className="space-y-3">
+              {getConnectorButton("baseAccount")}
               {getConnectorButton("familyAccountsProvider")}
               {getConnectorButton("injected")}
               {getConnectorButton("walletConnect")}
