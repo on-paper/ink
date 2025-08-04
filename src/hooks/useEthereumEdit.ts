@@ -1,11 +1,11 @@
 "use client";
 
-import { COMMENT_MANAGER_ADDRESS, CommentManagerABI } from "@ecp.eth/sdk";
+import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { base } from "viem/chains";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseEthereumEditOptions {
   onSuccess?: () => void;
@@ -16,6 +16,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
   const queryClient = useQueryClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -30,8 +31,25 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
       }
 
       const toastId = "edit-comment";
+      const defaultChainId = getDefaultChainId();
 
       try {
+        // Check if current chain is supported
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        let chainIdToUse = chainId;
+
+        if (!currentChainSupported) {
+          // Switch to default chain if current chain is not supported
+          toast.loading("Switching to supported network...", { id: toastId });
+          try {
+            await switchChainAsync({ chainId: defaultChainId });
+            chainIdToUse = defaultChainId;
+          } catch (switchError) {
+            console.error("Failed to switch chain:", switchError);
+            // Continue with default chain even if switch fails
+            chainIdToUse = defaultChainId;
+          }
+        }
         // Step 1: Get signature from the app
         toast.loading("Preparing edit...", { id: toastId });
 
@@ -41,7 +59,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
           body: JSON.stringify({
             content,
             author: address,
-            chainId: chainId || 8453, // Default to Base
+            chainId: chainIdToUse || defaultChainId,
             metadata,
           }),
         });
@@ -62,7 +80,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
           address: COMMENT_MANAGER_ADDRESS,
           functionName: "editComment",
           args: [data.commentId, data, signature],
-          chain: base,
+          chain: getDefaultChain(),
           account: address,
         });
 

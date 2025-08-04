@@ -3,6 +3,7 @@ import { createDeleteCommentTypedData } from "@ecp.eth/sdk/comments";
 import { type NextRequest, NextResponse } from "next/server";
 import { hashTypedData } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { getDefaultChainId } from "~/config/chains";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
@@ -37,10 +38,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const formattedPrivateKey = appPrivateKey.startsWith("0x") ? appPrivateKey : `0x${appPrivateKey}`;
     const app = privateKeyToAccount(formattedPrivateKey as `0x${string}`);
 
-    const chainIdToUse = chainId || 8453;
-    const chain = SUPPORTED_CHAINS[chainIdToUse];
+    const defaultChainId = getDefaultChainId();
+    let chainIdToUse = chainId || defaultChainId;
+    let chain = SUPPORTED_CHAINS[chainIdToUse];
+
     if (!chain) {
-      return NextResponse.json({ error: `Unsupported chain ID: ${chainIdToUse}` }, { status: 400 });
+      // If the chain is not supported, use the default chain instead of throwing an error
+      console.warn(`Unsupported chain ID: ${chainIdToUse}, falling back to default chain ${defaultChainId}`);
+      chainIdToUse = defaultChainId;
+      chain = SUPPORTED_CHAINS[defaultChainId];
+      if (!chain) {
+        return NextResponse.json({ error: `Default chain ${defaultChainId} is not supported` }, { status: 500 });
+      }
     }
 
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 60 * 24);

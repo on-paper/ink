@@ -7,6 +7,7 @@ import {
 } from "@ecp.eth/sdk/comments/schemas";
 import { HexSchema } from "@ecp.eth/sdk/core/schemas";
 import { z } from "zod";
+import { getDefaultChainId } from "~/config/chains";
 
 export const BadRequestResponseSchema = z.record(z.string(), z.string().array());
 
@@ -21,7 +22,10 @@ export const PrepareGaslessEditCommentRequestSchema = z
     author: HexSchema,
     metadata: MetadataArraySchema.optional().default([]),
     submitIfApproved: z.boolean().optional().default(false),
-    chainId: z.number().optional().default(8453), // Base mainnet
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
   })
   .transform((val) => {
     return {
@@ -50,7 +54,10 @@ export const GaslessEditRequestBodySchema = z
     appSignature: HexSchema,
     authorSignature: HexSchema,
     edit: EditCommentDataSchema,
-    chainId: z.number().optional().default(8453),
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
   })
   .transform((val) => {
     return {
@@ -69,7 +76,10 @@ export const PrepareGaslessDeleteCommentRequestSchema = z
     author: HexSchema,
     commentId: HexSchema,
     submitIfApproved: z.boolean().optional().default(false),
-    chainId: z.number().optional().default(8453),
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
   })
   .transform((val) => {
     return {
@@ -92,7 +102,10 @@ export const GaslessDeleteCommentRequestBodySchema = z
     signTypedDataParams: DeleteCommentTypedDataSchema,
     authorSignature: HexSchema,
     appSignature: HexSchema,
-    chainId: z.number().optional().default(8453),
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
   })
   .transform((val) => {
     return {

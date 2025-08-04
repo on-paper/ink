@@ -1,11 +1,11 @@
 "use client";
 
-import { COMMENT_MANAGER_ADDRESS, CommentManagerABI } from "@ecp.eth/sdk";
+import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { base } from "viem/chains";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseEthereumDeleteOptions {
   onSuccess?: (postId: string) => void;
@@ -16,6 +16,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
   const queryClient = useQueryClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -30,8 +31,25 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
       }
 
       const toastId = "delete-comment";
+      const defaultChainId = getDefaultChainId();
 
       try {
+        // Check if current chain is supported
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        let chainIdToUse = chainId;
+
+        if (!currentChainSupported) {
+          // Switch to default chain if current chain is not supported
+          toast.loading("Switching to supported network...", { id: toastId });
+          try {
+            await switchChainAsync({ chainId: defaultChainId });
+            chainIdToUse = defaultChainId;
+          } catch (switchError) {
+            console.error("Failed to switch chain:", switchError);
+            // Continue with default chain even if switch fails
+            chainIdToUse = defaultChainId;
+          }
+        }
         // Step 1: Get signature from the app
         toast.loading("Preparing deletion...", { id: toastId });
 
@@ -40,7 +58,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             author: address,
-            chainId: chainId || 8453, // Default to Base
+            chainId: chainIdToUse || defaultChainId,
           }),
         });
 
@@ -50,7 +68,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
           throw new Error(errorData.error || "Failed to prepare deletion");
         }
 
-        const { signature, data } = await response.json();
+        const { data } = await response.json();
 
         // Step 2: Post deletion to blockchain
         toast.loading("Deleting post...", { id: toastId });
@@ -60,7 +78,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
           address: COMMENT_MANAGER_ADDRESS,
           functionName: "deleteComment",
           args: [data.commentId],
-          chain: base,
+          chain: getDefaultChain(),
           account: address,
         });
 

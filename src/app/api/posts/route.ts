@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
+import { getDefaultChainId } from "~/config/chains";
 import { ecpCommentToPost } from "~/utils/ecp/converters/commentConverter";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
-const DEFAULT_CHAIN_ID = 8453; // Base
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -27,13 +27,13 @@ export async function GET(req: NextRequest) {
       group,
       limit,
       cursor,
-      chainId: DEFAULT_CHAIN_ID,
+      chainId: getDefaultChainId(),
       moderationStatus,
     });
 
     // Build query parameters
     const queryParams = new URLSearchParams({
-      chainId: DEFAULT_CHAIN_ID.toString(),
+      chainId: getDefaultChainId().toString(),
       limit: limit.toString(),
       sort: "desc",
       mode: address ? "nested" : "flat", // Use nested mode for user profiles

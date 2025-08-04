@@ -1,11 +1,11 @@
 "use client";
 
-import { COMMENT_MANAGER_ADDRESS, CommentManagerABI } from "@ecp.eth/sdk";
+import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { base } from "viem/chains";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseSimplePostCommentOptions {
   onSuccess?: () => void;
@@ -16,6 +16,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
   const queryClient = useQueryClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { switchChainAsync } = useSwitchChain();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
@@ -38,8 +39,26 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
       }
 
       const toastId = "post-comment";
+      const defaultChainId = getDefaultChainId();
 
       try {
+        // Check if current chain is supported
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        let chainIdToUse = chainId;
+
+        if (!currentChainSupported) {
+          // Switch to default chain if current chain is not supported
+          toast.loading("Switching to supported network...", { id: toastId });
+          try {
+            await switchChainAsync({ chainId: defaultChainId });
+            chainIdToUse = defaultChainId;
+          } catch (switchError) {
+            console.error("Failed to switch chain:", switchError);
+            // Continue with default chain even if switch fails
+            chainIdToUse = defaultChainId;
+          }
+        }
+
         // Step 1: Get signature from the app
         toast.loading("Preparing comment...", { id: toastId });
 
@@ -47,7 +66,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           content,
           parentId,
           author: address,
-          chainId: chainId || 8453, // Default to Base
+          chainId: chainIdToUse || defaultChainId,
         };
 
         if (channelId && !parentId) {
@@ -78,7 +97,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           address: COMMENT_MANAGER_ADDRESS,
           functionName: "postComment",
           args: [commentData, signature],
-          chain: base,
+          chain: getDefaultChain(),
           account: address,
         });
 
