@@ -5,7 +5,6 @@ import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 import { parseSiweMessage } from "viem/siwe";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
-import { getPublicClient } from "~/lib/viem";
 
 export async function POST(req: NextRequest) {
   try {

@@ -48,27 +48,22 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
     {
       name: "Farcaster",
       icon: <SiFarcaster className="w-4 h-4" />,
-      getShareUrl: (url: string, title?: string) => {
-        const text = title?.trim() ? `${title.trim()}\n\n${url}` : url;
-        return `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+      getShareUrl: (url: string) => {
+        return `https://warpcast.com/~/compose?text=${encodeURIComponent(url)}`;
       },
     },
     {
       name: "Twitter",
       icon: <SiX className="w-4 h-4" />,
-      getShareUrl: (url: string, title?: string) => {
-        // Twitter includes both text and URL in the same parameter for better control
-        const text = title?.trim() ? `${title.trim()} | ${url}` : url;
-        return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      getShareUrl: (url: string) => {
+        return `https://twitter.com/intent/tweet?text=${encodeURIComponent(url)}`;
       },
     },
     {
       name: "Bluesky",
       icon: <RiBlueskyLine className="w-4 h-4" />,
-      getShareUrl: (url: string, title?: string) => {
-        // Bluesky seems to strip newlines, so we'll use a separator
-        const text = title?.trim() ? `${title.trim()} | ${url}` : url;
-        return `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`;
+      getShareUrl: (url: string) => {
+        return `https://bsky.app/intent/compose?text=${encodeURIComponent(url)}`;
       },
     },
   ];
@@ -172,7 +167,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
                           key={platform.name}
                           onClick={(e) => {
                             e.preventDefault();
-                            const shareUrl = platform.getShareUrl(postLink, content);
+                            const shareUrl = platform.getShareUrl(postLink);
                             window.open(shareUrl, "_blank");
                             setOpen(false);
                           }}

@@ -46,7 +46,7 @@ export const usePostState = (
   });
 
   const baseUrl = getBaseUrl();
-  const postLink = `${baseUrl}p/${post.id}`;
+  const postLink = `${baseUrl}/p/${post.id}`;
   const shareLink = postLink;
 
   const setEditingQuery = () => {
