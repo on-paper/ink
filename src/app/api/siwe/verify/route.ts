@@ -1,31 +1,39 @@
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { SiweMessage } from "siwe";
+import { parseSiweMessage } from "viem/siwe";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
+import { getPublicClient } from "~/lib/viem";
 
 export async function POST(req: NextRequest) {
   try {
     const { message, signature } = await req.json();
-    const siweMessage = new SiweMessage(message);
 
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+    const cookieStore = cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
 
-    const result = await siweMessage.verify({
-      signature,
-      nonce: session.nonce,
-    });
-
-    if (!result.success) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+    const parsedMessage = parseSiweMessage(message);
 
     const expectedUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink");
     const expectedDomain = expectedUrl.port ? `${expectedUrl.hostname}:${expectedUrl.port}` : expectedUrl.hostname;
-    if (siweMessage.domain !== expectedDomain) {
-      console.error(`Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}`);
+
+    const publicClient = getPublicClient();
+    
+    const isValid = await publicClient.verifySiweMessage({
+      message,
+      signature,
+      domain: expectedDomain,
+      nonce: session.nonce,
+    });
+
+    if (!isValid) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    if (parsedMessage.domain !== expectedDomain) {
+      console.error(`Invalid domain: ${parsedMessage.domain}. Expected: ${expectedDomain}`);
       return NextResponse.json(
-        { error: `Invalid domain: ${siweMessage.domain}. Expected: ${expectedDomain}` },
+        { error: `Invalid domain: ${parsedMessage.domain}. Expected: ${expectedDomain}` },
         { status: 401 },
       );
     }
@@ -35,13 +43,13 @@ export async function POST(req: NextRequest) {
 
     // Store complete session data as recommended by wagmi
     session.siwe = {
-      address: siweMessage.address,
-      chainId: siweMessage.chainId,
-      domain: siweMessage.domain,
-      uri: siweMessage.uri,
+      address: parsedMessage.address,
+      chainId: parsedMessage.chainId,
+      domain: parsedMessage.domain,
+      uri: parsedMessage.uri,
       issued: now.toISOString(),
       expirationTime: expirationTime.toISOString(),
-      statement: siweMessage.statement,
+      statement: parsedMessage.statement,
     };
 
     // Clear the nonce after successful verification
@@ -50,8 +58,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      address: siweMessage.address,
-      chainId: siweMessage.chainId,
+      address: parsedMessage.address,
+      chainId: parsedMessage.chainId,
       expirationTime: expirationTime.toISOString(),
     });
   } catch (error) {

@@ -6,7 +6,8 @@ import {
   isApproved,
 } from "@ecp.eth/sdk/comments";
 import { type NextRequest, NextResponse } from "next/server";
-import { createPublicClient, createWalletClient, http, publicActions } from "viem";
+import { createWalletClient, http, publicActions } from "viem";
+import { getPublicClient } from "~/lib/viem";
 import {
   BadRequestResponseSchema,
   ErrorResponseSchema,
@@ -44,10 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const { commentId, content, author, metadata, submitIfApproved, chainConfig } = parsedBodyResult.data;
 
-    const publicClient = createPublicClient({
-      chain: chainConfig.chain,
-      transport: http(),
-    });
+    const publicClient = getPublicClient(chainConfig.chain);
 
     const nonce = await getNonce({
       author,

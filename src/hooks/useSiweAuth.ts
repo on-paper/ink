@@ -1,6 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { SiweMessage } from "siwe";
+import { createSiweMessage } from "viem/siwe";
 import { toast } from "sonner";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { prettifyViemError } from "~/utils/prettifyViemError";
@@ -47,7 +47,7 @@ export function useAuth() {
       const nonceRes = await fetch("/api/siwe/nonce");
       const { nonce } = await nonceRes.json();
 
-      const message = new SiweMessage({
+      const message = createSiweMessage({
         domain: window.location.host,
         address,
         statement: "Sign in with Ethereum to Paper",
@@ -55,13 +55,13 @@ export function useAuth() {
         version: "1",
         chainId,
         nonce,
-        issuedAt: new Date().toISOString(),
-        expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        issuedAt: new Date(),
+        expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       });
 
       const signature = await signMessageAsync({
         account: address as `0x${string}`,
-        message: message.prepareMessage(),
+        message,
       });
 
       const verifyRes = await fetch("/api/siwe/verify", {

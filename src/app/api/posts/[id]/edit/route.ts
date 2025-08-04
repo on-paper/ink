@@ -1,9 +1,10 @@
 import { SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { createEditCommentData, createEditCommentTypedData, getNonce } from "@ecp.eth/sdk/comments";
 import { type NextRequest, NextResponse } from "next/server";
-import { createPublicClient, hashTypedData, http } from "viem";
+import { hashTypedData } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { getDefaultChainId } from "~/config/chains";
+import { getPublicClient } from "~/lib/viem";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const dynamic = "force-dynamic";
@@ -53,10 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     // Create public client to read nonce
-    const publicClient = createPublicClient({
-      chain: chain.chain,
-      transport: http(),
-    });
+    const publicClient = getPublicClient(chain.chain);
 
     // Get the nonce for this author-app pair
     const nonce = await getNonce({
