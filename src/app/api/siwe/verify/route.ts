@@ -1,6 +1,8 @@
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
 import { parseSiweMessage } from "viem/siwe";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
 import { getPublicClient } from "~/lib/viem";
@@ -17,17 +19,17 @@ export async function POST(req: NextRequest) {
     const expectedUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink");
     const expectedDomain = expectedUrl.port ? `${expectedUrl.hostname}:${expectedUrl.port}` : expectedUrl.hostname;
 
-    const publicClient = getPublicClient();
-    
-    const isValid = await publicClient.verifySiweMessage({
-      message,
-      signature,
-      domain: expectedDomain,
-      nonce: session.nonce,
+    const publicClient = createPublicClient({
+      chain: mainnet,
+      transport: http()
     });
 
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    if (parsedMessage.nonce !== session.nonce) {
+      console.error(`Invalid nonce: ${parsedMessage.nonce}. Expected: ${session.nonce}`);
+      return NextResponse.json(
+        { error: "Invalid nonce" },
+        { status: 401 },
+      );
     }
 
     if (parsedMessage.domain !== expectedDomain) {
@@ -36,6 +38,16 @@ export async function POST(req: NextRequest) {
         { error: `Invalid domain: ${parsedMessage.domain}. Expected: ${expectedDomain}` },
         { status: 401 },
       );
+    }
+
+    const isValid = await publicClient.verifyMessage({
+      address: parsedMessage.address,
+      message,
+      signature,
+    });
+
+    if (!isValid) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const now = new Date();
