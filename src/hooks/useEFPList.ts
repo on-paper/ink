@@ -15,7 +15,7 @@ export function useEFPList() {
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<ProfileListsResponse | null>({
     queryKey: ["efp-profile-lists", address],
     queryFn: async () => {
       if (!address) return null;
@@ -49,11 +49,14 @@ export function useEFPList() {
       }
     },
     enabled: !!address,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 60 * 1000, 
+    gcTime: 24 * 60 * 60 * 1000, 
+    refetchOnWindowFocus: false, 
+    refetchOnMount: false, 
   });
 
   const hasEFPList = !!(profileLists?.primary_list || (profileLists?.lists && profileLists.lists.length > 0));
-  const primaryListId = profileLists?.primary_list;
+  const primaryListId = profileLists?.primary_list || null;
   const lists = profileLists?.lists || [];
 
   console.log("[useEFPList] Result:", {

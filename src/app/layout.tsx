@@ -53,7 +53,6 @@ export default async function RootLayout({ children }) {
               </DeletedPostsProvider>
             </FilteredUsersProvider>
           </UserProvider>
-
           <Toaster position="top-center" offset={16} />
         </Providers>
       </body>

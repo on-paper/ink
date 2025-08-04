@@ -27,7 +27,7 @@ interface EthFollowAccount {
 
 export function ensAccountToUser(account: EthFollowAccount): User {
   const address = account.address.toLowerCase();
-  const ensName = account.ens?.name !== "" ? account.ens.name : undefined;
+  const ensName = account.ens?.name && account.ens.name !== "" ? account.ens.name : undefined;
   const avatar = account.ens?.avatar || account.ens?.records?.avatar;
   const description = account.ens?.records?.description;
 

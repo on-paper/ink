@@ -1,12 +1,13 @@
 "use client";
 
 import type { User } from "@cartel-sh/ui";
-import { useFollowButton, useFollowingState } from "ethereum-identity-kit";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useUser } from "~/components/user/UserContext";
 import { useEFPList } from "~/hooks/useEFPList";
+import { useEFPFollow } from "~/hooks/useEFPFollow";
+import { useEFPFollowingState } from "~/hooks/useEFPFollowingState";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { UserAvatar } from "./user/UserAvatar";
@@ -20,17 +21,19 @@ export const FollowButton = ({ user, className }: { user: User; className?: stri
 
   const userAddress = user.address as `0x${string}`;
 
-  const { state: followingState } = useFollowingState({
-    lookupAddressOrName: userAddress,
-    connectedAddress: connectedAddress || undefined,
+  const { state: followingState, refetch: refetchFollowingState } = useEFPFollowingState({
+    userAddress: connectedAddress || undefined,
+    targetAddress: userAddress,
+    listId: primaryListId,
   });
 
-  const { handleAction, isLoading, isDisabled, error, ariaLabel, ariaPressed, disableHover, setDisableHover } =
-    useFollowButton({
-      lookupAddress: userAddress,
-      connectedAddress: connectedAddress || undefined,
-      selectedList: primaryListId || undefined,
-    });
+  const { follow, unfollow, isLoading, error } = useEFPFollow({
+    listId: primaryListId,
+    targetAddress: userAddress,
+    onSuccess: () => {
+      refetchFollowingState();
+    },
+  });
 
   const followsMe = user.actions.following;
   const isFollowing = followingState === "follows";
@@ -60,13 +63,13 @@ export const FollowButton = ({ user, className }: { user: User; className?: stri
       setShowUnfollowDialog(true);
     } else {
       console.log("[FollowButton] Not following, executing follow action");
-      handleAction();
+      follow();
     }
   };
 
   const handleUnfollow = () => {
     setShowUnfollowDialog(false);
-    handleAction();
+    unfollow();
   };
 
   const displayText = isFollowing ? "Following" : followsMe ? "Follow back" : "Follow";
@@ -77,11 +80,10 @@ export const FollowButton = ({ user, className }: { user: User; className?: stri
         size="sm"
         variant={isFollowing ? "outline" : "default"}
         onClick={handleButtonClick}
-        disabled={isDisabled || isLoading || isLoadingList}
-        className={`font-semibold h-8 text-sm ${disableHover ? "no-hover" : ""} ${error ? "error" : ""} ${className}`}
-        onMouseEnter={() => setDisableHover(false)}
-        aria-label={ariaLabel}
-        aria-pressed={ariaPressed}
+        disabled={isLoading || isLoadingList}
+        className={`font-semibold h-8 text-sm ${error ? "error" : ""} ${className}`}
+        aria-label={isFollowing ? "Unfollow user" : "Follow user"}
+        aria-pressed={isFollowing}
         title={error?.message || undefined}
       >
         {isLoading || isLoadingList ? "..." : displayText}
