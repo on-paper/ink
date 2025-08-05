@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { PostView } from "~/components/post/PostView";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { post: string } }): Promise<Metadata> {
   const title = "Post";
   const description = "View post on Paper";
 
@@ -18,9 +18,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
+export default async function PostPage({ params }: { params: { post: string } }) {
   try {
-    const response = await fetch(`${getBaseUrl()}/api/posts/${params.slug}`, {
+    const response = await fetch(`${getBaseUrl()}/api/posts/${params.post}`, {
       cache: "no-store",
     });
 
@@ -34,12 +34,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
     const post = await response.json();
 
     return (
-      <div className="flex flex-col gap-1 p-4">
-        <div className="flex flex-col gap-1 min-h-screen">
-          <div className="relative">
-            <PostView item={post} defaultExpanded={true} defaultReplyOpen={false} />
-          </div>
-        </div>
+      <div className="max-w-3xl p-4 mx-auto">
+        <PostView item={post} defaultExpanded={true} defaultReplyOpen={false} />
       </div>
     );
   } catch (error) {

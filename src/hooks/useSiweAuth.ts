@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { createSiweMessage } from "viem/siwe";
 import { toast } from "sonner";
+import { createSiweMessage } from "viem/siwe";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import { prettifyViemError } from "~/utils/prettifyViemError";
 

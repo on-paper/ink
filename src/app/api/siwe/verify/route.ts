@@ -20,15 +20,12 @@ export async function POST(req: NextRequest) {
 
     const publicClient = createPublicClient({
       chain: mainnet,
-      transport: http()
+      transport: http(),
     });
 
     if (parsedMessage.nonce !== session.nonce) {
       console.error(`Invalid nonce: ${parsedMessage.nonce}. Expected: ${session.nonce}`);
-      return NextResponse.json(
-        { error: "Invalid nonce" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid nonce" }, { status: 401 });
     }
 
     if (parsedMessage.domain !== expectedDomain) {

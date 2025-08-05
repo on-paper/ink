@@ -1,6 +1,7 @@
 import type { Post } from "@cartel-sh/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEthereumEdit } from "./useEthereumEdit";
+import { useEthereumReaction } from "./useEthereumReaction";
 
 interface PostMutationContext {
   previousPost?: Post;
@@ -8,6 +9,7 @@ interface PostMutationContext {
 
 export function usePostMutations(postId: string, post?: Post) {
   const queryClient = useQueryClient();
+  const { postReaction } = useEthereumReaction();
 
   const updatePostInCache = (updater: (oldPost: Post) => Post, fallbackPost?: Post) => {
     queryClient.setQueryData<Post>(["post", postId], (oldData) => {
@@ -41,12 +43,11 @@ export function usePostMutations(postId: string, post?: Post) {
 
   const upvoteMutation = useMutation<boolean, Error, void, PostMutationContext>({
     mutationFn: async () => {
-      const response = await fetch(`/api/posts/${postId}/upvote`, {
-        method: "POST",
+      await postReaction({
+        reactionType: "like",
+        endpoint: `/api/posts/${postId}/upvote`,
       });
-      if (!response.ok) throw new Error("Failed to upvote");
-      const result = await response.json();
-      return result.result;
+      return true;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["post", postId] });
@@ -79,12 +80,11 @@ export function usePostMutations(postId: string, post?: Post) {
 
   const repostMutation = useMutation<boolean, Error, void, PostMutationContext>({
     mutationFn: async () => {
-      const response = await fetch(`/api/posts/${postId}/repost`, {
-        method: "POST",
+      await postReaction({
+        reactionType: "repost",
+        endpoint: `/api/posts/${postId}/repost`,
       });
-      if (!response.ok) throw new Error("Failed to repost");
-      const result = await response.json();
-      return result.result;
+      return true;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["post", postId] });

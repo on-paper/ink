@@ -36,9 +36,7 @@ const userGallery = async ({ params }: { params: { user: string } }) => {
     );
   }
 
-  return (
-    <GalleryFeed ItemView={PostGallery} endpoint={`/api/posts?address=${user.address}&type=post&media=true`} />
-  );
+  return <GalleryFeed ItemView={PostGallery} endpoint={`/api/posts?address=${user.address}&type=post&media=true`} />;
 };
 
 export default userGallery;

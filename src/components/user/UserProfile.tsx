@@ -13,10 +13,10 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { UserAvatarViewer } from "./UserAvatar";
 // import { EditProfileModal } from "./EditProfileModal";
 import { useUser } from "./UserContext";
 import { UserFollowing } from "./UserFollowing";
-import { UserAvatarViewer } from "./UserAvatar";
 
 const MutedBadge = ({ onUnmute }: { onUnmute: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);

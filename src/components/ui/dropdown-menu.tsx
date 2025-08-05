@@ -74,7 +74,14 @@ const DropdownMenuContent = React.forwardRef<
 >(({ className, sideOffset = 4, children, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <AnimatePresence>
-      <DropdownMenuPrimitive.Content asChild ref={ref} avoidCollisions={true} collisionPadding={8} sideOffset={sideOffset} {...props}>
+      <DropdownMenuPrimitive.Content
+        asChild
+        ref={ref}
+        avoidCollisions={true}
+        collisionPadding={8}
+        sideOffset={sideOffset}
+        {...props}
+      >
         <motion.div
           className={cn(
             "z-50 min-w-[8rem] rounded-lg glass text-popover-foreground shadow-md overflow-hidden p-1",
@@ -87,7 +94,7 @@ const DropdownMenuContent = React.forwardRef<
             duration: 0.15,
             scale: { type: "spring", damping: 25, stiffness: 400 },
             y: { type: "spring", damping: 25, stiffness: 400 },
-            opacity: { duration: 0.1 }
+            opacity: { duration: 0.1 },
           }}
         >
           {children}

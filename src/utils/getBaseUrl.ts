@@ -1,13 +1,13 @@
 export const getBaseUrl = () => {
   // Check if we're in development
   if (process.env.NODE_ENV === "development") {
-    return "http://localhost:3000";
+    return "http://localhost:3010";
   }
 
   let url =
     process?.env?.NEXT_PUBLIC_SITE_URL ?? // Site URL in production env.
     process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
-    "http://localhost:3000";
+    "http://localhost:3010";
 
   // Make sure to include `https://` when not localhost.
   url = url.includes("http") ? url : `https://${url}`;

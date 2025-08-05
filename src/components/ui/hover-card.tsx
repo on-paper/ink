@@ -18,14 +18,17 @@ const HoverCardContent = React.forwardRef<
     <AnimatePresence>
       <HoverCardPrimitive.Content asChild ref={ref} align={align} sideOffset={sideOffset} {...props}>
         <motion.div
-          className={cn("z-[70] w-64 rounded-2xl glass text-popover-foreground shadow-md overflow-hidden p-4", className)}
+          className={cn(
+            "z-[70] w-64 rounded-2xl glass text-popover-foreground shadow-md overflow-hidden p-4",
+            className,
+          )}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{
             duration: 0.15,
             scale: { type: "spring", damping: 25, stiffness: 400 },
-            opacity: { duration: 0.1 }
+            opacity: { duration: 0.1 },
           }}
         >
           {children}

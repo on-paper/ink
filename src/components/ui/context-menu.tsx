@@ -86,7 +86,7 @@ const ContextMenuContent = React.forwardRef<
             duration: 0.15,
             scale: { type: "spring", damping: 25, stiffness: 400 },
             y: { type: "spring", damping: 25, stiffness: 400 },
-            opacity: { duration: 0.1 }
+            opacity: { duration: 0.1 },
           }}
         >
           {props.children}
