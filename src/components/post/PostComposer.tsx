@@ -39,9 +39,9 @@ import { LoadingSpinner } from "../LoadingSpinner";
 import { formatAddress } from "../menu/UserMenu";
 import { Button } from "../ui/button";
 import { UserAvatar } from "../user/UserAvatar";
-import { ComposerProvider, useComposer } from "./ComposerContext";
+import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostComposerActions } from "./PostComposerActions";
-import { QuotedPostPreview } from "./QuotedPostPreview";
+import { PostQuotePreview } from "./PostQuotePreview";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -320,23 +320,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-                .slice(1)
-                .map((m) => {
-                  if (m.type.startsWith("image/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaImageType(m.type),
-                    };
-                  }
-                  if (m.type.startsWith("video/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaVideoType(m.type),
-                    };
-                  }
-                  return null;
-                })
-                .filter(Boolean)
+              .slice(1)
+              .map((m) => {
+                if (m.type.startsWith("image/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaImageType(m.type),
+                  };
+                }
+                if (m.type.startsWith("video/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaVideoType(m.type),
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean)
             : undefined;
 
         return {
@@ -500,7 +500,7 @@ function ComposerContent() {
 
               <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
               <MediaPreview files={mediaFiles} onRemove={removeMedia} onReorder={reorderMedia} />
-              {quotedPost && <QuotedPostPreview quotedPost={quotedPost} />}
+              {quotedPost && <PostQuotePreview quotedPost={quotedPost} />}
 
               {editingPost && (
                 <div className="mt-4">

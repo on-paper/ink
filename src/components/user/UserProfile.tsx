@@ -3,7 +3,6 @@
 import { type User, type UserStats } from "@cartel-sh/ui";
 import { Link as LinkIcon, ShieldOffIcon, VolumeXIcon } from "lucide-react";
 import { useState } from "react";
-import { AvatarViewer } from "~/components/user/AvatarViewer";
 import { useUserActions } from "~/hooks/useUserActions";
 import { socialPlatforms } from "~/lib/socialPlatforms";
 import { FollowButton } from "../FollowButton";
@@ -17,6 +16,7 @@ import { Dialog, DialogContent } from "../ui/dialog";
 // import { EditProfileModal } from "./EditProfileModal";
 import { useUser } from "./UserContext";
 import { UserFollowing } from "./UserFollowing";
+import { UserAvatarViewer } from "./UserAvatar";
 
 const MutedBadge = ({ onUnmute }: { onUnmute: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -96,7 +96,7 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
     <Card className="p-6 pb-0 z-20 flex w-full flex-col gap-6 mt-4 rounded-xl overflow-hidden">
       <div className="flex flex-row gap-6">
         <div className="flex shrink-0 grow-0 w-12 h-12 sm:w-24 sm:h-24 self-start">
-          <AvatarViewer user={user} />
+          <UserAvatarViewer user={user} />
         </div>
 
         <div className="flex flex-col gap-2  flex-grow">

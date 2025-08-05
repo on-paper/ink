@@ -39,8 +39,8 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
   });
 };
 
-export const GalleryPostView = ({ item }: { item: Post }) => {
-  const metadata = item.metadata;
+export const PostGallery = ({ post }: { post: Post }) => {
+  const metadata = post.metadata;
   const type = metadata?.__typename;
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
 
@@ -73,7 +73,7 @@ export const GalleryPostView = ({ item }: { item: Post }) => {
 
   return (
     <Link
-      href={`/p/${item.id}`}
+      href={`/p/${post.id}`}
       className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100"
     >
       <Card className="overflow-hidden p-0">

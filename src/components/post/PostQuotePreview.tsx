@@ -6,7 +6,7 @@ interface QuotedPostPreviewProps {
   quotedPost: Post;
 }
 
-export function QuotedPostPreview({ quotedPost }: QuotedPostPreviewProps) {
+export function PostQuotePreview({ quotedPost }: QuotedPostPreviewProps) {
   const mediaContent = getPostMediaContent(quotedPost.metadata, quotedPost.id, quotedPost.author.username);
 
   return (

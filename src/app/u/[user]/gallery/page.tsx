@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GalleryFeed } from "~/components/GalleryFeed";
-import { GalleryPostView } from "~/components/post/GalleryPostView";
+import { PostGallery } from "~/components/post/PostGallery";
 import { getUserByUsername } from "~/utils/getUserByHandle";
 
 export async function generateMetadata({ params }: { params: { user: string } }): Promise<Metadata> {
@@ -37,7 +37,7 @@ const userGallery = async ({ params }: { params: { user: string } }) => {
   }
 
   return (
-    <GalleryFeed ItemView={GalleryPostView} endpoint={`/api/posts?address=${user.address}&type=post&media=true`} />
+    <GalleryFeed ItemView={PostGallery} endpoint={`/api/posts?address=${user.address}&type=post&media=true`} />
   );
 };
 
