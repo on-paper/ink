@@ -12,20 +12,18 @@ export function UpdateNotification() {
   useEffect(() => {
     if (newReleasesCount > 0 && newReleases.length > 0) {
       const latestRelease = newReleases[0];
-      
+
+      markAsViewed();
+
       toast(
-        <Link href="/changelog" onClick={markAsViewed} className="block w-full">
+        <Link href="/changelog" className="block w-full">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
               <Sparkles className="h-5 w-5 text-purple-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm mb-1">
-                New Release: v{latestRelease.version}
-              </p>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {latestRelease.title}
-              </p>
+              <p className="font-medium text-sm mb-1">New Release: v{latestRelease.version}</p>
+              <p className="text-xs text-muted-foreground line-clamp-2">{latestRelease.title}</p>
               {newReleasesCount > 1 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   +{newReleasesCount - 1} more release{newReleasesCount > 2 ? "s" : ""}
@@ -38,7 +36,7 @@ export function UpdateNotification() {
           duration: 8000,
           position: "top-left",
           className: "cursor-pointer hover:scale-[1.02] transition-transform",
-        }
+        },
       );
     }
   }, [newReleasesCount, newReleases, markAsViewed]);
