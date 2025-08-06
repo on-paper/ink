@@ -114,4 +114,3 @@ export function useEthereumReaction(options?: UseEthereumReactionOptions) {
     error: postReaction.error,
   };
 }
-

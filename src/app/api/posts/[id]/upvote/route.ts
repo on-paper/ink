@@ -3,7 +3,6 @@ import { createCommentData, createCommentTypedData } from "@ecp.eth/sdk/comments
 import { type NextRequest, NextResponse } from "next/server";
 import { privateKeyToAccount } from "viem/accounts";
 import { getDefaultChainId } from "~/config/chains";
-import { postIdToEcpTarget } from "~/utils/ecp/targetConverter";
 
 export const dynamic = "force-dynamic";
 
@@ -40,13 +39,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       }
     }
 
-    const targetUri = postIdToEcpTarget(params.id);
-
     const commentData = createCommentData({
       content: "like",
       author,
       app: app.address,
-      targetUri,
+      parentId: params.id as `0x${string}`,
       commentType: COMMENT_TYPE_REACTION,
     });
 
@@ -82,7 +79,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest) {
   return NextResponse.json({ error: "Not implemented yet" }, { status: 501 });
 }
-

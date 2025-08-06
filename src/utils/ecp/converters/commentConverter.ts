@@ -4,11 +4,11 @@ import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 export interface ECPComment {
   id: string;
   author:
-    | {
-        address?: string;
-        ens?: any;
-      }
-    | string;
+  | {
+    address?: string;
+    ens?: any;
+  }
+  | string;
   content: string;
   createdAt: number | string;
   reactions?: {

@@ -13,14 +13,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const chainIdParam = SUPPORTED_CHAIN_IDS.join(",");
 
   try {
-    console.log("OUFDSJOIJFOIJFSDOIJFOSDJFIOSDJ")
     const apiResponse = await fetch(`${API_URLS.ECP}/api/comments/${id}?chainId=${chainIdParam}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
       },
     });
-    console.log(apiResponse)
 
     if (!apiResponse.ok) {
       if (apiResponse.status === 404) {
