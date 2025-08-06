@@ -1,60 +1,47 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/src/utils";
-import { Button } from "../ui/button";
-import { ChangelogModal } from "./ChangelogModal";
+import Link from "next/link";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { useUpdates } from "./UpdatesContext";
 
 export function UpdateNotification() {
-  const { newCommitsCount, markAsViewed } = useUpdates();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { newReleasesCount, newReleases, markAsViewed } = useUpdates();
 
-  if (newCommitsCount === 0) return null;
+  useEffect(() => {
+    if (newReleasesCount > 0 && newReleases.length > 0) {
+      const latestRelease = newReleases[0];
+      
+      toast(
+        <Link href="/changelog" onClick={markAsViewed} className="block w-full">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm mb-1">
+                New Release: v{latestRelease.version}
+              </p>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {latestRelease.title}
+              </p>
+              {newReleasesCount > 1 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  +{newReleasesCount - 1} more release{newReleasesCount > 2 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          </div>
+        </Link>,
+        {
+          duration: 8000,
+          position: "top-right",
+          className: "cursor-pointer hover:scale-[1.02] transition-transform",
+        }
+      );
+    }
+  }, [newReleasesCount, newReleases, markAsViewed]);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-    markAsViewed();
-  };
-
-  return (
-    <>
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          className="fixed top-4 right-4 z-50"
-        >
-          <Button
-            onClick={handleOpenModal}
-            className={cn(
-              "glass rounded-full px-4 py-2 flex items-center gap-2",
-              "bg-gradient-to-r from-purple-500/10 to-pink-500/10",
-              "border-purple-500/20 hover:border-purple-500/40",
-              "shadow-lg shadow-purple-500/10",
-              "transition-all duration-300 hover:scale-105",
-            )}
-            variant="outline"
-          >
-            <motion.div
-              animate={{ rotate: [0, 15, -15, 0] }}
-              transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
-            >
-              <Sparkles className="h-4 w-4 text-purple-500" />
-            </motion.div>
-            <span className="text-sm font-medium">
-              {newCommitsCount} new update{newCommitsCount > 1 ? "s" : ""}
-            </span>
-            <span className="text-xs text-muted-foreground">View changelog</span>
-          </Button>
-        </motion.div>
-      </AnimatePresence>
-
-      <ChangelogModal open={isModalOpen} onOpenChange={setIsModalOpen} />
-    </>
-  );
+  return null;
 }

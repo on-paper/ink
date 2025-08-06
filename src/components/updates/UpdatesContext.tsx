@@ -38,8 +38,10 @@ interface ChangelogEntry {
 interface UpdatesContextValue {
   lastVisit: number | null;
   newCommitsCount: number;
+  newReleasesCount: number;
   commits: Commit[];
   changelogEntries: ChangelogEntry[];
+  newReleases: ChangelogEntry[];
   isLoading: boolean;
   error: Error | null;
   markAsViewed: () => void;
@@ -49,10 +51,14 @@ interface UpdatesContextValue {
 const UpdatesContext = createContext<UpdatesContextValue | undefined>(undefined);
 
 const LAST_VISIT_KEY = "paper_last_visit";
+const LAST_RELEASE_KEY = "paper_last_release_version";
 
 export function UpdatesProvider({ children }: { children: ReactNode }) {
   const [lastVisit, setLastVisit] = useState<number | null>(null);
   const [newCommitsCount, setNewCommitsCount] = useState(0);
+  const [newReleasesCount, setNewReleasesCount] = useState(0);
+  const [newReleases, setNewReleases] = useState<ChangelogEntry[]>([]);
+  const [lastReleaseVersion, setLastReleaseVersion] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem(LAST_VISIT_KEY);
@@ -62,6 +68,11 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       localStorage.setItem(LAST_VISIT_KEY, now.toString());
       setLastVisit(now);
+    }
+    
+    const storedRelease = localStorage.getItem(LAST_RELEASE_KEY);
+    if (storedRelease) {
+      setLastReleaseVersion(storedRelease);
     }
   }, []);
 
@@ -107,12 +118,46 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
     }
   }, [commitsData, lastVisit]);
 
+  useEffect(() => {
+    if (changelogData?.entries && changelogData.entries.length > 0) {
+      const latestRelease = changelogData.entries[0];
+      
+      if (!lastReleaseVersion) {
+        // First time user - mark the latest version as seen
+        localStorage.setItem(LAST_RELEASE_KEY, latestRelease.version || "1.0.0");
+        setLastReleaseVersion(latestRelease.version || "1.0.0");
+        setNewReleases([]);
+        setNewReleasesCount(0);
+      } else if (latestRelease.version && latestRelease.version !== lastReleaseVersion) {
+        // Find all new releases since last seen version
+        const newRels = [];
+        for (const entry of changelogData.entries) {
+          if (entry.version === lastReleaseVersion) break;
+          if (entry.version) newRels.push(entry);
+        }
+        setNewReleases(newRels);
+        setNewReleasesCount(newRels.length);
+      }
+    }
+  }, [changelogData, lastReleaseVersion]);
+
   const markAsViewed = useCallback(() => {
     const now = Date.now();
     localStorage.setItem(LAST_VISIT_KEY, now.toString());
     setLastVisit(now);
     setNewCommitsCount(0);
-  }, []);
+    
+    // Also mark the latest release as viewed
+    if (changelogData?.entries && changelogData.entries.length > 0) {
+      const latestRelease = changelogData.entries[0];
+      if (latestRelease.version) {
+        localStorage.setItem(LAST_RELEASE_KEY, latestRelease.version);
+        setLastReleaseVersion(latestRelease.version);
+        setNewReleases([]);
+        setNewReleasesCount(0);
+      }
+    }
+  }, [changelogData]);
 
   const refreshCommits = useCallback(async () => {
     await refetchCommits();
@@ -123,8 +168,10 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
       value={{
         lastVisit,
         newCommitsCount,
+        newReleasesCount,
         commits: commitsData?.commits || [],
         changelogEntries: changelogData?.entries || [],
+        newReleases,
         isLoading: commitsLoading,
         error: commitsError as Error | null,
         markAsViewed,
