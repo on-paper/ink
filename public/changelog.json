@@ -9,7 +9,106 @@
         "Optimized codebase by removing unused components and dependencies",
         "Improved application performance and reduced bundle size",
         "Enhanced platform stability through infrastructure cleanup"
-      ]
+      ],
+      "commits": {
+        "from": "e7b39e0",
+        "to": "6e80f33"
+      }
+    },
+    {
+      "version": "1.2.0",
+      "date": "2025-08-06",
+      "title": "Enhanced Authentication & Landing Experience",
+      "description": "Improved authentication flow with better domain verification and a refreshed landing page. Updated tracking systems for better privacy.",
+      "changes": [
+        "Updated landing page with improved user experience",
+        "Enhanced domain verification for better security",
+        "Improved SIWE (Sign-In with Ethereum) authentication",
+        "Removed tracking for enhanced privacy"
+      ],
+      "commits": {
+        "from": "18e20cc",
+        "to": "1ee2448"
+      }
+    },
+    {
+      "version": "1.3.0",
+      "date": "2025-08-06",
+      "title": "Notifications & Bookmarks",
+      "description": "Added real-time notifications and local bookmark functionality. Improved error handling with prettier error messages.",
+      "changes": [
+        "Added comprehensive notification system",
+        "Implemented local bookmarks for saving posts",
+        "Prettier error messages for better user experience",
+        "Updated dependencies for improved stability"
+      ],
+      "commits": {
+        "from": "83c3474",
+        "to": "98bdbb6"
+      }
+    },
+    {
+      "version": "1.4.0",
+      "date": "2025-08-06",
+      "title": "Social Features Enhancement",
+      "description": "Enhanced social interactions with improved handles, autocomplete, and post management. Added comprehensive testing for handle parsing.",
+      "changes": [
+        "Added handle autocomplete for easier user mentions",
+        "Improved handle parser with comprehensive tests",
+        "Fixed post deletion functionality",
+        "Enhanced following flow with direct on-chain writes"
+      ],
+      "commits": {
+        "from": "5d2a32f",
+        "to": "0558b41"
+      }
+    },
+    {
+      "version": "1.5.0",
+      "date": "2025-08-06",
+      "title": "Base Chain Integration",
+      "description": "Added support for Base chain with dedicated account connector and global chain configuration.",
+      "changes": [
+        "Added Base account connector for Base chain support",
+        "Implemented global default chain ID configuration",
+        "Updated SIWE package for improved authentication"
+      ],
+      "commits": {
+        "from": "2e69d2a",
+        "to": "d2192bf"
+      }
+    },
+    {
+      "version": "1.6.0",
+      "date": "2025-08-06",
+      "title": "Reactions & Sharing",
+      "description": "Implemented comprehensive reaction system with likes and reposts. Fixed sharing functionality and improved UI interactions.",
+      "changes": [
+        "Added like and repost actions for posts",
+        "Updated reactions implementation for better performance",
+        "Fixed sharing links functionality",
+        "Fixed hover effects on glass-style UI elements",
+        "General codebase cleanup"
+      ],
+      "commits": {
+        "from": "e3529cf",
+        "to": "a87aa5b"
+      }
+    },
+    {
+      "version": "1.7.0",
+      "date": "2025-08-06",
+      "title": "UI Polish & Fixes",
+      "description": "Final polish with animation fixes and improved content moderation by hiding deleted posts.",
+      "changes": [
+        "Fixed landing page animation for smoother experience",
+        "Implemented hiding of deleted posts for cleaner feeds",
+        "Enhanced overall UI responsiveness"
+      ],
+      "commits": {
+        "from": "baae57d",
+        "to": "30c30d0"
+      }
     }
   ]
 }
