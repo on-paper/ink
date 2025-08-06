@@ -31,10 +31,10 @@ export default function ChangelogPage() {
 
     return (
       <div className="space-y-8">
-        {changelogEntries.map((entry, index) => (
+        {[...changelogEntries].reverse().map((entry, index, reversedArray) => (
           <div key={entry.id} className="relative">
-            {index < changelogEntries.length - 1 && (
-              <div className="absolute left-8 top-16 w-0.5 bg-border/30 h-full" style={{ height: 'calc(100% - 4rem)' }} />
+            {index < reversedArray.length - 1 && (
+              <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-border/30" />
             )}
 
             <div className="flex items-start gap-4">
@@ -153,7 +153,7 @@ export default function ChangelogPage() {
     return (
       <div className="relative">
         {/* Vertical line connecting all commits */}
-        <div className="absolute left-[7px] top-3 bottom-3 w-px bg-border/30" />
+        <div className="absolute left-[3px] top-3 bottom-3 w-px bg-border/30" />
 
         <div className="space-y-1">
           {filteredCommits.map((commit, index) => (
