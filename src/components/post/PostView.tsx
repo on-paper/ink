@@ -47,7 +47,7 @@ export const PostView = ({
   const [isEditing, setIsEditing] = useState(false);
   const postContentRef = useRef<HTMLDivElement>(null);
   const { mutedUsers, blockedUsers } = useFilteredUsers();
-  const { deletedPosts } = useDeletedPosts();
+  const { deletedPosts, addDeletedPost } = useDeletedPosts();
 
   const dissolveFilterId = useMemo(() => `dissolve-${item.id}-${Date.now()}`, [item.id]);
   const isMuted = item.author.actions?.muted;
@@ -56,6 +56,13 @@ export const PostView = ({
   const isJustMuted = mutedUsers.has(item.author.id);
   const isJustBlocked = blockedUsers.has(item.author.id);
   const isJustDeleted = deletedPosts.has(item.id);
+
+  useEffect(() => {
+    if (content === "[deleted]" && !deletedPosts.has(item.id)) {
+      addDeletedPost(item.id);
+      setShouldHide(true)
+    }
+  }, [content, item.id, addDeletedPost, deletedPosts]);
 
   useEffect(() => {
     if ((isJustMuted || isJustBlocked) && !isOnUserProfile) {
