@@ -36,8 +36,6 @@ interface ChangelogEntry {
 }
 
 interface UpdatesContextValue {
-  lastVisit: number | null;
-  newCommitsCount: number;
   newReleasesCount: number;
   commits: Commit[];
   changelogEntries: ChangelogEntry[];
@@ -50,26 +48,14 @@ interface UpdatesContextValue {
 
 const UpdatesContext = createContext<UpdatesContextValue | undefined>(undefined);
 
-const LAST_VISIT_KEY = "paper_last_visit";
 const LAST_RELEASE_KEY = "paper_last_release_version";
 
 export function UpdatesProvider({ children }: { children: ReactNode }) {
-  const [lastVisit, setLastVisit] = useState<number | null>(null);
-  const [newCommitsCount, setNewCommitsCount] = useState(0);
   const [newReleasesCount, setNewReleasesCount] = useState(0);
   const [newReleases, setNewReleases] = useState<ChangelogEntry[]>([]);
   const [lastReleaseVersion, setLastReleaseVersion] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem(LAST_VISIT_KEY);
-    if (stored) {
-      setLastVisit(Number.parseInt(stored, 10));
-    } else {
-      const now = Date.now();
-      localStorage.setItem(LAST_VISIT_KEY, now.toString());
-      setLastVisit(now);
-    }
-    
     const storedRelease = localStorage.getItem(LAST_RELEASE_KEY);
     if (storedRelease) {
       setLastReleaseVersion(storedRelease);
@@ -109,18 +95,14 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    if (commitsData?.commits && lastVisit) {
-      const newCommits = commitsData.commits.filter((commit: Commit) => {
-        const commitDate = new Date(commit.author.date).getTime();
-        return commitDate > lastVisit;
-      });
-      setNewCommitsCount(newCommits.length);
-    }
-  }, [commitsData, lastVisit]);
-
-  useEffect(() => {
     if (changelogData?.entries && changelogData.entries.length > 0) {
-      const latestRelease = changelogData.entries[0];
+      // Sort entries by version to get the latest (changelog.json has them in ascending order)
+      const sortedEntries = [...changelogData.entries].sort((a, b) => {
+        const versionA = a.version || "0.0.0";
+        const versionB = b.version || "0.0.0";
+        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+      });
+      const latestRelease = sortedEntries[0];
       
       if (!lastReleaseVersion) {
         // First time user - mark the latest version as seen
@@ -131,7 +113,7 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
       } else if (latestRelease.version && latestRelease.version !== lastReleaseVersion) {
         // Find all new releases since last seen version
         const newRels = [];
-        for (const entry of changelogData.entries) {
+        for (const entry of sortedEntries) {
           if (entry.version === lastReleaseVersion) break;
           if (entry.version) newRels.push(entry);
         }
@@ -142,14 +124,15 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
   }, [changelogData, lastReleaseVersion]);
 
   const markAsViewed = useCallback(() => {
-    const now = Date.now();
-    localStorage.setItem(LAST_VISIT_KEY, now.toString());
-    setLastVisit(now);
-    setNewCommitsCount(0);
-    
-    // Also mark the latest release as viewed
+    // Mark the latest release as viewed
     if (changelogData?.entries && changelogData.entries.length > 0) {
-      const latestRelease = changelogData.entries[0];
+      // Sort to get the actual latest version
+      const sortedEntries = [...changelogData.entries].sort((a, b) => {
+        const versionA = a.version || "0.0.0";
+        const versionB = b.version || "0.0.0";
+        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+      });
+      const latestRelease = sortedEntries[0];
       if (latestRelease.version) {
         localStorage.setItem(LAST_RELEASE_KEY, latestRelease.version);
         setLastReleaseVersion(latestRelease.version);
@@ -166,8 +149,6 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
   return (
     <UpdatesContext.Provider
       value={{
-        lastVisit,
-        newCommitsCount,
         newReleasesCount,
         commits: commitsData?.commits || [],
         changelogEntries: changelogData?.entries || [],

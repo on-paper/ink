@@ -36,7 +36,7 @@ export function UpdateNotification() {
         </Link>,
         {
           duration: 8000,
-          position: "top-right",
+          position: "top-left",
           className: "cursor-pointer hover:scale-[1.02] transition-transform",
         }
       );
