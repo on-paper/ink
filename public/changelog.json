@@ -2,7 +2,7 @@
   "entries": [
     {
       "version": "1.1.0",
-      "date": "2025-08-06",
+      "date": "2025-07-29",
       "title": "Infrastructure Improvements",
       "description": "Enhanced platform performance through codebase cleanup and optimization. Removed unused components and dependencies to improve loading times and reduce bundle size.",
       "changes": [
@@ -17,7 +17,7 @@
     },
     {
       "version": "1.2.0",
-      "date": "2025-08-06",
+      "date": "2025-07-31",
       "title": "Enhanced Authentication & Landing Experience",
       "description": "Improved authentication flow with better domain verification and a refreshed landing page. Updated tracking systems for better privacy.",
       "changes": [
@@ -33,7 +33,7 @@
     },
     {
       "version": "1.3.0",
-      "date": "2025-08-06",
+      "date": "2025-08-02",
       "title": "Notifications & Bookmarks",
       "description": "Added real-time notifications and local bookmark functionality. Improved error handling with prettier error messages.",
       "changes": [
@@ -49,7 +49,7 @@
     },
     {
       "version": "1.4.0",
-      "date": "2025-08-06",
+      "date": "2025-08-04",
       "title": "Social Features Enhancement",
       "description": "Enhanced social interactions with improved handles, autocomplete, and post management. Added comprehensive testing for handle parsing.",
       "changes": [
@@ -65,7 +65,7 @@
     },
     {
       "version": "1.5.0",
-      "date": "2025-08-06",
+      "date": "2025-08-04",
       "title": "Base Chain Integration",
       "description": "Added support for Base chain with dedicated account connector and global chain configuration.",
       "changes": [
@@ -80,7 +80,7 @@
     },
     {
       "version": "1.6.0",
-      "date": "2025-08-06",
+      "date": "2025-08-05",
       "title": "Reactions & Sharing",
       "description": "Implemented comprehensive reaction system with likes and reposts. Fixed sharing functionality and improved UI interactions.",
       "changes": [
