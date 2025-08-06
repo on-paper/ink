@@ -34,7 +34,7 @@ export default function ChangelogPage() {
         {[...changelogEntries].reverse().map((entry, index, reversedArray) => (
           <div key={entry.id} className="relative">
             {index < reversedArray.length - 1 && (
-              <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-border/30" />
+              <div className="absolute left-8 top-16 bottom-0 h-[100%] w-0.5 bg-border/30" />
             )}
 
             <div className="flex items-start gap-4">
@@ -153,14 +153,14 @@ export default function ChangelogPage() {
     return (
       <div className="relative">
         {/* Vertical line connecting all commits */}
-        <div className="absolute left-[3px] top-3 bottom-3 w-px bg-border/30" />
+        <div className="absolute left-[2.5px] top-3 bottom-3 w-px bg-border/30" />
 
         <div className="space-y-1">
           {filteredCommits.map((commit, index) => (
             <div key={commit.sha} className="relative flex items-center gap-3 group">
               {/* Small dot on the timeline */}
               <div className="relative z-10 flex-shrink-0">
-                <div className={cn("h-1.5 w-1.5 rounded-full", index === 0 ? "bg-purple-500" : "bg-foreground/40")} />
+                <div className={cn("h-1.5 w-1.5 rounded-full", index === 0 ? "bg-purple-500" : "bg-foreground/90")} />
               </div>
 
               {/* Commit content - single line */}
