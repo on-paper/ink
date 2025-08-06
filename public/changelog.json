@@ -1,0 +1,15 @@
+{
+  "entries": [
+    {
+      "version": "1.1.0",
+      "date": "2025-08-06",
+      "title": "Infrastructure Improvements",
+      "description": "Enhanced platform performance through codebase cleanup and optimization. Removed unused components and dependencies to improve loading times and reduce bundle size.",
+      "changes": [
+        "Optimized codebase by removing unused components and dependencies",
+        "Improved application performance and reduced bundle size",
+        "Enhanced platform stability through infrastructure cleanup"
+      ]
+    }
+  ]
+}
