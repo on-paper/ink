@@ -63,7 +63,7 @@ export function HistoryIndicator() {
             }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {!isHovered ? (
                 <motion.div
                   key="dots"

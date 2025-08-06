@@ -54,41 +54,54 @@ export const LandingContent = () => {
               <SiEthereum className="text-4xl text-primary flex-shrink-0 dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] drop-shadow-sm" />
 
               <div className="h-20 flex flex-col justify-center flex-1">
-                <h3 className="text-xl font-bold text-left">
-                  Ethereum{" "}
-                  <AnimatePresence mode="popLayout">
-                    <motion.span key={currentIndex} className="inline-flex">
-                      {protocols[currentIndex].name.split("").map((letter, index) => (
-                        <motion.span
-                          key={`${currentIndex}-${index}`}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{
-                            duration: 0.2,
-                            delay: index * 0.03,
-                            ease: "easeInOut",
-                          }}
-                          className={letter === " " ? "inline-block w-[0.25em]" : ""}
-                        >
-                          {letter}
-                        </motion.span>
-                      ))}
-                    </motion.span>
-                  </AnimatePresence>
+                <h3 className="text-xl font-bold text-left whitespace-nowrap flex items-baseline">
+                  <span>Ethereum</span>
+                  <span className="ml-[5px]"> </span>
+                  <span className="relative inline-flex" style={{ minWidth: "160px" }}>
+                    <AnimatePresence>
+                      <motion.span
+                        key={currentIndex}
+                        className="inline-flex"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, position: "absolute", left: 0, top: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {protocols[currentIndex].name.split("").map((letter, index) => (
+                          <motion.span
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{
+                              duration: 0.3,
+                              delay: index * 0.03,
+                              ease: "easeInOut",
+                            }}
+                            className="inline-block"
+                            style={{ width: letter === " " ? "0.25em" : "auto" }}
+                          >
+                            {letter}
+                          </motion.span>
+                        ))}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
                 </h3>
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={currentIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-sm text-primary/60 text-left"
-                  >
-                    {protocols[currentIndex].description}
-                  </motion.p>
-                </AnimatePresence>
+                <div className="relative h-5">
+                  <AnimatePresence>
+                    <motion.p
+                      key={currentIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-sm text-primary/60 text-left absolute left-0 top-0"
+                    >
+                      {protocols[currentIndex].description}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
