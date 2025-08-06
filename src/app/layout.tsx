@@ -13,8 +13,8 @@ import { HistoryIndicator } from "~/components/HistoryIndicator";
 import { Menu } from "~/components/menu/Menu";
 import { NavigationShortcuts } from "~/components/NavigationShortcuts";
 import { RouteTracker } from "~/components/RouteTracker";
-import { UpdateNotification } from "~/components/updates/UpdateNotification";
 import { Toaster } from "~/components/ui/sonner";
+import { UpdateNotification } from "~/components/updates/UpdateNotification";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://paper.ink"),

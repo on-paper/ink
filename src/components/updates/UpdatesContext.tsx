@@ -100,10 +100,10 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
       const sortedEntries = [...changelogData.entries].sort((a, b) => {
         const versionA = a.version || "0.0.0";
         const versionB = b.version || "0.0.0";
-        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: "base" });
       });
       const latestRelease = sortedEntries[0];
-      
+
       if (!lastReleaseVersion) {
         // First time user - mark the latest version as seen
         localStorage.setItem(LAST_RELEASE_KEY, latestRelease.version || "1.0.0");
@@ -130,7 +130,7 @@ export function UpdatesProvider({ children }: { children: ReactNode }) {
       const sortedEntries = [...changelogData.entries].sort((a, b) => {
         const versionA = a.version || "0.0.0";
         const versionB = b.version || "0.0.0";
-        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+        return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: "base" });
       });
       const latestRelease = sortedEntries[0];
       if (latestRelease.version) {

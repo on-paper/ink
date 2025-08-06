@@ -28,7 +28,7 @@ export function LogoutButton() {
 
   return (
     <Button
-      variant="destructive"
+      variant="outline"
       onClick={async () => {
         if (isConnected) {
           disconnectWallet();
@@ -39,7 +39,7 @@ export function LogoutButton() {
       }}
     >
       <UserMinusIcon size={20} className="sm:mr-2" />
-      Log out
+      Disconnect
     </Button>
   );
 }

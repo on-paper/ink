@@ -1,11 +1,11 @@
-import { WalletIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { LatestCommit } from "~/components/LatestCommit";
 import { ThemeSettings } from "~/components/ThemeSettings";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { ConnectedWalletLabel } from "~/components/web3/ConnnectedWalletLabel";
 import { LogoutButton } from "~/components/web3/WalletButtons";
+import { WalletInfo } from "~/components/web3/WalletInfo";
 import { getServerAuth } from "~/utils/getServerAuth";
 
 export const metadata: Metadata = {
@@ -36,19 +36,24 @@ const settings = async () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <p className="text-sm text-muted-foreground">Manage your wallet connection</p>
+          <CardTitle>Wallet</CardTitle>
+          <p className="text-sm text-muted-foreground">Your connected wallet information</p>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4">
-            <h1 className="text-lg flex gap-2 items-center">
-              <WalletIcon /> Wallet
-            </h1>
-            <div className="pl-4 flex flex-col gap-2">
-              <ConnectedWalletLabel />
-              <LogoutButton />
-            </div>
+        <CardContent className="space-y-4">
+          <WalletInfo />
+          <div className="pt-2">
+            <LogoutButton />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>About</CardTitle>
+          <p className="text-sm text-muted-foreground">Application information</p>
+        </CardHeader>
+        <CardContent>
+          <LatestCommit />
         </CardContent>
       </Card>
     </div>

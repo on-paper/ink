@@ -60,7 +60,7 @@ export const PostView = ({
   useEffect(() => {
     if (content === "[deleted]" && !deletedPosts.has(item.id)) {
       addDeletedPost(item.id);
-      setShouldHide(true)
+      setShouldHide(true);
     }
   }, [content, item.id, addDeletedPost, deletedPosts]);
 
