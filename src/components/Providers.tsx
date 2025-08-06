@@ -16,6 +16,7 @@ import { getAllChains, getAvailableChains } from "~/config/networks";
 import { env } from "~/env.mjs";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { ExplosionProvider } from "./ExplosionPortal";
+import { UpdatesProvider } from "./updates/UpdatesContext";
 import "overlayscrollbars/styles/overlayscrollbars.css";
 import { Toaster } from "~/components/ui/sonner";
 
@@ -99,11 +100,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <ConnectKitProvider>
               <TransactionProvider>
                 <ExplosionProvider>
-                  <OverlayScrollbarsComponent defer className="h-full">
-                    {children}
-                  </OverlayScrollbarsComponent>
-                  <Toaster position="top-center" offset={16} />
-                  <ReactQueryDevtools initialIsOpen={false} />
+                  <UpdatesProvider>
+                    <OverlayScrollbarsComponent defer className="h-full">
+                      {children}
+                    </OverlayScrollbarsComponent>
+                    <Toaster position="top-center" offset={16} />
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  </UpdatesProvider>
                 </ExplosionProvider>
               </TransactionProvider>
             </ConnectKitProvider>

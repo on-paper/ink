@@ -13,6 +13,7 @@ import { HistoryIndicator } from "~/components/HistoryIndicator";
 import { Menu } from "~/components/menu/Menu";
 import { NavigationShortcuts } from "~/components/NavigationShortcuts";
 import { RouteTracker } from "~/components/RouteTracker";
+import { UpdateNotification } from "~/components/updates/UpdateNotification";
 import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }) {
                   <RouteTracker />
                   <NavigationShortcuts />
                   <HistoryIndicator />
+                  <UpdateNotification />
                   <Menu isAuthenticated={isAuthenticated} user={user} />
 
                   <PageTransition>

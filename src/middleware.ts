@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
 
-const publicPaths = ["/", "/login", "/u", "/p"];
+const publicPaths = ["/", "/login", "/u", "/p", "/changelog"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
