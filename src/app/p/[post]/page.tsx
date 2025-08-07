@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PostComments } from "~/components/post/PostComments";
 import { PostView } from "~/components/post/PostView";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 
@@ -36,6 +37,7 @@ export default async function PostPage({ params }: { params: { post: string } })
     return (
       <div className="max-w-3xl p-4 mx-auto">
         <PostView item={post} defaultExpanded={true} defaultReplyOpen={false} />
+        <PostComments post={post} level={1} />
       </div>
     );
   } catch (error) {
