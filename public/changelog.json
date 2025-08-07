@@ -1,26 +1,6 @@
 {
   "entries": [
     {
-      "version": "1.8.0",
-      "date": "2025-08-07",
-      "title": "Comments & Changelog Improvements",
-      "description": "Server-side comments rendering and enhanced changelog system with release-only notifications.",
-      "changes": [
-        "Added server-side comments rendering on posts for better performance",
-        "Made follow button interactions more responsive",
-        "Updated notification system to track releases only",
-        "Fixed latest notification handling",
-        "Fixed changelog styling and UI issues",
-        "Fixed changelog dates to match actual commit dates",
-        "Improved changelog page UI",
-        "Updated application settings"
-      ],
-      "commits": {
-        "from": "dc64bbb",
-        "to": "603015c"
-      }
-    },
-    {
       "version": "1.1.0",
       "date": "2025-07-29",
       "title": "Infrastructure Improvements",
@@ -128,6 +108,26 @@
       "commits": {
         "from": "baae57d",
         "to": "30c30d0"
+      }
+    },
+    {
+      "version": "1.8.0",
+      "date": "2025-08-07",
+      "title": "Comments & Changelog Improvements",
+      "description": "Server-side comments rendering and enhanced changelog system with notifications.",
+      "changes": [
+        "Added server-side comments rendering on posts",
+        "Made follow button interactions more responsive",
+        "Updated notification system to track releases only",
+        "Fixed latest notification handling",
+        "Fixed changelog styling and UI issues",
+        "Fixed changelog dates to match actual commit dates",
+        "Improved changelog page UI",
+        "Updated application settings"
+      ],
+      "commits": {
+        "from": "dc64bbb",
+        "to": "603015c"
       }
     }
   ]
