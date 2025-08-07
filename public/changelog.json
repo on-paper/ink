@@ -1,10 +1,30 @@
 {
   "entries": [
     {
+      "version": "1.8.0",
+      "date": "2025-08-07",
+      "title": "Comments & Changelog Improvements",
+      "description": "Server-side comments rendering and enhanced changelog system with release-only notifications.",
+      "changes": [
+        "Added server-side comments rendering on posts for better performance",
+        "Made follow button interactions more responsive",
+        "Updated notification system to track releases only",
+        "Fixed latest notification handling",
+        "Fixed changelog styling and UI issues",
+        "Fixed changelog dates to match actual commit dates",
+        "Improved changelog page UI",
+        "Updated application settings"
+      ],
+      "commits": {
+        "from": "dc64bbb",
+        "to": "603015c"
+      }
+    },
+    {
       "version": "1.1.0",
       "date": "2025-07-29",
       "title": "Infrastructure Improvements",
-      "description": "Enhanced platform performance through codebase cleanup and optimization. Removed unused components and dependencies to improve loading times and reduce bundle size.",
+      "description": "Codebase cleanup and optimization. Removed unused components and dependencies",
       "changes": [
         "Optimized codebase by removing unused components and dependencies",
         "Improved application performance and reduced bundle size",
@@ -18,8 +38,8 @@
     {
       "version": "1.2.0",
       "date": "2025-07-31",
-      "title": "Enhanced Authentication & Landing Experience",
-      "description": "Improved authentication flow with better domain verification and a refreshed landing page. Updated tracking systems for better privacy.",
+      "title": "Enhanced Authentication & Landing",
+      "description": "Improved authentication and a refreshed landing page. Removed tracking systems for better privacy.",
       "changes": [
         "Updated landing page with improved user experience",
         "Enhanced domain verification for better security",
@@ -35,12 +55,12 @@
       "version": "1.3.0",
       "date": "2025-08-02",
       "title": "Notifications & Bookmarks",
-      "description": "Added real-time notifications and local bookmark functionality. Improved error handling with prettier error messages.",
+      "description": "Added notifications and local bookmark functionality. Improved error handling.",
       "changes": [
         "Added comprehensive notification system",
-        "Implemented local bookmarks for saving posts",
-        "Prettier error messages for better user experience",
-        "Updated dependencies for improved stability"
+        "Implemented local bookmarks",
+        "Prettier error messages for viem",
+        "Updated dependencies"
       ],
       "commits": {
         "from": "83c3474",
@@ -51,7 +71,7 @@
       "version": "1.4.0",
       "date": "2025-08-04",
       "title": "Social Features Enhancement",
-      "description": "Enhanced social interactions with improved handles, autocomplete, and post management. Added comprehensive testing for handle parsing.",
+      "description": "Improved handles, autocomplete, and post management",
       "changes": [
         "Added handle autocomplete for easier user mentions",
         "Improved handle parser with comprehensive tests",
@@ -66,8 +86,8 @@
     {
       "version": "1.5.0",
       "date": "2025-08-04",
-      "title": "Base Chain Integration",
-      "description": "Added support for Base chain with dedicated account connector and global chain configuration.",
+      "title": "Base Chain",
+      "description": "Added support for Base chain with Base account connector",
       "changes": [
         "Added Base account connector for Base chain support",
         "Implemented global default chain ID configuration",
@@ -82,7 +102,7 @@
       "version": "1.6.0",
       "date": "2025-08-05",
       "title": "Reactions & Sharing",
-      "description": "Implemented comprehensive reaction system with likes and reposts. Fixed sharing functionality and improved UI interactions.",
+      "description": "Added likes and reposts. Fixed sharing functionality and improved UI.",
       "changes": [
         "Added like and repost actions for posts",
         "Updated reactions implementation for better performance",
@@ -99,10 +119,10 @@
       "version": "1.7.0",
       "date": "2025-08-06",
       "title": "UI Polish & Fixes",
-      "description": "Final polish with animation fixes and improved content moderation by hiding deleted posts.",
+      "description": "Animation polish and hiding deleted posts.",
       "changes": [
-        "Fixed landing page animation for smoother experience",
-        "Implemented hiding of deleted posts for cleaner feeds",
+        "Fixed landing page animations",
+        "Implemented hiding of deleted posts",
         "Enhanced overall UI responsiveness"
       ],
       "commits": {
