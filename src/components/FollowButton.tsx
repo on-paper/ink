@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useAccount } from "wagmi";
 import { useUser } from "~/components/user/UserContext";
 import { useEFPFollow } from "~/hooks/useEFPFollow";
-import { useEFPFollowingState } from "~/hooks/useEFPFollowingState";
 import { useEFPList } from "~/hooks/useEFPList";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent } from "./ui/dialog";
@@ -14,36 +13,35 @@ import { UserAvatar } from "./user/UserAvatar";
 
 export const FollowButton = ({ user, className }: { user: User; className?: string }) => {
   const [showUnfollowDialog, setShowUnfollowDialog] = useState(false);
+  const [optimisticFollowing, setOptimisticFollowing] = useState<boolean | null>(null);
+  const [pendingAction, setPendingAction] = useState<"follow" | "unfollow" | null>(null);
   const { requireAuth } = useUser();
   const { address: connectedAddress } = useAccount();
-  const { hasEFPList, isLoading: isLoadingList, primaryListId } = useEFPList();
+  const { hasEFPList, primaryListId } = useEFPList();
   const router = useRouter();
 
   const userAddress = user.address as `0x${string}`;
 
-  const { state: followingState, refetch: refetchFollowingState } = useEFPFollowingState({
-    userAddress: connectedAddress || undefined,
-    targetAddress: userAddress,
-    listId: primaryListId,
-  });
+  const isFollowing = optimisticFollowing !== null ? optimisticFollowing : user.actions?.followed || false;
+  const followsMe = user.actions?.following;
 
   const { follow, unfollow, isLoading, error } = useEFPFollow({
     listId: primaryListId,
     targetAddress: userAddress,
     onSuccess: () => {
-      refetchFollowingState();
+      setPendingAction(null);
+    },
+    onError: () => {
+      setOptimisticFollowing(null);
+      setPendingAction(null);
     },
   });
-
-  const followsMe = user.actions.following;
-  const isFollowing = followingState === "follows";
 
   const handleButtonClick = () => {
     console.log("[FollowButton] Click handler:", {
       connectedAddress,
       hasEFPList,
       isFollowing,
-      isLoadingList,
     });
 
     if (!connectedAddress) {
@@ -63,16 +61,26 @@ export const FollowButton = ({ user, className }: { user: User; className?: stri
       setShowUnfollowDialog(true);
     } else {
       console.log("[FollowButton] Not following, executing follow action");
+      setOptimisticFollowing(true);
+      setPendingAction("follow");
       follow();
     }
   };
 
   const handleUnfollow = () => {
     setShowUnfollowDialog(false);
+    setOptimisticFollowing(false);
+    setPendingAction("unfollow");
     unfollow();
   };
 
-  const displayText = isFollowing ? "Following" : followsMe ? "Follow back" : "Follow";
+  const getDisplayText = () => {
+    if (pendingAction === "follow") return "Following...";
+    if (pendingAction === "unfollow") return "Unfollowing...";
+    if (isFollowing) return "Following";
+    if (followsMe) return "Follow back";
+    return "Follow";
+  };
 
   return (
     <>
@@ -80,13 +88,13 @@ export const FollowButton = ({ user, className }: { user: User; className?: stri
         size="sm"
         variant={isFollowing ? "outline" : "default"}
         onClick={handleButtonClick}
-        disabled={isLoading || isLoadingList}
+        disabled={isLoading}
         className={`font-semibold h-8 text-sm ${error ? "error" : ""} ${className}`}
         aria-label={isFollowing ? "Unfollow user" : "Follow user"}
         aria-pressed={isFollowing}
         title={error?.message || undefined}
       >
-        {isLoading || isLoadingList ? "..." : displayText}
+        {getDisplayText()}
       </Button>
 
       <Dialog open={showUnfollowDialog} onOpenChange={setShowUnfollowDialog}>

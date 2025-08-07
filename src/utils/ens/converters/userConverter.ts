@@ -112,10 +112,8 @@ async function fetchUserStats(addressOrEns: string): Promise<{ following: number
   }
 }
 
-// Helper function to fetch and convert user data
 export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: string): Promise<User | null> {
   try {
-    // Fetch ENS data
     const ensResponse = await fetch(
       `${API_URLS.EFP}/users/${addressOrEns}/account`,
       { next: { revalidate: 3600 } }, // Cache for 1 hour
@@ -128,7 +126,6 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
     const ensData: EthFollowAccount = await ensResponse.json();
     const user = ensAccountToUser(ensData);
 
-    // Fetch real stats from EthFollow
     const stats = await fetchUserStats(addressOrEns);
     if (stats) {
       user.stats = {
@@ -137,10 +134,8 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
       };
     }
 
-    // If we have a current user, check following relationship
     if (currentUserAddress) {
       try {
-        // Check if current user follows this user
         const followingResponse = await fetch(`${API_URLS.EFP}/users/${currentUserAddress}/following`, {
           next: { revalidate: 300 },
         });
