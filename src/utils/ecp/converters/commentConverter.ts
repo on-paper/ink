@@ -1,9 +1,11 @@
 import type { Post } from "@cartel-sh/ui";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
+import { fetchChannel } from "~/utils/ecp/channels";
 
 export interface ECPComment {
   id: string;
   commentType?: number; // 0 = post/comment, 1 = reaction
+  channelId?: string;
   author:
   | {
     address?: string;
@@ -75,6 +77,20 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       ? new Date(timestamp * 1000) // Convert Unix timestamp to Date
       : new Date(timestamp); // Already ISO string
 
+  let channelMeta: { id: string; name: string; slug: string } | undefined;
+  if (comment.channelId && comment.channelId !== "0") {
+    try {
+      const channel = await fetchChannel(comment.channelId);
+      if (channel?.name) {
+        channelMeta = {
+          id: channel.id,
+          name: channel.name,
+          slug: channel.name.toLowerCase().replace(/\s+/g, "-"),
+        };
+      }
+    } catch (_e) { }
+  }
+
   const allReplies = comment.replies?.results ?? [];
   const normalReplies = allReplies.filter((r) => (r.commentType ?? 0) === 0);
   const reactionReplies = allReplies.filter((r) => (r.commentType ?? 0) === 1);
@@ -101,6 +117,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     metadata: {
       content: comment.content,
       __typename: "TextOnlyMetadata" as const,
+      ...(channelMeta ? { channel: channelMeta } : {}),
     },
     createdAt,
     updatedAt: createdAt,

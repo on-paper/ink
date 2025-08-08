@@ -44,7 +44,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
   const endpoint = `/api/posts?channelId=${channelId}`;
 
   return (
-    <div className="z-[30] p-4 py-0">
+    <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
       <div className="pt-4">
         <CommunityHeader community={community} />
         <CommunityNavigation communityAddress={params.community} />

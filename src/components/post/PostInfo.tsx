@@ -5,6 +5,7 @@ import { RiBlueskyLine } from "react-icons/ri";
 import { SiFarcaster, SiX } from "react-icons/si";
 import { toast } from "sonner";
 import Link from "~/components/Link";
+import { Badge } from "../ui/badge";
 import { useUser } from "~/components/user/UserContext";
 
 import { TimeElapsedSince } from "../TimeLabel";
@@ -33,6 +34,9 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
   const displayName = handle || truncateEthAddress(author.address, "....");
   const tags = post?.metadata?.tags || [];
   const content = "content" in post.metadata ? (post.metadata.content as string) : "";
+  const channel = (post as any)?.metadata?.channel as { id?: string; name?: string } | undefined;
+  const channelNameRaw = channel?.name || channel?.id || "";
+  const channelName = channelNameRaw.length > 10 ? `${channelNameRaw.slice(0, 10)}…` : channelNameRaw;
 
   const handleCopyLink = async () => {
     try {
@@ -95,6 +99,15 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
         <>
           <span>{"·"}</span>
           <Link href={`/c/${community}`}>/{community}</Link>
+        </>
+      )}
+      {channel?.id && channelName && (
+        <>
+          <Link href={`/c/${channel.id}`}>
+            <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4">
+              {channelName}
+            </Badge>
+          </Link>
         </>
       )}
       <span className="text-muted-foreground">
