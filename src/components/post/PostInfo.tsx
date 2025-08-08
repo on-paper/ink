@@ -1,5 +1,5 @@
 import type { Post } from "@cartel-sh/ui";
-import { Check, EllipsisIcon, Link2, PenIcon } from "lucide-react";
+import { Check, ChevronRight, EllipsisIcon, Link2, PenIcon } from "lucide-react";
 import { useState } from "react";
 import { RiBlueskyLine } from "react-icons/ri";
 import { SiFarcaster, SiX } from "react-icons/si";
@@ -103,14 +103,15 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
       )}
       {channel?.id && channelName && (
         <>
-          <Link href={`/c/${channel.id}`}>
-            <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4">
-              {channelName}
-            </Badge>
+          <Link href={`/c/${channel.id}`} className="flex items-center justify-center font-bold gap-1.5">
+            <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
+            {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
+            {channelName}
+            {/* </Badge> */}
           </Link>
         </>
       )}
-      <span className="text-muted-foreground">
+      <span className="text-muted-foreground font-medium">
         <TimeElapsedSince date={post.createdAt} />
       </span>
       {post.isEdited && (
