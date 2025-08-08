@@ -38,14 +38,19 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const dockItems = isAuthenticated
     ? [
         {
-          icon:
-            pathname === "/home"
-              ? HomeIcon
-              : pathname === "/explore"
-                ? CompassIcon
-                : pathname === "/communities"
-                  ? Users
-                  : PaperLogo,
+          customIcon: (
+            <div className="relative w-full h-full flex items-center justify-center">
+              {pathname === "/home" ? (
+                <PaperLogo className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" strokeWidth={2.25} />
+              ) : pathname === "/explore" ? (
+                <CompassIcon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              ) : pathname === "/communities" ? (
+                <Users className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              ) : (
+                <PaperLogo className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              )}
+            </div>
+          ),
           label: "Home",
           onClick: () => router.push("/home"),
           isActive: pathname === "/home" || pathname === "/explore" || pathname === "/communities",
@@ -129,14 +134,19 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
       ]
     : [
         {
-          icon:
-            pathname === "/home"
-              ? HomeIcon
-              : pathname === "/explore"
-                ? CompassIcon
-                : pathname === "/communities"
-                  ? Users
-                  : PaperLogo,
+          customIcon: (
+            <div className="relative w-full h-full flex items-center justify-center">
+              {pathname === "/home" ? (
+                <PaperLogo className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" strokeWidth={2.25} />
+              ) : pathname === "/explore" ? (
+                <CompassIcon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              ) : pathname === "/communities" ? (
+                <Users className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              ) : (
+                <PaperLogo className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />
+              )}
+            </div>
+          ),
           label: "Home",
           onClick: () => router.push("/home"),
           isActive: pathname === "/home" || pathname === "/explore" || pathname === "/communities",
