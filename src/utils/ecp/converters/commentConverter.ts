@@ -3,12 +3,13 @@ import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 
 export interface ECPComment {
   id: string;
+  commentType?: number; // 0 = post/comment, 1 = reaction
   author:
-    | {
-        address?: string;
-        ens?: any;
-      }
-    | string;
+  | {
+    address?: string;
+    ens?: any;
+  }
+  | string;
   content: string;
   createdAt: number | string;
   reactions?: {
@@ -22,8 +23,16 @@ export interface ECPComment {
   };
   parentId?: string;
   targetUri?: string;
-  reactionCounts?: any;
-  viewerReactions?: any;
+  reactionCounts?: {
+    like?: number;
+    repost?: number;
+    [key: string]: number | undefined;
+  };
+  viewerReactions?: {
+    like?: boolean;
+    repost?: boolean;
+    [key: string]: boolean | undefined;
+  };
 }
 
 export interface CommentToPostOptions {
@@ -66,6 +75,26 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       ? new Date(timestamp * 1000) // Convert Unix timestamp to Date
       : new Date(timestamp); // Already ISO string
 
+  const allReplies = comment.replies?.results ?? [];
+  const normalReplies = allReplies.filter((r) => (r.commentType ?? 0) === 0);
+  const reactionReplies = allReplies.filter((r) => (r.commentType ?? 0) === 1);
+
+  const likeCountFromApi = comment.reactionCounts?.like ?? 0;
+  const repostCountFromApi = comment.reactionCounts?.repost ?? 0;
+
+  const likeCountDerived = reactionReplies.filter(
+    (r) => typeof r.content === "string" && r.content.toLowerCase() === "like",
+  ).length;
+  const repostCountDerived = reactionReplies.filter(
+    (r) => typeof r.content === "string" && r.content.toLowerCase() === "repost",
+  ).length;
+
+  const likeCount = likeCountFromApi || likeCountDerived || comment.reactions?.upvotes || 0;
+  const repostCount = repostCountFromApi || repostCountDerived || 0;
+
+  const isUpvoted = Boolean(comment.viewerReactions?.like);
+  const isReposted = Boolean(comment.viewerReactions?.repost);
+
   const post: Post = {
     id: comment.id,
     author,
@@ -81,28 +110,29 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     reactions: {
       Bookmark: 0,
       Collect: 0,
-      Comment: comment.replies?.results?.length || 0,
-      Repost: 0,
-      upvotes: comment.reactions?.upvotes || 0,
-      isUpvoted: false,
+      Comment: normalReplies.length,
+      Repost: repostCount,
+      upvotes: likeCount,
+      isUpvoted,
       isBookmarked: false,
       isCollected: false,
-      isReposted: false,
+      isReposted,
       canCollect: false,
       canComment: true,
       canRepost: true,
       canQuote: true,
       canDecrypt: false,
       canEdit: currentUserAddress ? authorAddress === currentUserAddress.toLowerCase() : false,
-      totalReactions: (comment.reactions?.upvotes || 0) + (comment.replies?.results?.length || 0),
+      totalReactions: likeCount + normalReplies.length + repostCount,
     },
     comments: [],
     mentions: undefined,
   };
 
-  if (includeReplies && comment.replies?.results && comment.replies.results.length > 0) {
+  // Only include non-reaction replies as comments
+  if (includeReplies && normalReplies.length > 0) {
     post.comments = await Promise.all(
-      comment.replies.results.map((reply) => ecpCommentToPost(reply, { currentUserAddress, includeReplies: false })),
+      normalReplies.map((reply) => ecpCommentToPost(reply, { currentUserAddress, includeReplies: false })),
     );
   }
 
