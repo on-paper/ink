@@ -3,28 +3,17 @@
 import type { Group } from "@cartel-sh/ui";
 import { Users } from "lucide-react";
 import Link from "~/components/Link";
-import { useUser } from "~/components/user/UserContext";
 import { resolveUrl } from "~/utils/resolveUrl";
-import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 
 interface CommunityViewProps {
   community: Group;
   isVertical?: boolean;
-  showJoin?: boolean;
 }
 
-export function CommunityView({ community, isVertical = false, showJoin = true }: CommunityViewProps) {
+export function CommunityView({ community, isVertical = false }: CommunityViewProps) {
   const communityUrl = `/c/${community.address}`;
   const iconUrl = resolveUrl(community.metadata?.icon);
-  const canJoin = community.operations?.canJoin || false;
-  const canLeave = community.operations?.canLeave || false;
-  const { isAuthenticated } = useUser();
-
-  const handleJoinLeave = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
 
   return (
     <Link href={communityUrl} className="block ">
@@ -57,17 +46,6 @@ export function CommunityView({ community, isVertical = false, showJoin = true }
                   `Community ${community.address.slice(0, 6)}...${community.address.slice(-4)}`}
               </h3>
             </div>
-
-            {showJoin && isAuthenticated && (canJoin || canLeave) && (
-              <Button
-                size={isVertical ? "sm" : "default"}
-                variant={canLeave ? "outline" : "default"}
-                onClick={handleJoinLeave}
-                className={isVertical ? "mt-3 w-full" : "flex-shrink-0 px-6"}
-              >
-                {canLeave ? "Leave" : "Join"}
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>

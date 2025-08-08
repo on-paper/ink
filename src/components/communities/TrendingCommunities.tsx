@@ -27,7 +27,7 @@ function TrendingCommunityItem({ address, isVertical = true }: { address: string
 
   return (
     <div className="flex-1">
-      <CommunityView community={community} isVertical={isVertical} showJoin={!isVertical} />
+      <CommunityView community={community} isVertical={isVertical} />
     </div>
   );
 }

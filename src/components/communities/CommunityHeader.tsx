@@ -1,10 +1,8 @@
 "use client";
 
 import { Ban, Users } from "lucide-react";
-import { useUser } from "~/components/user/UserContext";
 import type { CommunityWithOperations } from "~/hooks/useCommunity";
 import { resolveUrl } from "~/utils/resolveUrl";
-import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 
 interface CommunityHeaderProps {
@@ -13,11 +11,6 @@ interface CommunityHeaderProps {
 
 export function CommunityHeader({ community }: CommunityHeaderProps) {
   const iconUrl = resolveUrl(community.metadata?.icon);
-  const canJoin = community.canJoin || false;
-  const canLeave = community.canLeave || false;
-  const { isAuthenticated } = useUser();
-
-  const handleJoinLeave = () => {};
 
   return (
     <Card className="flex items-center gap-4 p-4 rounded-xl mb-4">
@@ -51,12 +44,6 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
           )}
         </div>
       </div>
-
-      {isAuthenticated && (canJoin || canLeave) && (
-        <Button variant={canLeave ? "outline" : "default"} onClick={handleJoinLeave} className="px-6">
-          {canLeave ? "Leave" : "Join"}
-        </Button>
-      )}
     </Card>
   );
 }
