@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { LatestCommit } from "~/components/LatestCommit";
 import { ThemeSettings } from "~/components/ThemeSettings";
 
@@ -7,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { LogoutButton } from "~/components/web3/WalletButtons";
 import { WalletInfo } from "~/components/web3/WalletInfo";
 import { getServerAuth } from "~/utils/getServerAuth";
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -25,9 +26,18 @@ export const metadata: Metadata = {
 };
 
 const settings = async () => {
-  const { isAuthenticated, address } = await getServerAuth();
+  const { isAuthenticated } = await getServerAuth();
+
   if (!isAuthenticated) {
-    redirect("/");
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <h1 className="text-2xl font-semibold">Sign in required</h1>
+        <p className="text-muted-foreground">Please sign in with Ethereum to access your settings.</p>
+        <Button asChild>
+          <Link href="/login">Sign in with Ethereum</Link>
+        </Button>
+      </div>
+    );
   }
 
   return (
