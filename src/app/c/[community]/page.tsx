@@ -22,7 +22,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
 
   if (isLoading) {
     return (
-      <div className="z-[30] p-4 py-0">
+      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
         <div className="pt-4">
           <FeedSuspense />
         </div>
@@ -32,7 +32,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
 
   if (error || !community) {
     return (
-      <div className="z-[30] p-4 py-0">
+      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
         <div className="pt-4">
           <div className="text-center text-muted-foreground">Community not found</div>
         </div>
