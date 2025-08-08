@@ -23,7 +23,7 @@ import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPl
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { COMMAND_PRIORITY_LOW, KEY_DOWN_COMMAND, PASTE_COMMAND } from "lexical";
+import { $getRoot, COMMAND_PRIORITY_LOW, KEY_DOWN_COMMAND, PASTE_COMMAND } from "lexical";
 import { AnchorPointPlugin, createAnchorPoint, DEFAULT_URL_REGEX } from "lexical-anchorpoint";
 import { useCallback, useEffect, useRef } from "react";
 import "./lexical.css";
@@ -60,6 +60,7 @@ interface LexicalEditorProps {
   onKeyDown?: (event: KeyboardEvent) => void;
   onPasteFiles?: (files: File[]) => void;
   className?: string;
+  focusAtStart?: boolean;
 }
 
 const theme = {
@@ -221,6 +222,25 @@ const OnChangePluginWrapper = ({ onChange, value }: { onChange: (value: string) 
   return <OnChangePlugin onChange={handleChange} />;
 };
 
+const FocusAtStartPlugin = ({ enabled = false }: { enabled?: boolean }) => {
+  const [editor] = useLexicalComposerContext();
+  const hasFocusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!enabled || hasFocusedRef.current) return;
+    hasFocusedRef.current = true;
+    editor.focus(() => {
+      editor.update(() => {
+        const root = $getRoot();
+        const first = root.getFirstChild();
+        first?.selectStart();
+      });
+    });
+  }, [editor, enabled]);
+
+  return null;
+};
+
 function EditorContent({
   value,
   onChange,
@@ -229,6 +249,7 @@ function EditorContent({
   onKeyDown,
   onPasteFiles,
   className = "",
+  focusAtStart = false,
 }: LexicalEditorProps) {
   return (
     <>
@@ -252,6 +273,7 @@ function EditorContent({
       <EmojiTypeaheadPlugin />
       <MentionsTypeaheadPlugin />
       <FloatingToolbarPlugin />
+      <FocusAtStartPlugin enabled={focusAtStart} />
       <AnchorPointPlugin
         points={[
           createAnchorPoint(DEFAULT_URL_REGEX, (text) => {
@@ -274,6 +296,7 @@ export const LexicalEditorWrapper = ({
   onKeyDown,
   onPasteFiles,
   className = "",
+  focusAtStart = false,
 }: LexicalEditorProps) => {
   const initialConfig = {
     namespace: "PostComposer",
@@ -297,6 +320,7 @@ export const LexicalEditorWrapper = ({
         onKeyDown={onKeyDown}
         onPasteFiles={onPasteFiles}
         className={className}
+        focusAtStart={focusAtStart}
       />
     </LexicalComposer>
   );

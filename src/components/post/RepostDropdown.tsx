@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useUser } from "~/components/user/UserContext";
 import { usePostMutations } from "~/hooks/usePostMutations";
 import { cn } from "~/utils";
+import { getBaseUrl } from "~/utils/getBaseUrl";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -31,6 +32,8 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
   const router = useRouter();
   const { requireAuth } = useUser();
   const { repost } = usePostMutations(post.id, post);
+  const quoteLink = `${getBaseUrl()}/p/${post.id}`;
+  const prefillContent = `\n\n${quoteLink}`;
 
   const handleRepost = async () => {
     if (!reactions.canRepost) {
@@ -48,10 +51,22 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
       return;
     }
     setDropdownOpen(false);
-    // Delay opening the dialog to ensure dropdown is fully closed
-    setTimeout(() => {
-      setShowQuoteDialog(true);
-    }, 100);
+    const openComposer = () => {
+      setTimeout(() => {
+        setShowQuoteDialog(true);
+      }, 100);
+    };
+
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(quoteLink)
+        .catch(() => {
+          toast.error("Unable to copy link");
+        })
+        .finally(openComposer);
+    } else {
+      openComposer();
+    }
   };
 
   return (
@@ -61,9 +76,8 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
           <Button
             size="sm"
             variant="ghost"
-            className={`border-0 px-0 place-content-center items-center flex flex-row min-w-[2.2rem] gap-1.5 sm:gap-2 md:gap-3 hover:bg-transparent hover:scale-105 active:scale-95 data-[state=open]:scale-95 button-hover-bg ${
-              reactions.count > 0 ? "button-hover-bg-wide" : "button-hover-bg-equal"
-            }`}
+            className={`border-0 px-0 place-content-center items-center flex flex-row min-w-[2.2rem] gap-1.5 sm:gap-2 md:gap-3 hover:bg-transparent hover:scale-105 active:scale-95 data-[state=open]:scale-95 button-hover-bg ${reactions.count > 0 ? "button-hover-bg-wide" : "button-hover-bg-equal"
+              }`}
             onClick={(e) => {
               e.stopPropagation();
             }}
@@ -103,6 +117,7 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
           <Card className="p-4">
             <PostComposer
               quotedPost={post}
+              initialContent={prefillContent}
               onCancel={() => setShowQuoteDialog(false)}
               onSuccess={(newPost) => {
                 setShowQuoteDialog(false);

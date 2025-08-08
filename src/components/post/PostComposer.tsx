@@ -25,6 +25,7 @@ import { useUser } from "~/components/user/UserContext";
 import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
 import { storageClient } from "~/utils/lens/storage";
+import { getBaseUrl } from "~/utils/getBaseUrl";
 
 export const MAX_CONTENT_LENGTH = 1000;
 
@@ -320,23 +321,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-                .slice(1)
-                .map((m) => {
-                  if (m.type.startsWith("image/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaImageType(m.type),
-                    };
-                  }
-                  if (m.type.startsWith("video/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaVideoType(m.type),
-                    };
-                  }
-                  return null;
-                })
-                .filter(Boolean)
+              .slice(1)
+              .map((m) => {
+                if (m.type.startsWith("image/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaImageType(m.type),
+                  };
+                }
+                if (m.type.startsWith("video/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaVideoType(m.type),
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean)
             : undefined;
 
         return {
@@ -392,7 +393,12 @@ function ComposerContent() {
     }
 
     if (quotedPost) {
-      finalContent += `\n\nQuoting: https://paper.ink/p/${quotedPost.id}`;
+      const quotePath = `/p/${quotedPost.id}`;
+      const alreadyHasQuoteUrl = finalContent.includes(quotePath);
+      if (!alreadyHasQuoteUrl) {
+        const quoteUrl = `${getBaseUrl()}${quotePath}`;
+        finalContent += `\n\nQuoting: ${quoteUrl}`;
+      }
     }
 
     if (editingPost) {
@@ -491,6 +497,7 @@ function ComposerContent() {
                           onPasteFiles={handleAddFiles}
                           placeholder={placeholderText}
                           disabled={isPosting}
+                          focusAtStart={Boolean(quotedPost)}
                         />
                       </div>
                     </FormControl>
