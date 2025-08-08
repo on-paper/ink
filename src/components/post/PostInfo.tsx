@@ -6,7 +6,7 @@ import { SiFarcaster, SiX } from "react-icons/si";
 import { toast } from "sonner";
 import Link from "~/components/Link";
 import { useUser } from "~/components/user/UserContext";
-import { formatAddress } from "../menu/UserMenu";
+
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
 import {
@@ -21,6 +21,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { menuItems } from "./PostMenuConfig";
 import { usePostStateContext } from "./PostStateContext";
+import { truncateEthAddress } from "../web3/Address";
 
 export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
   const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
   const author = post.author;
   const handle = author.username;
-  const displayName = handle || formatAddress(author.address);
+  const displayName = handle || truncateEthAddress(author.address, "....");
   const tags = post?.metadata?.tags || [];
   const content = "content" in post.metadata ? (post.metadata.content as string) : "";
 

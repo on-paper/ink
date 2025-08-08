@@ -36,12 +36,12 @@ import {
 } from "~/utils/mimeTypes";
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
-import { formatAddress } from "../menu/UserMenu";
 import { Button } from "../ui/button";
 import { UserAvatar } from "../user/UserAvatar";
 import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
+import { truncateEthAddress } from "../web3/Address";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -449,7 +449,7 @@ function ComposerContent() {
               <div className="flex h-5 justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs sm:text-sm">
-                    {currentUser?.username || formatAddress(currentUser.address)}
+                    {currentUser?.username || truncateEthAddress(currentUser?.address)}
                   </span>
                   {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>
