@@ -14,7 +14,9 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import PostComposer from "./PostComposer";
 import { DraftCloseConfirm } from "./DraftCloseConfirm";
-import { upsertDraft } from "~/utils/drafts";
+import { useAtom, useSetAtom } from "jotai";
+import { upsertDraftAtom, deleteDraftAtom } from "~/atoms/drafts";
+import { composerDraftAtom } from "~/atoms/composerDraft";
 
 interface RepostDropdownProps {
   post: Post;
@@ -30,6 +32,9 @@ interface RepostDropdownProps {
 export default function RepostDropdown({ post, variant = "post", reactions }: RepostDropdownProps) {
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
+  const upsertDraft = useSetAtom(upsertDraftAtom);
+  const deleteDraft = useSetAtom(deleteDraftAtom);
+  const [composerDraft, setComposerDraft] = useAtom(composerDraftAtom);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const { requireAuth } = useUser();
@@ -133,11 +138,26 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
         onSave={() => {
           const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
           const content = editor ? editor.innerText || "" : "";
-          if (content.trim().length > 0) upsertDraft({ content });
+          if (content.trim().length > 0) {
+            const id = composerDraft.draftId || `d_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            upsertDraft({ id, content });
+            setComposerDraft({
+              isActive: true,
+              isModal: true,
+              draftId: id,
+              content,
+              updatedAt: Date.now(),
+              hasMedia: composerDraft.hasMedia,
+            });
+          }
           setShowDraftConfirm(false);
           setShowQuoteDialog(false);
         }}
         onDiscard={() => {
+          if (composerDraft.draftId) {
+            deleteDraft(composerDraft.draftId);
+          }
+          setComposerDraft({ isActive: false, isModal: false, draftId: null, content: "", updatedAt: null, hasMedia: false });
           setShowDraftConfirm(false);
           setShowQuoteDialog(false);
         }}

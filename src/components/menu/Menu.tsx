@@ -13,7 +13,9 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import { UserAvatar } from "../user/UserAvatar";
 import { UserMenuButtons } from "./UserMenu";
 import { DraftCloseConfirm } from "../post/DraftCloseConfirm";
-import { upsertDraft } from "~/utils/drafts";
+import { useAtom, useSetAtom } from "jotai";
+import { upsertDraftAtom, deleteDraftAtom } from "~/atoms/drafts";
+import { composerDraftAtom } from "~/atoms/composerDraft";
 
 interface MenuClientProps {
   isAuthenticated: boolean;
@@ -26,6 +28,9 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const pathname = usePathname();
   const { newCount } = useNotifications();
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
+  const upsertDraft = useSetAtom(upsertDraftAtom);
+  const deleteDraft = useSetAtom(deleteDraftAtom);
+  const [composerDraft, setComposerDraft] = useAtom(composerDraftAtom);
 
   useEffect(() => {
     router.prefetch("/home");
@@ -225,11 +230,26 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         onSave={() => {
           const textarea = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
           const content = textarea ? textarea.innerText || "" : "";
-          if (content.trim().length > 0) upsertDraft({ content });
+          if (content.trim().length > 0) {
+            const id = composerDraft.draftId || `d_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            upsertDraft({ id, content });
+            setComposerDraft({
+              isActive: true,
+              isModal: true,
+              draftId: id,
+              content,
+              updatedAt: Date.now(),
+              hasMedia: composerDraft.hasMedia,
+            });
+          }
           setShowDraftConfirm(false);
           setIsPostDialogOpen(false);
         }}
         onDiscard={() => {
+          if (composerDraft.draftId) {
+            deleteDraft(composerDraft.draftId);
+          }
+          setComposerDraft({ isActive: false, isModal: false, draftId: null, content: "", updatedAt: null, hasMedia: false });
           setShowDraftConfirm(false);
           setIsPostDialogOpen(false);
         }}

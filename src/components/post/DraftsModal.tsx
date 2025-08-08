@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSetAtom, useAtom } from "jotai";
 import { getTimeAgo } from "~/utils/formatTime";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { loadDrafts, deleteDraft, type Draft } from "~/utils/drafts";
+import { draftsAtom, deleteDraftAtom, type Draft } from "~/atoms/drafts";
 
 export function DraftsModal({
   open,
@@ -15,18 +15,8 @@ export function DraftsModal({
   onOpenChange: (open: boolean) => void;
   onSelect: (draft: Draft) => void;
 }) {
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-
-  const refresh = () => setDrafts(loadDrafts());
-
-  useEffect(() => {
-    if (open) refresh();
-  }, [open]);
-
-  const handleDelete = (id: string) => {
-    deleteDraft(id);
-    refresh();
-  };
+  const [drafts] = useAtom(draftsAtom);
+  const deleteDraft = useSetAtom(deleteDraftAtom);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,7 +42,7 @@ export function DraftsModal({
                     <div className="text-sm font-medium truncate">{firstLine || "(no content)"}</div>
                     <div className="text-xs text-muted-foreground">Created {getTimeAgo(d.createdAt)}</div>
                   </button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}>
+                  <Button variant="ghost" size="sm" onClick={() => deleteDraft(d.id)}>
                     Delete
                   </Button>
                 </div>

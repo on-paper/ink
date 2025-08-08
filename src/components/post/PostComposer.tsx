@@ -43,7 +43,8 @@ import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
 import { DraftsModal } from "./DraftsModal";
-import { upsertDraft, loadDrafts, deleteDraft, type Draft } from "~/utils/drafts";
+import { useSetAtom } from "jotai";
+import { draftsAtom, upsertDraftAtom, deleteDraftAtom, type Draft } from "~/atoms/drafts";
 import { useAtom } from "jotai";
 import { composerDraftAtom } from "~/atoms/composerDraft";
 
@@ -189,6 +190,8 @@ function ComposerContent() {
   const [isDraftsOpen, setIsDraftsOpen] = useState(false);
   const [composerDraft, setComposerDraft] = useAtom(composerDraftAtom);
   const [isFocused, setIsFocused] = useState(false);
+  const upsertDraft = useSetAtom(upsertDraftAtom);
+  const deleteDraft = useSetAtom(deleteDraftAtom);
 
   // Save draft on unload (background) and auto-save frequently
   useEffect(() => {
@@ -196,14 +199,14 @@ function ComposerContent() {
       const content = form.getValues("content") || "";
       const hasMedia = mediaFiles.length > 0;
       if (content.trim().length === 0 && !hasMedia) return;
-      const currentId = composerDraft.draftId || undefined;
-      const draft = upsertDraft({ id: currentId, content });
+      const id = composerDraft.draftId || `d_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      upsertDraft({ id, content });
       setComposerDraft({
         isActive: true,
-        isModal: false,
-        draftId: draft.id,
-        content: draft.content,
-        updatedAt: draft.updatedAt,
+        isModal: composerDraft.isModal,
+        draftId: id,
+        content,
+        updatedAt: Date.now(),
         hasMedia,
       });
     };
@@ -218,7 +221,7 @@ function ComposerContent() {
       clearInterval(interval);
       window.removeEventListener("beforeunload", onBeforeUnload);
     };
-  }, [form, mediaFiles, composerDraft.draftId, setComposerDraft]);
+  }, [form, mediaFiles, composerDraft.draftId, composerDraft.isModal, setComposerDraft, upsertDraft]);
 
   // When posting successfully, remove the associated draft
   useEffect(() => {
@@ -233,7 +236,7 @@ function ComposerContent() {
       deleteDraft(id);
     }
     setComposerDraft({ isActive: false, isModal: false, draftId: null, content: "", updatedAt: null, hasMedia: false });
-  }, [composerDraft.draftId, setComposerDraft]);
+  }, [composerDraft.draftId, setComposerDraft, deleteDraft]);
 
   // Media handlers
   const handleAddFiles = useCallback((acceptedFiles: File[]) => {

@@ -18,7 +18,9 @@ import { UserAvatarViewer } from "./UserAvatar";
 import { useUser } from "./UserContext";
 import { UserFollowing } from "./UserFollowing";
 import { DraftCloseConfirm } from "../post/DraftCloseConfirm";
-import { upsertDraft } from "~/utils/drafts";
+import { useAtom, useSetAtom } from "jotai";
+import { upsertDraftAtom, deleteDraftAtom } from "~/atoms/drafts";
+import { composerDraftAtom } from "~/atoms/composerDraft";
 
 const MutedBadge = ({ onUnmute }: { onUnmute: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -81,6 +83,9 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
   const { requireAuth } = useUser();
   const [isMentionDialogOpen, setIsMentionDialogOpen] = useState(false);
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
+  const upsertDraft = useSetAtom(upsertDraftAtom);
+  const deleteDraft = useSetAtom(deleteDraftAtom);
+  const [composerDraft, setComposerDraft] = useAtom(composerDraftAtom);
   // const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const userActions = useUserActions(user || ({} as User));
 
@@ -254,11 +259,26 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
         onSave={() => {
           const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
           const content = editor ? editor.innerText || "" : "";
-          if (content.trim().length > 0) upsertDraft({ content });
+          if (content.trim().length > 0) {
+            const id = composerDraft.draftId || `d_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            upsertDraft({ id, content });
+            setComposerDraft({
+              isActive: true,
+              isModal: true,
+              draftId: id,
+              content,
+              updatedAt: Date.now(),
+              hasMedia: composerDraft.hasMedia,
+            });
+          }
           setShowDraftConfirm(false);
           setIsMentionDialogOpen(false);
         }}
         onDiscard={() => {
+          if (composerDraft.draftId) {
+            deleteDraft(composerDraft.draftId);
+          }
+          setComposerDraft({ isActive: false, isModal: false, draftId: null, content: "", updatedAt: null, hasMedia: false });
           setShowDraftConfirm(false);
           setIsMentionDialogOpen(false);
         }}

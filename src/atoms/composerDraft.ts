@@ -1,6 +1,6 @@
 "use client";
 
-import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
 export type ActiveComposerDraft = {
   isActive: boolean;
@@ -11,11 +11,13 @@ export type ActiveComposerDraft = {
   hasMedia: boolean;
 };
 
-export const composerDraftAtom = atom<ActiveComposerDraft>({
+const defaultState: ActiveComposerDraft = {
   isActive: false,
   isModal: false,
   draftId: null,
   content: "",
   updatedAt: null,
   hasMedia: false,
-});
+};
+
+export const composerDraftAtom = atomWithStorage<ActiveComposerDraft>("paper.activeComposer.v1", defaultState);
