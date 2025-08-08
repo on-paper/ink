@@ -13,6 +13,8 @@ import { Card } from "../ui/card";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import PostComposer from "./PostComposer";
+import { DraftCloseConfirm } from "./DraftCloseConfirm";
+import { upsertDraft } from "~/utils/drafts";
 
 interface RepostDropdownProps {
   post: Post;
@@ -27,6 +29,7 @@ interface RepostDropdownProps {
 
 export default function RepostDropdown({ post, variant = "post", reactions }: RepostDropdownProps) {
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const { requireAuth } = useUser();
@@ -98,7 +101,17 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={showQuoteDialog} onOpenChange={setShowQuoteDialog}>
+      <Dialog open={showQuoteDialog} onOpenChange={(next) => {
+        if (!next) {
+          const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+          const content = editor ? editor.innerText || "" : "";
+          if (content.trim().length > 0) {
+            setShowDraftConfirm(true);
+            return;
+          }
+        }
+        setShowQuoteDialog(next);
+      }}>
         <DialogContent className="max-w-2xl" onClick={(e) => e.stopPropagation()}>
           <Card className="p-4">
             <PostComposer
@@ -114,6 +127,21 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
           </Card>
         </DialogContent>
       </Dialog>
+      <DraftCloseConfirm
+        open={showDraftConfirm}
+        onOpenChange={setShowDraftConfirm}
+        onSave={() => {
+          const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+          const content = editor ? editor.innerText || "" : "";
+          if (content.trim().length > 0) upsertDraft({ content });
+          setShowDraftConfirm(false);
+          setShowQuoteDialog(false);
+        }}
+        onDiscard={() => {
+          setShowDraftConfirm(false);
+          setShowQuoteDialog(false);
+        }}
+      />
     </>
   );
 }

@@ -60,6 +60,7 @@ interface LexicalEditorProps {
   onKeyDown?: (event: KeyboardEvent) => void;
   onPasteFiles?: (files: File[]) => void;
   className?: string;
+  onFocusChange?: (focused: boolean) => void;
 }
 
 const theme = {
@@ -229,6 +230,7 @@ function EditorContent({
   onKeyDown,
   onPasteFiles,
   className = "",
+  onFocusChange,
 }: LexicalEditorProps) {
   return (
     <>
@@ -237,6 +239,8 @@ function EditorContent({
           <ContentEditable
             className={`lexical-editor ${disabled ? "opacity-50 pointer-events-none" : ""} ${className}`}
             data-lexical-editor
+            onFocus={() => onFocusChange?.(true)}
+            onBlur={() => onFocusChange?.(false)}
           />
         }
         ErrorBoundary={LexicalErrorBoundary}
@@ -274,6 +278,7 @@ export const LexicalEditorWrapper = ({
   onKeyDown,
   onPasteFiles,
   className = "",
+  onFocusChange,
 }: LexicalEditorProps) => {
   const initialConfig = {
     namespace: "PostComposer",
@@ -297,6 +302,7 @@ export const LexicalEditorWrapper = ({
         onKeyDown={onKeyDown}
         onPasteFiles={onPasteFiles}
         className={className}
+        onFocusChange={onFocusChange}
       />
     </LexicalComposer>
   );

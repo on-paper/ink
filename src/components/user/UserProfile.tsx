@@ -17,6 +17,8 @@ import { UserAvatarViewer } from "./UserAvatar";
 // import { EditProfileModal } from "./EditProfileModal";
 import { useUser } from "./UserContext";
 import { UserFollowing } from "./UserFollowing";
+import { DraftCloseConfirm } from "../post/DraftCloseConfirm";
+import { upsertDraft } from "~/utils/drafts";
 
 const MutedBadge = ({ onUnmute }: { onUnmute: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -78,6 +80,7 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
   const { user: authedUser } = useUser();
   const { requireAuth } = useUser();
   const [isMentionDialogOpen, setIsMentionDialogOpen] = useState(false);
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
   // const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const userActions = useUserActions(user || ({} as User));
 
@@ -223,7 +226,17 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
         </div>
       )}
 
-      <Dialog open={isMentionDialogOpen} onOpenChange={setIsMentionDialogOpen} modal={true}>
+      <Dialog open={isMentionDialogOpen} onOpenChange={(next) => {
+        if (!next) {
+          const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+          const content = editor ? editor.innerText || "" : "";
+          if (content.trim().length > 0) {
+            setShowDraftConfirm(true);
+            return;
+          }
+        }
+        setIsMentionDialogOpen(next);
+      }} modal={true}>
         <DialogContent className="max-w-full sm:max-w-[700px]">
           <Card className="p-4">
             <PostComposer
@@ -234,6 +247,22 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
           </Card>
         </DialogContent>
       </Dialog>
+
+      <DraftCloseConfirm
+        open={showDraftConfirm}
+        onOpenChange={setShowDraftConfirm}
+        onSave={() => {
+          const editor = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+          const content = editor ? editor.innerText || "" : "";
+          if (content.trim().length > 0) upsertDraft({ content });
+          setShowDraftConfirm(false);
+          setIsMentionDialogOpen(false);
+        }}
+        onDiscard={() => {
+          setShowDraftConfirm(false);
+          setIsMentionDialogOpen(false);
+        }}
+      />
 
       {/* {isUserProfile && (
         <EditProfileModal

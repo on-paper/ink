@@ -12,6 +12,8 @@ import PostComposer from "../post/PostComposer";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { UserAvatar } from "../user/UserAvatar";
 import { UserMenuButtons } from "./UserMenu";
+import { DraftCloseConfirm } from "../post/DraftCloseConfirm";
+import { upsertDraft } from "~/utils/drafts";
 
 interface MenuClientProps {
   isAuthenticated: boolean;
@@ -23,6 +25,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { newCount } = useNotifications();
+  const [showDraftConfirm, setShowDraftConfirm] = useState(false);
 
   useEffect(() => {
     router.prefetch("/home");
@@ -187,7 +190,22 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
       </div>
 
       {isAuthenticated && (
-        <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen} modal={true}>
+        <Dialog
+          open={isPostDialogOpen}
+          onOpenChange={(next) => {
+            if (!next) {
+              // Intercept close to prompt save/discard if input has value
+              const textarea = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+              const content = textarea ? textarea.innerText || "" : "";
+              if (content.trim().length > 0) {
+                setShowDraftConfirm(true);
+                return; // prevent closing until user decides
+              }
+            }
+            setIsPostDialogOpen(next);
+          }}
+          modal={true}
+        >
           <DialogContent className="max-w-full sm:max-w-[700px]">
             <PostComposer
               user={user}
@@ -201,6 +219,21 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           </DialogContent>
         </Dialog>
       )}
+      <DraftCloseConfirm
+        open={showDraftConfirm}
+        onOpenChange={setShowDraftConfirm}
+        onSave={() => {
+          const textarea = document.querySelector('[data-lexical-editor]') as HTMLElement | null;
+          const content = textarea ? textarea.innerText || "" : "";
+          if (content.trim().length > 0) upsertDraft({ content });
+          setShowDraftConfirm(false);
+          setIsPostDialogOpen(false);
+        }}
+        onDiscard={() => {
+          setShowDraftConfirm(false);
+          setIsPostDialogOpen(false);
+        }}
+      />
     </>
   );
 }

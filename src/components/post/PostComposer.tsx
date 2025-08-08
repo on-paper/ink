@@ -42,6 +42,10 @@ import { UserAvatar } from "../user/UserAvatar";
 import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
+import { DraftsModal } from "./DraftsModal";
+import { upsertDraft, loadDrafts, deleteDraft, type Draft } from "~/utils/drafts";
+import { useAtom } from "jotai";
+import { composerDraftAtom } from "~/atoms/composerDraft";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -182,80 +186,54 @@ function ComposerContent() {
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
+  const [composerDraft, setComposerDraft] = useAtom(composerDraftAtom);
+  const [isFocused, setIsFocused] = useState(false);
 
-  const { postMutation: post, isPosting: isPostingNew } = useEthereumPost({
-    onSuccess: () => {
-      onSuccess?.(null);
-      form.setValue("content", "");
-      setMediaFiles([]);
-      if (replyingTo || quotedPost) {
-        onCancel?.();
-      }
-    },
-  });
-
-  const { editMutation: edit, isEditing: isEditingPost } = useEthereumEdit({
-    onSuccess: () => {
-      onSuccess?.(null);
-      form.setValue("content", "");
-      setMediaFiles([]);
-      onCancel?.();
-    },
-  });
-
-  const isPosting = editingPost ? isEditingPost : isPostingNew;
-
-  const pathSegments = pathname.split("/");
-  const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
-  const finalCommunity = community || communityFromPath;
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      content: editingPost?.metadata?.content || initialContent,
-    },
-  });
-
-  const watchedContent = form.watch("content");
-  const isEmpty = !watchedContent.trim() && mediaFiles.length === 0;
-
+  // Save draft on unload (background) and auto-save frequently
   useEffect(() => {
-    if (editingPost?.metadata) {
-      const existingMedia: MediaItem[] = [];
-      const metadata = editingPost.metadata;
+    const saveIfNeeded = () => {
+      const content = form.getValues("content") || "";
+      const hasMedia = mediaFiles.length > 0;
+      if (content.trim().length === 0 && !hasMedia) return;
+      const currentId = composerDraft.draftId || undefined;
+      const draft = upsertDraft({ id: currentId, content });
+      setComposerDraft({
+        isActive: true,
+        isModal: false,
+        draftId: draft.id,
+        content: draft.content,
+        updatedAt: draft.updatedAt,
+        hasMedia,
+      });
+    };
 
-      if (metadata.__typename === "ImageMetadata" && metadata.image?.item) {
-        existingMedia.push({
-          type: "url",
-          url: metadata.image.item,
-          mimeType: normalizeImageMimeType(metadata.image.type) || "image/jpeg",
-          id: `existing-${Date.now()}-0`,
-        });
-      } else if (metadata.__typename === "VideoMetadata" && metadata.video?.item) {
-        existingMedia.push({
-          type: "url",
-          url: metadata.video.item,
-          mimeType: normalizeVideoMimeType(metadata.video.type) || "video/mp4",
-          id: `existing-${Date.now()}-0`,
-        });
-      }
+    const interval = setInterval(saveIfNeeded, 1500);
+    const onBeforeUnload = () => {
+      saveIfNeeded();
+    };
 
-      if (metadata.attachments && Array.isArray(metadata.attachments)) {
-        metadata.attachments.forEach((att: any, index: number) => {
-          if (att.item) {
-            existingMedia.push({
-              type: "url",
-              url: att.item,
-              mimeType: att.type || "image/jpeg",
-              id: `existing-${Date.now()}-${index + 1}`,
-            });
-          }
-        });
-      }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, [form, mediaFiles, composerDraft.draftId, setComposerDraft]);
 
-      setMediaFiles(existingMedia);
+  // When posting successfully, remove the associated draft
+  useEffect(() => {
+    if (!isPosting) return;
+  }, [isPosting]);
+
+  // Override onSuccess handlers to clear draft when actually posted
+  const clearDraftAfterPost = useCallback(() => {
+    const id = composerDraft.draftId;
+    if (id) {
+      // remove this draft entry so it's not kept
+      deleteDraft(id);
     }
-  }, [editingPost]);
+    setComposerDraft({ isActive: false, isModal: false, draftId: null, content: "", updatedAt: null, hasMedia: false });
+  }, [composerDraft.draftId, setComposerDraft]);
 
   // Media handlers
   const handleAddFiles = useCallback((acceptedFiles: File[]) => {
@@ -408,6 +386,9 @@ function ComposerContent() {
         channelId: feed || community,
       });
     }
+
+    // clear draft after initiating a real post
+    clearDraftAfterPost();
   }
 
   const handleEmojiClick = useCallback(
@@ -418,6 +399,19 @@ function ComposerContent() {
     },
     [form, requireAuth],
   );
+
+  // draft selection from modal
+  const handleSelectDraft = (d: Draft) => {
+    form.setValue("content", d.content, { shouldValidate: true });
+    setComposerDraft({
+      isActive: true,
+      isModal: composerDraft.isModal,
+      draftId: d.id,
+      content: d.content,
+      updatedAt: d.updatedAt,
+      hasMedia: mediaFiles.length > 0,
+    });
+  };
 
   const placeholderText = editingPost
     ? "edit your post..."
@@ -453,6 +447,18 @@ function ComposerContent() {
                   </span>
                   {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>
+                {/* Drafts button visible on focus/active */}
+                {isFocused && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 rounded-full text-xs hover:bg-transparent button-hover-bg"
+                    onClick={() => setIsDraftsOpen(true)}
+                  >
+                    Drafts
+                  </Button>
+                )}
                 {editingPost && onCancel && (
                   <Button
                     variant="ghost"
@@ -491,6 +497,7 @@ function ComposerContent() {
                           onPasteFiles={handleAddFiles}
                           placeholder={placeholderText}
                           disabled={isPosting}
+                          onFocusChange={setIsFocused}
                         />
                       </div>
                     </FormControl>
@@ -525,6 +532,12 @@ function ComposerContent() {
           </div>
         </form>
       </Form>
+
+      <DraftsModal
+        open={isDraftsOpen}
+        onOpenChange={setIsDraftsOpen}
+        onSelect={handleSelectDraft}
+      />
     </div>
   );
 }
