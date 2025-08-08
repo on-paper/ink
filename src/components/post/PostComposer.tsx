@@ -13,7 +13,7 @@ import {
 import { rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SendHorizontalIcon, VideoIcon, X } from "lucide-react";
+import { ChevronRight, SendHorizontalIcon, VideoIcon, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -38,11 +38,18 @@ import {
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { UserAvatar } from "../user/UserAvatar";
 import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
 import { truncateEthAddress } from "../web3/Address";
+import { useCommunity } from "~/hooks/useCommunity";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -183,12 +190,57 @@ function ComposerContent() {
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+  const isReply = Boolean(replyingTo);
+  const isChannelComposer = Boolean(feed);
+
+  const [selectedChannelId, setSelectedChannelId] = useState<string | undefined>(undefined);
+  const [selectedChannelName, setSelectedChannelName] = useState<string | undefined>(undefined);
+  const { data: currentCommunity } = useCommunity(isChannelComposer ? feed : undefined);
+  const [channels, setChannels] = useState<Array<{ address: string; metadata?: { name?: string } }>>([]);
+  const [isChannelsLoading, setIsChannelsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isChannelComposer || isReply) return;
+    let aborted = false;
+    const controller = new AbortController();
+    setIsChannelsLoading(true);
+    (async () => {
+      try {
+        const collected: Array<{ address: string; metadata?: { name?: string } }> = [];
+        let cursor: string | undefined = undefined;
+        let pages = 0;
+        const maxPages = 5;
+        while (!aborted && pages < maxPages) {
+          const url = `/api/communities?limit=50${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+          const res = await fetch(url, { signal: controller.signal });
+          if (!res.ok) break;
+          const json = await res.json();
+          const list = Array.isArray(json?.data) ? json.data : [];
+          collected.push(...list);
+          if (!json?.nextCursor) break;
+          cursor = json.nextCursor as string;
+          pages += 1;
+        }
+        if (!aborted) setChannels(collected);
+      } catch {
+        // ignore
+      } finally {
+        if (!aborted) setIsChannelsLoading(false);
+      }
+    })();
+    return () => {
+      aborted = true;
+      controller.abort();
+    };
+  }, [isChannelComposer, isReply]);
 
   const { postMutation: post, isPosting: isPostingNew } = useEthereumPost({
     onSuccess: () => {
       onSuccess?.(null);
       form.setValue("content", "");
       setMediaFiles([]);
+      setSelectedChannelId(undefined);
+      setSelectedChannelName(undefined);
       if (replyingTo || quotedPost) {
         onCancel?.();
       }
@@ -411,7 +463,7 @@ function ComposerContent() {
       post({
         content: finalContent,
         parentId: replyingTo?.id,
-        channelId: feed || community,
+        channelId: selectedChannelId || feed || community,
       });
     }
   }
@@ -452,13 +504,57 @@ function ComposerContent() {
               <UserAvatar user={currentUser} />
             </div>
             <div className="grow flex-1">
-              <div className="flex h-5 justify-between items-center">
+              <div className="flex h-5 gap-1.5 items-center">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs sm:text-sm">
                     {currentUser?.username || truncateEthAddress(currentUser?.address)}
                   </span>
                   {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>
+                {!editingPost && !isReply && (
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                    <ChevronRight strokeWidth={2.2} className="w-4 h-4 -mx-1" />
+                    {isChannelComposer ? (
+                      <span className="font-bold">
+                        {currentCommunity?.metadata?.name || feed}
+                      </span>
+                    ) : (
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="hover:text-foreground transition-colors">
+                            {selectedChannelName || "Community"}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="max-h-72 overflow-auto min-w-56">
+                          {isChannelsLoading && (
+                            <DropdownMenuItem disabled className="text-muted-foreground">
+                              Loading channels...
+                            </DropdownMenuItem>
+                          )}
+                          {!isChannelsLoading && channels.length === 0 && (
+                            <DropdownMenuItem disabled className="text-muted-foreground">
+                              No channels available
+                            </DropdownMenuItem>
+                          )}
+                          {channels.map((ch) => {
+                            const name = ch.metadata?.name || ch.address;
+                            return (
+                              <DropdownMenuItem
+                                key={ch.address}
+                                onClick={() => {
+                                  setSelectedChannelId(ch.address);
+                                  setSelectedChannelName(name);
+                                }}
+                              >
+                                <span className="truncate">{name}</span>
+                              </DropdownMenuItem>
+                            );
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
                 {editingPost && onCancel && (
                   <Button
                     variant="ghost"
