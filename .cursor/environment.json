@@ -1,0 +1,10 @@
+{
+  "snapshot": "POPULATED_FROM_SETTINGS",
+  "install": "bash -lc 'set -euo pipefail; export PATH=\"$HOME/.bun/bin:$PATH\"; if [ ! -x \"$HOME/.bun/bin/bun\" ]; then curl -fsSL https://bun.sh/install | bash; fi; bun upgrade --version 1.2.5; bun --version; bun install --frozen-lockfile'",
+  "terminals": [
+    {
+      "name": "Next.js Dev (bun)",
+      "command": "bash -lc 'export PATH=\"$HOME/.bun/bin:$PATH\"; bun run dev'"
+    }
+  ]
+}
