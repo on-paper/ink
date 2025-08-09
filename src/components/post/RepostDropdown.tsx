@@ -3,7 +3,7 @@
 import type { Post } from "@cartel-sh/ui";
 import { EditIcon, RefreshCwIcon, Repeat2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useUser } from "~/components/user/UserContext";
 import { usePostMutations } from "~/hooks/usePostMutations";
@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import PostComposer from "./PostComposer";
+import PostComposer, { type PostComposerHandle } from "./PostComposer";
 
 interface RepostDropdownProps {
   post: Post;
@@ -28,6 +28,8 @@ interface RepostDropdownProps {
 
 export default function RepostDropdown({ post, variant = "post", reactions }: RepostDropdownProps) {
   const [showQuoteDialog, setShowQuoteDialog] = useState(false);
+  const composerRef = useRef<PostComposerHandle | null>(null);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const { requireAuth } = useUser();
@@ -112,21 +114,60 @@ export default function RepostDropdown({ post, variant = "post", reactions }: Re
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={showQuoteDialog} onOpenChange={setShowQuoteDialog}>
+      <Dialog open={showQuoteDialog} onOpenChange={(open) => {
+        if (!open) {
+          if (composerRef.current?.getIsDirty()) {
+            setIsCloseConfirmOpen(true);
+            return;
+          }
+        }
+        setShowQuoteDialog(open);
+      }}>
         <DialogContent className="max-w-2xl" onClick={(e) => e.stopPropagation()}>
           <Card className="p-4">
             <PostComposer
+              ref={composerRef as any}
               quotedPost={post}
               initialContent={prefillContent}
               onCancel={() => setShowQuoteDialog(false)}
-              onSuccess={(newPost) => {
-                setShowQuoteDialog(false);
-                if (newPost?.id && !newPost.id.startsWith("optimistic-")) {
-                  router.push(`/p/${newPost.id}`);
-                }
-              }}
+              onSuccess={() => setShowQuoteDialog(false)}
             />
           </Card>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCloseConfirmOpen} onOpenChange={setIsCloseConfirmOpen}>
+        <DialogContent className="p-0 gap-0 max-w-xs rounded-2xl">
+          <div className="flex flex-col items-center p-6">
+            <h2 className="text-lg font-semibold">Save draft?</h2>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              You have unsent content. Save it as a draft or discard it.
+            </p>
+          </div>
+          <div className="flex w-full h-12">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                composerRef.current?.discardDraft();
+                setIsCloseConfirmOpen(false);
+                setShowQuoteDialog(false);
+              }}
+              className="w-1/2 rounded-none rounded-bl-lg border-t border-r hover:bg-muted/50"
+            >
+              Discard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                composerRef.current?.saveDraft();
+                setIsCloseConfirmOpen(false);
+                setShowQuoteDialog(false);
+              }}
+              className="w-1/2 rounded-none rounded-br-lg border-t hover:bg-muted/50"
+            >
+              Save Draft
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -2,12 +2,12 @@
 
 import { type User, type UserStats } from "@cartel-sh/ui";
 import { Link as LinkIcon, ShieldOffIcon, VolumeXIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUserActions } from "~/hooks/useUserActions";
 import { socialPlatforms } from "~/lib/socialPlatforms";
 import { FollowButton } from "../FollowButton";
 
-import PostComposer from "../post/PostComposer";
+import PostComposer, { type PostComposerHandle } from "../post/PostComposer";
 import { TruncatedText } from "../TruncatedText";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -79,6 +79,8 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
   const { user: authedUser } = useUser();
   const { requireAuth } = useUser();
   const [isMentionDialogOpen, setIsMentionDialogOpen] = useState(false);
+  const composerRef = useRef<PostComposerHandle | null>(null);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   // const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const userActions = useUserActions(user || ({} as User));
 
@@ -224,15 +226,59 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
         </div>
       )}
 
-      <Dialog open={isMentionDialogOpen} onOpenChange={setIsMentionDialogOpen} modal={true}>
+      <Dialog open={isMentionDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          if (composerRef.current?.getIsDirty()) {
+            setIsCloseConfirmOpen(true);
+            return;
+          }
+        }
+        setIsMentionDialogOpen(open);
+      }} modal={true}>
         <DialogContent className="max-w-full sm:max-w-[700px]">
           <Card className="p-4">
             <PostComposer
+              ref={composerRef as any}
               user={authedUser}
               initialContent={`@lens/${user.username} `}
               onSuccess={() => setIsMentionDialogOpen(false)}
             />
           </Card>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCloseConfirmOpen} onOpenChange={setIsCloseConfirmOpen}>
+        <DialogContent className="p-0 gap-0 max-w-xs rounded-2xl">
+          <div className="flex flex-col items-center p-6">
+            <h2 className="text-lg font-semibold">Save draft?</h2>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              You have unsent content. Save it as a draft or discard it.
+            </p>
+          </div>
+          <div className="flex w-full h-12">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                composerRef.current?.discardDraft();
+                setIsCloseConfirmOpen(false);
+                setIsMentionDialogOpen(false);
+              }}
+              className="w-1/2 rounded-none rounded-bl-lg border-t border-r hover:bg-muted/50"
+            >
+              Discard
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                composerRef.current?.saveDraft();
+                setIsCloseConfirmOpen(false);
+                setIsMentionDialogOpen(false);
+              }}
+              className="w-1/2 rounded-none rounded-br-lg border-t hover:bg-muted/50"
+            >
+              Save Draft
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

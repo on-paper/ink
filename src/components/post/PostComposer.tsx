@@ -15,7 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, SendHorizontalIcon, VideoIcon, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -50,6 +50,9 @@ import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
 import { truncateEthAddress } from "../web3/Address";
 import { useCommunity } from "~/hooks/useCommunity";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { formatDate } from "~/utils/formatDate";
+import { deleteDraft, generateDraftId, getDraft, loadDrafts, PostDraft, upsertDraft } from "~/utils/drafts";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -169,6 +172,8 @@ export interface PostComposerProps {
   onSuccess?: (post?: Post | null) => void;
   onCancel?: () => void;
   isReplyingToComment?: boolean;
+  onContentChange?: (content: string) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 function ComposerContent() {
@@ -186,10 +191,17 @@ function ComposerContent() {
     isReplyingToComment = false,
     onSuccess,
     onCancel,
+    onDirtyChange,
+    onContentChange,
+    registerImperativeApi,
   } = useComposer();
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isDraftsOpen, setIsDraftsOpen] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<string | undefined>(undefined);
+  const draftsUserId = currentUser?.id || currentUser?.address || undefined;
   const isReply = Boolean(replyingTo);
   const isChannelComposer = Boolean(feed);
 
@@ -271,6 +283,67 @@ function ComposerContent() {
 
   const watchedContent = form.watch("content");
   const isEmpty = !watchedContent.trim() && mediaFiles.length === 0;
+
+  // Inform parent of dirty state/content
+  useEffect(() => {
+    onDirtyChange?.(!isEmpty && !editingPost && !isReply);
+    onContentChange?.(watchedContent);
+  }, [watchedContent, isEmpty, editingPost, isReply]);
+
+  // Autosave drafts for new posts (not replies, not editing)
+  useEffect(() => {
+    if (editingPost || isReply) return;
+    const trimmed = watchedContent.trim();
+    const hasContent = trimmed.length > 0 || mediaFiles.length > 0;
+    if (!hasContent) return;
+
+    const id = currentDraftId || generateDraftId();
+    if (!currentDraftId) setCurrentDraftId(id);
+
+    const draft: PostDraft = {
+      id,
+      content: watchedContent,
+      createdAt: currentDraftId ? getDraft(draftsUserId, currentDraftId)?.createdAt || Date.now() : Date.now(),
+      updatedAt: Date.now(),
+      context: {
+        community,
+        feed,
+        replyingToId: replyingTo?.id,
+        quotedPostId: quotedPost?.id,
+      },
+    };
+
+    const handle = setTimeout(() => {
+      upsertDraft(draftsUserId, draft);
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [watchedContent, mediaFiles.length, editingPost, isReply, community, feed, replyingTo?.id, quotedPost?.id, draftsUserId, currentDraftId]);
+
+  // Save on unload just in case
+  useEffect(() => {
+    if (editingPost || isReply) return;
+    const beforeUnload = () => {
+      const trimmed = watchedContent.trim();
+      if (trimmed.length === 0 && mediaFiles.length === 0) return;
+      const id = currentDraftId || generateDraftId();
+      if (!currentDraftId) setCurrentDraftId(id);
+      const draft: PostDraft = {
+        id,
+        content: watchedContent,
+        createdAt: currentDraftId ? getDraft(draftsUserId, currentDraftId)?.createdAt || Date.now() : Date.now(),
+        updatedAt: Date.now(),
+        context: { community, feed, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
+      };
+      upsertDraft(draftsUserId, draft);
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [watchedContent, mediaFiles.length, editingPost, isReply, community, feed, replyingTo?.id, quotedPost?.id, draftsUserId, currentDraftId]);
+
+  // When posting succeeds, clear draft if any
+  useEffect(() => {
+    if (!isPosting) return;
+  }, [isPosting]);
 
   useEffect(() => {
     if (editingPost?.metadata) {
@@ -465,6 +538,11 @@ function ComposerContent() {
         parentId: replyingTo?.id,
         channelId: selectedChannelId || feed || community,
       });
+      // Remove current draft on submit
+      if (currentDraftId) {
+        deleteDraft(draftsUserId, currentDraftId);
+        setCurrentDraftId(undefined);
+      }
     }
   }
 
@@ -476,6 +554,55 @@ function ComposerContent() {
     },
     [form, requireAuth],
   );
+
+  // Drafts listing and actions
+  const drafts = useMemo(() => loadDrafts(draftsUserId), [draftsUserId, isDraftsOpen]);
+  const loadDraftIntoComposer = (draftId: string) => {
+    const d = getDraft(draftsUserId, draftId);
+    if (!d) return;
+    form.setValue("content", d.content, { shouldValidate: true });
+    setCurrentDraftId(draftId);
+    setIsDraftsOpen(false);
+  };
+  const discardCurrentDraft = () => {
+    if (currentDraftId) {
+      deleteDraft(draftsUserId, currentDraftId);
+      setCurrentDraftId(undefined);
+    }
+  };
+  const saveCurrentDraft = () => {
+    const trimmed = watchedContent.trim();
+    if (editingPost || isReply || (trimmed.length === 0 && mediaFiles.length === 0)) return;
+    const id = currentDraftId || generateDraftId();
+    const draft: PostDraft = {
+      id,
+      content: watchedContent,
+      createdAt: currentDraftId ? getDraft(draftsUserId, currentDraftId)?.createdAt || Date.now() : Date.now(),
+      updatedAt: Date.now(),
+      context: { community, feed, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
+    };
+    upsertDraft(draftsUserId, draft);
+    if (!currentDraftId) setCurrentDraftId(id);
+  };
+
+  useEffect(() => {
+    registerImperativeApi?.({
+      saveDraft: saveCurrentDraft,
+      discardDraft: discardCurrentDraft,
+      getIsDirty: () => !isEmpty && !editingPost && !isReply,
+    });
+  }, [registerImperativeApi, saveCurrentDraft, discardCurrentDraft, isEmpty, editingPost, isReply]);
+
+  // Focus tracking on editor area
+  const focusTimerRef = useRef<number | null>(null);
+  const handleFocusIn = () => {
+    if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
+    setIsFocused(true);
+  };
+  const handleFocusOut = () => {
+    if (focusTimerRef.current) window.clearTimeout(focusTimerRef.current);
+    focusTimerRef.current = window.setTimeout(() => setIsFocused(false), 120);
+  };
 
   const placeholderText = editingPost
     ? "edit your post..."
@@ -490,7 +617,7 @@ function ComposerContent() {
   const isSmallAvatar = replyingTo && isReplyingToComment;
 
   return (
-    <div className="w-full" {...getRootProps()} onClick={(e) => e.stopPropagation()}>
+    <div className="w-full" {...getRootProps()} onClick={(e) => e.stopPropagation()} onFocusCapture={handleFocusIn} onBlurCapture={handleFocusOut}>
       <input {...getInputProps()} />
       {isDragActive && (
         <div className="absolute inset-0 bg-black/20 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-primary">
@@ -555,22 +682,29 @@ function ComposerContent() {
                     )}
                   </div>
                 )}
-                {editingPost && onCancel && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-full hover:bg-transparent hover:scale-105 active:scale-95 button-hover-bg button-hover-bg-equal"
-                    onClick={onCancel}
-                    disabled={isPosting}
-                  >
-                    <X
-                      size={18}
-                      strokeWidth={2.2}
-                      stroke="hsl(var(--muted-foreground))"
-                      className="transition-all duration-200"
-                    />
-                  </Button>
-                )}
+                <div className="ml-auto flex items-center gap-2">
+                  {isFocused && !editingPost && !isReply && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setIsDraftsOpen(true)} className="h-7 px-2 text-xs">
+                      Drafts
+                    </Button>
+                  )}
+                  {editingPost && onCancel && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-full hover:bg-transparent hover:scale-105 active:scale-95 button-hover-bg button-hover-bg-equal"
+                      onClick={onCancel}
+                      disabled={isPosting}
+                    >
+                      <X
+                        size={18}
+                        strokeWidth={2.2}
+                        stroke="hsl(var(--muted-foreground))"
+                        className="transition-all duration-200"
+                      />
+                    </Button>
+                  )}
+                </div>
               </div>
               <FormField
                 control={form.control}
@@ -584,6 +718,7 @@ function ComposerContent() {
                           onChange={(value) => {
                             if (!requireAuth()) return;
                             field.onChange(value);
+                            onContentChange?.(value);
                           }}
                           onKeyDown={(e) => {
                             if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -628,38 +763,57 @@ function ComposerContent() {
           </div>
         </form>
       </Form>
+
+      {/* Drafts Modal */}
+      <Dialog open={isDraftsOpen} onOpenChange={setIsDraftsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Drafts</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 max-h-80 overflow-auto">
+            {drafts.length === 0 && <div className="text-sm text-muted-foreground">No drafts yet</div>}
+            {drafts.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className="w-full text-left p-2 rounded-md hover:bg-accent/50 transition-colors"
+                onClick={() => loadDraftIntoComposer(d.id)}
+              >
+                <div className="text-xs text-muted-foreground">{formatDate(new Date(d.createdAt), "MMM d, yyyy")}</div>
+                <div className="truncate text-sm">{d.content.split("\n")[0] || "(empty)"}</div>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-export default function PostComposer({
-  user,
-  replyingTo,
-  quotedPost,
-  editingPost,
-  initialContent = "",
-  community,
-  feed,
-  onSuccess,
-  onCancel,
-  isReplyingToComment = false,
-}: PostComposerProps) {
-  const contextValue = {
-    user,
-    replyingTo,
-    quotedPost,
-    editingPost,
-    initialContent,
-    community,
-    feed,
-    isReplyingToComment,
-    onSuccess,
-    onCancel,
-  };
+export type PostComposerHandle = {
+  getIsDirty: () => boolean;
+  saveDraft: () => void;
+  discardDraft: () => void;
+};
 
+const ForwardedPostComposer = forwardRef<PostComposerHandle, PostComposerProps>(function PostComposerForwarded(
+  props,
+  ref,
+) {
+  const apiRef = useRef<PostComposerHandle | null>(null);
+  const registerImperativeApi = (api: PostComposerHandle) => {
+    apiRef.current = api;
+  };
+  useImperativeHandle(ref, () => ({
+    getIsDirty: () => apiRef.current?.getIsDirty?.() || false,
+    saveDraft: () => apiRef.current?.saveDraft?.(),
+    discardDraft: () => apiRef.current?.discardDraft?.(),
+  }));
   return (
-    <ComposerProvider value={contextValue}>
+    <ComposerProvider value={{ ...props, registerImperativeApi }}>
       <ComposerContent />
     </ComposerProvider>
   );
-}
+});
+
+export default ForwardedPostComposer;

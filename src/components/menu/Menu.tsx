@@ -4,13 +4,14 @@ import type { User } from "@cartel-sh/ui";
 import { Bookmark, Heart, LogInIcon, PlusIcon, Users, LogOutIcon, MoonIcon, SunIcon, SettingsIcon, UserIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import PaperLogo from "~/components/icons/PaperLogo";
 import { Dock } from "~/components/ui/dock";
 import { cn } from "~/utils";
 import { useNotifications } from "../notifications/NotificationsContext";
-import PostComposer from "../post/PostComposer";
+import PostComposer, { type PostComposerHandle } from "../post/PostComposer";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { Button } from "../ui/button";
 import { UserAvatar } from "../user/UserAvatar";
 import { useAuth } from "~/hooks/useSiweAuth";
 
@@ -26,6 +27,9 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const { newCount } = useNotifications();
   const { theme, setTheme } = useTheme();
   const { signOut } = useAuth();
+  const composerRef = useRef<PostComposerHandle | null>(null);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
+  const [pendingClose, setPendingClose] = useState(false);
 
   useEffect(() => {
     router.prefetch("/home");
@@ -223,10 +227,25 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
       </div>
 
       {isAuthenticated && (
-        <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen} modal={true}>
+        <Dialog
+          open={isPostDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              if (composerRef.current?.getIsDirty()) {
+                setIsCloseConfirmOpen(true);
+                setPendingClose(true);
+                return;
+              }
+            }
+            setIsPostDialogOpen(open);
+          }}
+          modal={true}
+        >
           <DialogContent className="max-w-full sm:max-w-[700px]">
             <PostComposer
+              ref={composerRef as any}
               user={user}
+              onDirtyChange={() => {/* handled via ref */}}
               onSuccess={(newPost) => {
                 setIsPostDialogOpen(false);
                 if (newPost && !(newPost as any).isOptimistic) {
@@ -234,6 +253,46 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
                 }
               }}
             />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Close confirmation dialog */}
+      {isAuthenticated && (
+        <Dialog open={isCloseConfirmOpen} onOpenChange={setIsCloseConfirmOpen}>
+          <DialogContent className="p-0 gap-0 max-w-xs rounded-2xl">
+            <div className="flex flex-col items-center p-6">
+              <h2 className="text-lg font-semibold">Save draft?</h2>
+              <p className="text-sm text-muted-foreground text-center mt-2">
+                You have unsent content. Save it as a draft or discard it.
+              </p>
+            </div>
+            <div className="flex w-full h-12">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  composerRef.current?.discardDraft();
+                  setIsCloseConfirmOpen(false);
+                  setIsPostDialogOpen(false);
+                  setPendingClose(false);
+                }}
+                className="w-1/2 rounded-none rounded-bl-lg border-t border-r hover:bg-muted/50"
+              >
+                Discard
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  composerRef.current?.saveDraft();
+                  setIsCloseConfirmOpen(false);
+                  setIsPostDialogOpen(false);
+                  setPendingClose(false);
+                }}
+                className="w-1/2 rounded-none rounded-br-lg border-t hover:bg-muted/50"
+              >
+                Save Draft
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
