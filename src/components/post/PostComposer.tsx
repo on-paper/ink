@@ -675,7 +675,7 @@ function ComposerContent() {
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <button type="button" className="hover:text-foreground transition-colors">
-                            {selectedChannelName || "Community"}
+                            {selectedChannelName || "global"}
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="max-h-72 overflow-auto min-w-56">
