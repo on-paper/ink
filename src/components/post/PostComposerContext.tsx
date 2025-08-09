@@ -14,6 +14,14 @@ interface ComposerContextValue {
   isReplyingToComment?: boolean;
   onSuccess?: (post?: Post | null) => void;
   onCancel?: () => void;
+  onContentChange?: (content: string) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  registerImperativeApi?: (api: {
+    saveDraft: () => void;
+    discardDraft: () => void;
+    getIsDirty: () => boolean;
+    confirmClose: () => Promise<boolean>;
+  }) => void;
 }
 
 const ComposerContext = createContext<ComposerContextValue | undefined>(undefined);

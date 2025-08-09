@@ -2,12 +2,12 @@
 
 import { type User, type UserStats } from "@cartel-sh/ui";
 import { Link as LinkIcon, ShieldOffIcon, VolumeXIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUserActions } from "~/hooks/useUserActions";
 import { socialPlatforms } from "~/lib/socialPlatforms";
 import { FollowButton } from "../FollowButton";
 
-import PostComposer from "../post/PostComposer";
+import PostComposer, { type PostComposerHandle } from "../post/PostComposer";
 import { TruncatedText } from "../TruncatedText";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -79,6 +79,7 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
   const { user: authedUser } = useUser();
   const { requireAuth } = useUser();
   const [isMentionDialogOpen, setIsMentionDialogOpen] = useState(false);
+  const composerRef = useRef<PostComposerHandle | null>(null);
   // const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const userActions = useUserActions(user || ({} as User));
 
@@ -224,10 +225,17 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
         </div>
       )}
 
-      <Dialog open={isMentionDialogOpen} onOpenChange={setIsMentionDialogOpen} modal={true}>
+      <Dialog open={isMentionDialogOpen} onOpenChange={async (open) => {
+        if (!open) {
+          const canClose = await (composerRef.current?.confirmClose?.() || Promise.resolve(true));
+          if (!canClose) return;
+        }
+        setIsMentionDialogOpen(open);
+      }} modal={true}>
         <DialogContent className="max-w-full sm:max-w-[700px]">
           <Card className="p-4">
             <PostComposer
+              ref={composerRef as any}
               user={authedUser}
               initialContent={`@lens/${user.username} `}
               onSuccess={() => setIsMentionDialogOpen(false)}

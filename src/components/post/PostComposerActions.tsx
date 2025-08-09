@@ -1,4 +1,4 @@
-import { ImageIcon, SmileIcon } from "lucide-react";
+import { BookDashed, ImageIcon, SmileIcon } from "lucide-react";
 import { useState } from "react";
 import { EmojiPicker } from "../emoji/EmojiPicker";
 import { Button } from "../ui/button";
@@ -7,9 +7,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dr
 interface PostComposerActionsProps {
   onImageClick: () => void;
   onEmojiClick: (emoji: any) => void;
+  onDraftsClick?: () => void;
 }
 
-export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposerActionsProps) {
+export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick }: PostComposerActionsProps) {
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const handleEmojiClick = (emoji: any) => {
@@ -55,6 +56,19 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+      {onDraftsClick && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal"
+          onClick={onDraftsClick}
+          aria-label="Open drafts"
+          title="Drafts"
+        >
+          <BookDashed className="h-5 w-5 text-muted-foreground" />
+        </Button>
+      )}
     </div>
   );
 }
