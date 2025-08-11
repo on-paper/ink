@@ -2,6 +2,7 @@
 
 import type { Group } from "@cartel-sh/ui";
 import Link from "~/components/Link";
+import { formatChannelIdForUrl } from "~/utils";
 import { CommunityIcon } from "./CommunityIcon";
 import { Card, CardContent } from "../ui/card";
 
@@ -11,7 +12,7 @@ interface CommunityViewProps {
 }
 
 export function CommunityView({ community, isVertical = false }: CommunityViewProps) {
-  const communityUrl = `/c/${community.address}`;
+  const communityUrl = `/c/${formatChannelIdForUrl(community.address)}`;
 
   return (
     <Link href={communityUrl} className="block ">

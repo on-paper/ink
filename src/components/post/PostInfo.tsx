@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Link from "~/components/Link";
 import { Badge } from "../ui/badge";
 import { useUser } from "~/components/user/UserContext";
+import { formatChannelIdForUrl } from "~/utils";
 
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
@@ -103,7 +104,10 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
       )}
       {channel?.id && channelName && (
         <>
-          <Link href={`/c/${channel.id}`} className="flex items-center justify-center font-bold gap-1.5">
+          <Link
+            href={`/c/${formatChannelIdForUrl(channel.id)}`}
+            className="flex items-center justify-center font-bold gap-1.5"
+          >
             <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
             {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
             {channelName}
