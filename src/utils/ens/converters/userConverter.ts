@@ -65,7 +65,7 @@ export function ensAccountToUser(account: EthFollowAccount): User {
     id: address,
     address: address,
     username: ensName,
-    profilePictureUrl: avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`,
+    profilePictureUrl: avatar || `https://api.dicebear.com/9.x/glass/svg?seed=${address}`,
     description: description || null,
     namespace: "ens",
     metadata:

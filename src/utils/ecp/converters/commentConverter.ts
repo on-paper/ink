@@ -57,7 +57,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     address: authorAddress,
     username: displayName,
     namespace: "ens",
-    profilePictureUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${authorAddress}`,
+    profilePictureUrl: `https://api.dicebear.com/9.x/glass/svg?seed=${authorAddress}`,
     description: null,
     actions: {
       followed: false,
