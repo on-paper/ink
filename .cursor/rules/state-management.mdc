@@ -1,0 +1,15 @@
+---
+description: State management patterns (Redux Toolkit, React Query, React Hook Form)
+globs:
+  - "src/components/**"
+  - "src/hooks/**"
+  - "src/app/**"
+alwaysApply: false
+---
+
+- For global app state, prefer Redux Toolkit where necessary and keep global state minimal.
+- Use React Query (TanStack Query) for server state, caching, and invalidation. Co-locate queries/mutations within `src/hooks/`.
+- Use React Hook Form for forms; integrate with Shadcn/UI controls.
+- Isolate complex state logic inside custom hooks; keep components declarative.
+
+

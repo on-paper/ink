@@ -1,0 +1,11 @@
+---
+description: Code style and file organization policies
+globs:
+alwaysApply: true
+---
+
+- Prefer fewer files; only create new files when absolutely necessary.
+- Use individual exports in files; do not create index files.
+- Use Biome for formatting and linting.
+
+

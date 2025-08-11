@@ -1,0 +1,24 @@
+---
+description: Web3 integration guidance and docs (ENS, EFP, ECP, Ethereum Identity Kit)
+globs:
+  - "src/components/web3/**"
+  - "src/lib/**"
+  - "src/utils/**"
+  - "src/hooks/**"
+alwaysApply: false
+---
+
+- Use Wagmi for Ethereum interactions and Viem for blockchain utilities.
+- For EFP and ECP, start with the minimal LLM docs; use the full docs for comprehensive APIs and edge cases.
+- Keep identity and follow graph features consistent with Ethereum Identity Kit.
+
+Docs:
+- EFP minimal: https://docs.efp.app/llms.txt
+- EFP full: https://docs.efp.app/llms-full.txt
+- ECP minimal: https://docs.ethcomments.xyz/llms.txt
+- ECP full: https://docs.ethcomments.xyz/llms-full.txt
+- Ethereum Identity Kit minimal: https://ethidentitykit.com/llms/complete/llms.txt
+- Ethereum Identity Kit full: https://ethidentitykit.com/llms/complete/llms-full.txt
+
+@CLAUDE.md
+

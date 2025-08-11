@@ -1,0 +1,26 @@
+---
+description: Architecture overview and directory map for Paper
+globs:
+alwaysApply: false
+---
+
+Paper is a minimalistic decentralized social platform built on:
+- ENS, EFP, ECP for Ethereum integration
+- Next.js 14 (App Router)
+- TypeScript
+- Bun
+
+Directory structure highlights:
+- `src/app/`: Next.js App Router pages and API routes
+  - `(feed)/`, `(title)/`, `api/`, `p/[post]/`, `u/[user]/`
+- `src/components/`: React components organized by domain
+  - `auth/`, `communities/`, `notifications/`, `menu/`, `post/`, `ui/`, `user/`, `web3/`
+- `src/lib/`: Protocol and service integrations
+- `src/utils/`: Utilities, helpers, and tests
+
+Key technologies:
+- Web3: ENS, EFP, ECP, Ethereum Identity Kit
+- Ethereum: Wagmi, Viem
+- UI/Styling: Tailwind CSS, Shadcn/UI, Framer Motion
+
+

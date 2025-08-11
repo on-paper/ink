@@ -1,0 +1,14 @@
+---
+description: UI and component conventions for src/components
+globs:
+  - "src/components/**"
+alwaysApply: false
+---
+
+- Use Tailwind CSS for styling.
+- Use Shadcn/UI (Radix primitives) for base components.
+- Prefer Framer Motion for animations where needed.
+- Organize components by domain (`post/`, `user/`, `communities/`, etc.).
+- Leverage the custom background gradient system where applicable.
+
+

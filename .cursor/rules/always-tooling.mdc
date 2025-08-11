@@ -1,0 +1,21 @@
+---
+description: Enforce Bun, Biome, and TypeScript workflow for this project
+globs:
+alwaysApply: true
+---
+
+- Use Bun (v1.2.5). Do not use Node.js, npm, pnpm, or Vite commands in this repo.
+- Install dependencies with Bun.
+- Lint and format before commits using Biome.
+- After any TypeScript edit, run a type check and fix all errors until none remain.
+- Assume the dev server is already running; do not start or stop dev/build tasks from the Agent.
+
+Common commands:
+
+```bash
+bun install
+bun x @biomejs/biome check --write --unsafe ./src/*
+bunx tsc --noEmit
+```
+
+

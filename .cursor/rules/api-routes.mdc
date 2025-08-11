@@ -1,0 +1,13 @@
+---
+description: Standards and expectations for API routes in src/app/api
+globs:
+  - "src/app/api/**"
+alwaysApply: false
+---
+
+- Follow RESTful conventions within Next.js App Router APIs.
+- Keep handlers cohesive and domain-focused; delegate to `src/lib` and `src/utils` when appropriate.
+- Reuse types from `src/types` to ensure consistent IO contracts.
+- Integrate Web3 protocols (EFP/ECP/ENS) via utilities in `src/lib` and `src/utils`.
+
+

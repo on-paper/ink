@@ -1,0 +1,12 @@
+---
+description: Commit message conventions
+globs:
+alwaysApply: true
+---
+
+- Use lowercase commit messages.
+- Keep commit messages short.
+- Do not add authors.
+- Example: "add x, fix y, update z"
+
+
