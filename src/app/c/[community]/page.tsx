@@ -53,7 +53,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
           <div className="">
             {community.canPost && !community.isBanned && (
               <Card className="p-4">
-                <PostComposer user={user} feed={channelId} community={params.community} />
+                <PostComposer user={user} community={params.community} />
               </Card>
             )}
           </div>

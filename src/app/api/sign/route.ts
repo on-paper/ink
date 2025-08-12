@@ -48,9 +48,9 @@ export async function POST(req: NextRequest) {
       ...(parentId
         ? { parentId }
         : {
-          targetUri: channelId ? "" : targetUri || "app://paper.ink",
-          ...(channelId ? { channelId } : {}),
-        }),
+            targetUri: channelId ? "" : targetUri || "app://paper.ink",
+            ...(channelId ? { channelId } : {}),
+          }),
     } as any);
 
     const typedCommentData = createCommentTypedData({

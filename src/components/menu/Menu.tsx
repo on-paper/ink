@@ -1,19 +1,29 @@
 "use client";
 
 import type { User } from "@cartel-sh/ui";
-import { Bookmark, Heart, LogInIcon, PlusIcon, Users, LogOutIcon, MoonIcon, SunIcon, SettingsIcon, UserIcon } from "lucide-react";
+import {
+  Bookmark,
+  Heart,
+  LogInIcon,
+  LogOutIcon,
+  MoonIcon,
+  PlusIcon,
+  SettingsIcon,
+  SunIcon,
+  UserIcon,
+  Users,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import PaperLogo from "~/components/icons/PaperLogo";
 import { Dock } from "~/components/ui/dock";
+import { useAuth } from "~/hooks/useSiweAuth";
 import { cn } from "~/utils";
 import { useNotifications } from "../notifications/NotificationsContext";
 import PostComposer, { type PostComposerHandle } from "../post/PostComposer";
 import { Dialog, DialogContent } from "../ui/dialog";
-import { Button } from "../ui/button";
 import { UserAvatar } from "../user/UserAvatar";
-import { useAuth } from "~/hooks/useSiweAuth";
 
 interface MenuClientProps {
   isAuthenticated: boolean;
@@ -48,18 +58,14 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
 
   let homeInnerIcon: React.ReactNode;
   if (isHome) {
-    homeInnerIcon = (
-      <PaperLogo className="w-5 h-5 md:w-6 md:h-6" stroke="currentColor" strokeWidth={2.25} />
-    );
+    homeInnerIcon = <PaperLogo className="w-5 h-5 md:w-6 md:h-6" stroke="currentColor" strokeWidth={2.25} />;
   } else if (isCommunities) {
     homeInnerIcon = <Users className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />;
   } else {
     homeInnerIcon = <PaperLogo className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />;
   }
 
-  const homeIcon = (
-    <div className="relative w-full h-full flex items-center justify-center">{homeInnerIcon}</div>
-  );
+  const homeIcon = <div className="relative w-full h-full flex items-center justify-center">{homeInnerIcon}</div>;
 
   const activityIcon = (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -108,7 +114,8 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const profileHandle = user?.username || user?.address;
   const profilePath = profileHandle ? `/u/${profileHandle}` : undefined;
   const isProfile = profilePath ? pathname === profilePath || pathname.startsWith(`${profilePath}/`) : false;
-  const displayName = user?.username || (user?.address ? `${user.address.slice(0, 4)}...${user.address.slice(-4)}` : "User");
+  const displayName =
+    user?.username || (user?.address ? `${user.address.slice(0, 4)}...${user.address.slice(-4)}` : "User");
   const goProfile = () => {
     if (profilePath) router.push(profilePath);
   };
@@ -240,7 +247,9 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
             <PostComposer
               ref={composerRef as any}
               user={user}
-              onDirtyChange={() => {/* handled via ref */ }}
+              onDirtyChange={() => {
+                /* handled via ref */
+              }}
               onSuccess={(newPost) => {
                 setIsPostDialogOpen(false);
                 if (newPost && !(newPost as any).isOptimistic) {

@@ -15,7 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, SendHorizontalIcon, VideoIcon, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -24,11 +24,21 @@ import { Form, FormControl, FormField, FormItem } from "@/src/components/ui/form
 import { useUser } from "~/components/user/UserContext";
 import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
-import { storageClient } from "~/utils/lens/storage";
 import { getBaseUrl } from "~/utils/getBaseUrl";
+import { storageClient } from "~/utils/lens/storage";
 
 export const MAX_CONTENT_LENGTH = 1000;
 
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  deleteDraftAtomFamily,
+  draftsAtomFamily,
+  generateDraftId,
+  type PostDraft,
+  upsertDraftAtomFamily,
+} from "~/atoms/drafts";
+import { useCommunity } from "~/hooks/useCommunity";
+import { formatDate } from "~/utils/formatDate";
 import {
   castToMediaImageType,
   castToMediaVideoType,
@@ -38,28 +48,13 @@ import {
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { UserAvatar } from "../user/UserAvatar";
+import { truncateEthAddress } from "../web3/Address";
 import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
-import { truncateEthAddress } from "../web3/Address";
-import { useCommunity } from "~/hooks/useCommunity";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { formatDate } from "~/utils/formatDate";
-import { useAtomValue, useSetAtom } from "jotai";
-import {
-  draftsAtomFamily,
-  generateDraftId,
-  type PostDraft,
-  upsertDraftAtomFamily,
-  deleteDraftAtomFamily,
-} from "~/atoms/drafts";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -175,7 +170,6 @@ export interface PostComposerProps {
   editingPost?: Post;
   initialContent?: string;
   community?: string;
-  feed?: string;
   onSuccess?: (post?: Post | null) => void;
   onCancel?: () => void;
   isReplyingToComment?: boolean;
@@ -194,7 +188,6 @@ function ComposerContent() {
     editingPost,
     initialContent = "",
     community,
-    feed,
     isReplyingToComment = false,
     onSuccess,
     onCancel,
@@ -213,7 +206,9 @@ function ComposerContent() {
   const closeConfirmResolverRef = useRef<((canClose: boolean) => void) | null>(null);
   const draftsUserId = currentUser?.id || currentUser?.address || undefined;
   const isReply = Boolean(replyingTo);
-  const isChannelComposer = Boolean(feed);
+  const communityFromPath = pathname.split("/")[1] === "c" ? pathname.split("/")[2] : "";
+  const channelIdForContext = (community || communityFromPath) as string | undefined;
+  const isChannelComposer = Boolean(channelIdForContext);
 
   // Drafts state via Jotai persistent storage
   const drafts = useAtomValue(draftsAtomFamily(draftsUserId));
@@ -222,7 +217,7 @@ function ComposerContent() {
 
   const [selectedChannelId, setSelectedChannelId] = useState<string | undefined>(undefined);
   const [selectedChannelName, setSelectedChannelName] = useState<string | undefined>(undefined);
-  const { data: currentCommunity } = useCommunity(isChannelComposer ? feed : undefined);
+  const { data: currentCommunity } = useCommunity(isChannelComposer ? channelIdForContext : undefined);
   const [channels, setChannels] = useState<Array<{ address: string; metadata?: { name?: string } }>>([]);
   const [isChannelsLoading, setIsChannelsLoading] = useState(false);
 
@@ -234,7 +229,7 @@ function ComposerContent() {
     (async () => {
       try {
         const collected: Array<{ address: string; metadata?: { name?: string } }> = [];
-        let cursor: string | undefined = undefined;
+        let cursor: string | undefined;
         let pages = 0;
         const maxPages = 5;
         while (!aborted && pages < maxPages) {
@@ -286,8 +281,8 @@ function ComposerContent() {
   const isPosting = editingPost ? isEditingPost : isPostingNew;
 
   const pathSegments = pathname.split("/");
-  const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
-  const finalCommunity = community || communityFromPath;
+  const communityFromPath2 = pathSegments[1] === "c" ? pathSegments[2] : "";
+  const finalCommunity = community || communityFromPath2;
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -322,7 +317,6 @@ function ComposerContent() {
       updatedAt: Date.now(),
       context: {
         community,
-        feed,
         replyingToId: replyingTo?.id,
         quotedPostId: quotedPost?.id,
       },
@@ -332,7 +326,18 @@ function ComposerContent() {
       upsertDraftAtom(draft);
     }, 400);
     return () => clearTimeout(handle);
-  }, [watchedContent, mediaFiles.length, editingPost, isReply, community, feed, replyingTo?.id, quotedPost?.id, draftsUserId, currentDraftId, upsertDraftAtom]);
+  }, [
+    watchedContent,
+    mediaFiles.length,
+    editingPost,
+    isReply,
+    community,
+    replyingTo?.id,
+    quotedPost?.id,
+    draftsUserId,
+    currentDraftId,
+    upsertDraftAtom,
+  ]);
 
   // Save on unload just in case
   useEffect(() => {
@@ -348,13 +353,24 @@ function ComposerContent() {
         content: watchedContent,
         createdAt: currentDraftCreatedAtRef.current || Date.now(),
         updatedAt: Date.now(),
-        context: { community, feed, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
+        context: { community, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
       };
       upsertDraftAtom(draft);
     };
     window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
-  }, [watchedContent, mediaFiles.length, editingPost, isReply, community, feed, replyingTo?.id, quotedPost?.id, draftsUserId, currentDraftId, upsertDraftAtom]);
+  }, [
+    watchedContent,
+    mediaFiles.length,
+    editingPost,
+    isReply,
+    community,
+    replyingTo?.id,
+    quotedPost?.id,
+    draftsUserId,
+    currentDraftId,
+    upsertDraftAtom,
+  ]);
 
   // When posting succeeds, clear draft if any
   useEffect(() => {
@@ -552,7 +568,7 @@ function ComposerContent() {
       post({
         content: finalContent,
         parentId: replyingTo?.id,
-        channelId: selectedChannelId || feed || community,
+        channelId: selectedChannelId || channelIdForContext,
       });
       // Remove current draft on submit
       if (currentDraftId) {
@@ -597,7 +613,7 @@ function ComposerContent() {
       content: watchedContent,
       createdAt: currentDraftCreatedAtRef.current || Date.now(),
       updatedAt: Date.now(),
-      context: { community, feed, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
+      context: { community, replyingToId: replyingTo?.id, quotedPostId: quotedPost?.id },
     };
     if (!currentDraftCreatedAtRef.current) currentDraftCreatedAtRef.current = draft.createdAt;
     upsertDraftAtom(draft);
@@ -643,7 +659,13 @@ function ComposerContent() {
   const isSmallAvatar = replyingTo && isReplyingToComment;
 
   return (
-    <div className="w-full" {...getRootProps()} onClick={(e) => e.stopPropagation()} onFocusCapture={handleFocusIn} onBlurCapture={handleFocusOut}>
+    <div
+      className="w-full"
+      {...getRootProps()}
+      onClick={(e) => e.stopPropagation()}
+      onFocusCapture={handleFocusIn}
+      onBlurCapture={handleFocusOut}
+    >
       <input {...getInputProps()} />
       {isDragActive && (
         <div className="absolute inset-0 bg-black/20 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-primary">
@@ -668,9 +690,18 @@ function ComposerContent() {
                   <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
                     <ChevronRight strokeWidth={2.2} className="w-4 h-4 -mx-1" />
                     {isChannelComposer ? (
-                      <span className="font-bold">
-                        {currentCommunity?.metadata?.name || feed}
-                      </span>
+                      currentCommunity?.metadata?.name ? (
+                        <span className="font-bold truncate max-w-[10rem] inline-block align-bottom">
+                          {currentCommunity.metadata.name}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="inline-block h-4 w-16 rounded-full bg-muted animate-pulse" />
+                          <span className="font-bold text-muted-foreground truncate max-w-[10rem] inline-block align-bottom">
+                            {community || communityFromPath}
+                          </span>
+                        </span>
+                      )
                     ) : (
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
@@ -757,7 +788,11 @@ function ComposerContent() {
                 )}
               />
 
-              <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} onDraftsClick={() => setIsDraftsOpen(true)} />
+              <PostComposerActions
+                onImageClick={open}
+                onEmojiClick={handleEmojiClick}
+                onDraftsClick={() => setIsDraftsOpen(true)}
+              />
               <MediaPreview files={mediaFiles} onRemove={removeMedia} onReorder={reorderMedia} />
               {quotedPost && <PostQuotePreview quotedPost={quotedPost} />}
 
@@ -798,12 +833,10 @@ function ComposerContent() {
                 key={d.id}
                 className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors"
               >
-                <button
-                  type="button"
-                  className="flex-1 text-left"
-                  onClick={() => loadDraftIntoComposer(d.id)}
-                >
-                  <div className="text-xs text-muted-foreground">{formatDate(new Date(d.createdAt), "MMM d, yyyy")}</div>
+                <button type="button" className="flex-1 text-left" onClick={() => loadDraftIntoComposer(d.id)}>
+                  <div className="text-xs text-muted-foreground">
+                    {formatDate(new Date(d.createdAt), "MMM d, yyyy")}
+                  </div>
                   <div className="truncate text-sm">{d.content.split("\n")[0] || "(empty)"}</div>
                 </button>
                 <button
@@ -893,25 +926,24 @@ export type PostComposerHandle = {
   confirmClose: () => Promise<boolean>;
 };
 
-const ForwardedPostComposer = forwardRef<PostComposerHandle, PostComposerProps>(function PostComposerForwarded(
-  props,
-  ref,
-) {
-  const apiRef = useRef<PostComposerHandle | null>(null);
-  const registerImperativeApi = (api: PostComposerHandle) => {
-    apiRef.current = api;
-  };
-  useImperativeHandle(ref, () => ({
-    getIsDirty: () => apiRef.current?.getIsDirty?.() || false,
-    saveDraft: () => apiRef.current?.saveDraft?.(),
-    discardDraft: () => apiRef.current?.discardDraft?.(),
-    confirmClose: () => apiRef.current?.confirmClose?.() || Promise.resolve(true),
-  }));
-  return (
-    <ComposerProvider value={{ ...props, registerImperativeApi }}>
-      <ComposerContent />
-    </ComposerProvider>
-  );
-});
+const ForwardedPostComposer = forwardRef<PostComposerHandle, PostComposerProps>(
+  function PostComposerForwarded(props, ref) {
+    const apiRef = useRef<PostComposerHandle | null>(null);
+    const registerImperativeApi = (api: PostComposerHandle) => {
+      apiRef.current = api;
+    };
+    useImperativeHandle(ref, () => ({
+      getIsDirty: () => apiRef.current?.getIsDirty?.() || false,
+      saveDraft: () => apiRef.current?.saveDraft?.(),
+      discardDraft: () => apiRef.current?.discardDraft?.(),
+      confirmClose: () => apiRef.current?.confirmClose?.() || Promise.resolve(true),
+    }));
+    return (
+      <ComposerProvider value={{ ...props, registerImperativeApi }}>
+        <ComposerContent />
+      </ComposerProvider>
+    );
+  },
+);
 
 export default ForwardedPostComposer;

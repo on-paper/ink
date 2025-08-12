@@ -10,7 +10,6 @@ interface ComposerContextValue {
   editingPost?: Post;
   initialContent?: string;
   community?: string;
-  feed?: string;
   isReplyingToComment?: boolean;
   onSuccess?: (post?: Post | null) => void;
   onCancel?: () => void;

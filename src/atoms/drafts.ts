@@ -8,7 +8,6 @@ export type PostDraft = {
   updatedAt: number; // epoch ms
   context?: {
     community?: string;
-    feed?: string;
     replyingToId?: string;
     quotedPostId?: string;
   };
@@ -29,9 +28,7 @@ export const upsertDraftAtomFamily = atomFamily((userId?: string) =>
   atom(null, (get, set, draft: PostDraft) => {
     const drafts = get(draftsAtomFamily(userId));
     const existingIndex = drafts.findIndex((d) => d.id === draft.id);
-    const nextDrafts = existingIndex >= 0
-      ? drafts.map((d) => (d.id === draft.id ? draft : d))
-      : [draft, ...drafts];
+    const nextDrafts = existingIndex >= 0 ? drafts.map((d) => (d.id === draft.id ? draft : d)) : [draft, ...drafts];
     set(draftsAtomFamily(userId), nextDrafts);
   }),
 );
@@ -55,5 +52,3 @@ export const clearDraftsAtomFamily = atomFamily((userId?: string) =>
 export function generateDraftId(): string {
   return `draft_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
-
-

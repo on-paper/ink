@@ -20,26 +20,11 @@ export function CommunityIcon({
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
-  const containerClass =
-    size === "lg"
-      ? "w-20 h-20"
-      : size === "md"
-        ? "w-16 h-16"
-        : "w-12 h-12"; // sm
+  const containerClass = size === "lg" ? "w-20 h-20" : size === "md" ? "w-16 h-16" : "w-12 h-12"; // sm
 
-  const imageClass =
-    size === "lg"
-      ? "w-14 h-14"
-      : size === "md"
-        ? "w-12 h-12"
-        : "w-9 h-9"; // sm
+  const imageClass = size === "lg" ? "w-14 h-14" : size === "md" ? "w-12 h-12" : "w-9 h-9"; // sm
 
-  const fallbackClass =
-    size === "lg"
-      ? "w-10 h-10"
-      : size === "md"
-        ? "w-8 h-8"
-        : "w-5 h-5"; // sm
+  const fallbackClass = size === "lg" ? "w-10 h-10" : size === "md" ? "w-8 h-8" : "w-5 h-5"; // sm
 
   const backgroundUrl = `https://api.dicebear.com/9.x/glass/svg?seed=${community.address.toLowerCase()}`;
   const iconUrl = resolveUrl(community.metadata?.icon);
@@ -58,5 +43,3 @@ export function CommunityIcon({
     </div>
   );
 }
-
-

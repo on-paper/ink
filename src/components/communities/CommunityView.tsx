@@ -3,8 +3,8 @@
 import type { Group } from "@cartel-sh/ui";
 import Link from "~/components/Link";
 import { formatChannelIdForUrl } from "~/utils";
-import { CommunityIcon } from "./CommunityIcon";
 import { Card, CardContent } from "../ui/card";
+import { CommunityIcon } from "./CommunityIcon";
 
 interface CommunityViewProps {
   community: Group;

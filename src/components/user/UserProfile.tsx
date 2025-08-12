@@ -2,7 +2,7 @@
 
 import { type User, type UserStats } from "@cartel-sh/ui";
 import { Link as LinkIcon, ShieldOffIcon, VolumeXIcon } from "lucide-react";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useUserActions } from "~/hooks/useUserActions";
 import { socialPlatforms } from "~/lib/socialPlatforms";
 import { FollowButton } from "../FollowButton";
@@ -13,11 +13,11 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { truncateEthAddress } from "../web3/Address";
 import { UserAvatarViewer } from "./UserAvatar";
 // import { EditProfileModal } from "./EditProfileModal";
 import { useUser } from "./UserContext";
 import { UserFollowing } from "./UserFollowing";
-import { truncateEthAddress } from "../web3/Address";
 
 const MutedBadge = ({ onUnmute }: { onUnmute: () => void }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -225,13 +225,17 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
         </div>
       )}
 
-      <Dialog open={isMentionDialogOpen} onOpenChange={async (open) => {
-        if (!open) {
-          const canClose = await (composerRef.current?.confirmClose?.() || Promise.resolve(true));
-          if (!canClose) return;
-        }
-        setIsMentionDialogOpen(open);
-      }} modal={true}>
+      <Dialog
+        open={isMentionDialogOpen}
+        onOpenChange={async (open) => {
+          if (!open) {
+            const canClose = await (composerRef.current?.confirmClose?.() || Promise.resolve(true));
+            if (!canClose) return;
+          }
+          setIsMentionDialogOpen(open);
+        }}
+        modal={true}
+      >
         <DialogContent className="max-w-full sm:max-w-[700px]">
           <Card className="p-4">
             <PostComposer

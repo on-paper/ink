@@ -5,10 +5,8 @@ import { RiBlueskyLine } from "react-icons/ri";
 import { SiFarcaster, SiX } from "react-icons/si";
 import { toast } from "sonner";
 import Link from "~/components/Link";
-import { Badge } from "../ui/badge";
 import { useUser } from "~/components/user/UserContext";
 import { formatChannelIdForUrl } from "~/utils";
-
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
 import {
@@ -21,9 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { truncateEthAddress } from "../web3/Address";
 import { menuItems } from "./PostMenuConfig";
 import { usePostStateContext } from "./PostStateContext";
-import { truncateEthAddress } from "../web3/Address";
 
 export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -103,17 +101,15 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
         </>
       )}
       {channel?.id && channelName && (
-        <>
-          <Link
-            href={`/c/${formatChannelIdForUrl(channel.id)}`}
-            className="flex items-center justify-center font-bold gap-1.5"
-          >
-            <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
-            {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
-            {channelName}
-            {/* </Badge> */}
-          </Link>
-        </>
+        <Link
+          href={`/c/${formatChannelIdForUrl(channel.id)}`}
+          className="flex items-center justify-center font-bold gap-1.5"
+        >
+          <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
+          {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
+          {channelName}
+          {/* </Badge> */}
+        </Link>
       )}
       <span className="text-muted-foreground font-medium">
         <TimeElapsedSince date={post.createdAt} />
