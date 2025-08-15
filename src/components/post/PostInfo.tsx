@@ -90,20 +90,22 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
       suppressHydrationWarning
       className="group flex h-5 flex-row items-center place-items-center gap-2 text-xs font-light leading-4 text-base-content sm:text-sm"
     >
-      <Link className="flex gap-2" href={`/u/${handle || author.address}`}>
+      <Link className="flex gap-2 transition-opacity hover:opacity-70" href={`/u/${handle || author.address}`}>
         {/* <span className="w-fit truncate font-bold">{author.name}</span> */}
         <span className="font-bold w-fit">{`${displayName}`}</span>
       </Link>
       {community && (
         <>
           <span>{"·"}</span>
-          <Link href={`/c/${community}`}>/{community}</Link>
+          <Link className="transition-opacity hover:opacity-70" href={`/c/${community}`}>
+            /{community}
+          </Link>
         </>
       )}
       {channel?.id && channelName && (
         <Link
           href={`/c/${formatChannelIdForUrl(channel.id)}`}
-          className="flex items-center justify-center font-bold gap-1.5"
+          className="flex items-center justify-center font-bold gap-1.5 transition-opacity hover:opacity-70"
         >
           <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
           {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
