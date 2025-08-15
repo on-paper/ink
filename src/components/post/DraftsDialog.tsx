@@ -120,8 +120,8 @@ export function DraftsDialog({
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                        <Button onClick={() => handleLoadDraft(draft.id)} size="sm">
-                          Load Draft
+                        <Button onClick={() => handleLoadDraft(draft.id)} size="sm" className="text-sm px-6">
+                          Write
                         </Button>
                       </div>
                     </div>
