@@ -69,9 +69,11 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           chainId: chainIdToUse || defaultChainId,
         };
 
-        if (channelId && !parentId) {
+        // Include channelId for both top-level posts and replies in channels
+        if (channelId) {
           requestBody.channelId = channelId;
         } else if (!parentId) {
+          // Only set targetUri for top-level posts without a channel
           requestBody.targetUri = "app://paper";
         }
 

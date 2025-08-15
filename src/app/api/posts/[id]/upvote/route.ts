@@ -41,13 +41,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       }
     }
 
+    // Only include channelId if it's not "0" or empty
+    const channelIdBigInt = channelId && channelId !== "0" ? BigInt(channelId) : null;
+    
     const commentData = createCommentData({
       content: "like",
       author,
       app: app.address,
       parentId: params.id as `0x${string}`,
       commentType: COMMENT_TYPE_REACTION,
-      ...(channelId ? { channelId: BigInt(channelId) } : {}),
+      ...(channelIdBigInt ? { channelId: channelIdBigInt } : {}),
     });
 
     const typedCommentData = createCommentTypedData({

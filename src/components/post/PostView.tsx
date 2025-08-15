@@ -46,6 +46,10 @@ export const PostView = ({
   const [shouldHide, setShouldHide] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const postContentRef = useRef<HTMLDivElement>(null);
+
+  // Extract channel from the post metadata - it's stored as an object with id and name
+  const channel = (item as any)?.metadata?.channel as { id?: string; name?: string } | undefined;
+  const postChannelId = channel?.id;
   const { mutedUsers, blockedUsers } = useFilteredUsers();
   const { deletedPosts, addDeletedPost } = useDeletedPosts();
 
@@ -156,6 +160,7 @@ export const PostView = ({
             user={item.author}
             editingPost={item}
             quotedPost={item.quoteOn}
+            community={postChannelId}
             onCancel={() => setIsEditing(false)}
             onSuccess={() => {
               setIsEditing(false);
@@ -227,6 +232,7 @@ export const PostView = ({
             <PostComposer
               replyingTo={item}
               isReplyingToComment={settings.isComment}
+              community={postChannelId}
               onSuccess={() => {
                 setReplyWizardOpen(false);
               }}

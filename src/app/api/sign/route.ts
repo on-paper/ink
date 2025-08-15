@@ -41,15 +41,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Only include channelId if it's not "0" or empty
+    const channelIdBigInt = channelId && channelId !== "0" ? BigInt(channelId) : null;
+
     const commentData = createCommentData({
       content,
       author,
       app: app.address,
       ...(parentId
-        ? { parentId }
+        ? {
+            parentId,
+            // Include channelId for replies in channels
+            ...(channelIdBigInt ? { channelId: channelIdBigInt } : {}),
+          }
         : {
-            targetUri: channelId ? "" : targetUri || "app://paper.ink",
-            ...(channelId ? { channelId } : {}),
+            targetUri: channelIdBigInt ? "" : targetUri || "app://paper.ink",
+            ...(channelIdBigInt ? { channelId: channelIdBigInt } : {}),
           }),
     } as any);
 

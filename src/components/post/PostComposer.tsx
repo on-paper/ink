@@ -207,7 +207,9 @@ function ComposerContent() {
   const draftsUserId = currentUser?.id || currentUser?.address || undefined;
   const isReply = Boolean(replyingTo);
   const communityFromPath = pathname.split("/")[1] === "c" ? pathname.split("/")[2] : "";
-  const channelIdForContext = (community || communityFromPath) as string | undefined;
+  const replyingToChannel = (replyingTo as any)?.metadata?.channel as { id?: string } | undefined;
+  const replyingToChannelId = replyingTo?.metadata?.channelId || replyingToChannel?.id;
+  const channelIdForContext = replyingToChannelId || community || communityFromPath || undefined;
   const isChannelComposer = Boolean(channelIdForContext);
 
   // Drafts state via Jotai persistent storage
