@@ -50,8 +50,10 @@ import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Textarea } from "../ui/textarea";
 import { UserAvatar } from "../user/UserAvatar";
 import { truncateEthAddress } from "../web3/Address";
+import { DraftsDialog } from "./DraftsDialog";
 import { PostComposerActions } from "./PostComposerActions";
 import { ComposerProvider, useComposer } from "./PostComposerContext";
 import { PostQuotePreview } from "./PostQuotePreview";
@@ -300,44 +302,38 @@ function ComposerContent() {
     onContentChange?.(watchedContent);
   }, [watchedContent, isEmpty, editingPost, isReply]);
 
+  // Auto-save on component unmount
+  const saveCurrentStateRef = useRef<() => void>();
   useEffect(() => {
-    if (editingPost || isReply) return;
-    const trimmed = watchedContent.trim();
-    const hasContent = trimmed.length > 0 || mediaFiles.length > 0;
-    if (!hasContent) return;
+    saveCurrentStateRef.current = () => {
+      // Only save if we have content and this is not an edit or reply
+      if (editingPost || isReply) return;
+      const trimmed = watchedContent.trim();
+      const hasContent = trimmed.length > 0 || mediaFiles.length > 0;
+      if (!hasContent) return;
 
-    const id = currentDraftId || generateDraftId();
-    if (!currentDraftId) setCurrentDraftId(id);
-    if (!currentDraftCreatedAtRef.current) currentDraftCreatedAtRef.current = Date.now();
+      const id = currentDraftId || generateDraftId();
+      const draft: PostDraft = {
+        id,
+        content: watchedContent,
+        createdAt: currentDraftCreatedAtRef.current || Date.now(),
+        updatedAt: Date.now(),
+        context: {
+          community,
+          replyingToId: replyingTo?.id,
+          quotedPostId: quotedPost?.id,
+        },
+      };
 
-    const draft: PostDraft = {
-      id,
-      content: watchedContent,
-      createdAt: currentDraftCreatedAtRef.current || Date.now(),
-      updatedAt: Date.now(),
-      context: {
-        community,
-        replyingToId: replyingTo?.id,
-        quotedPostId: quotedPost?.id,
-      },
-    };
-
-    const handle = setTimeout(() => {
       upsertDraftAtom(draft);
-    }, 400);
-    return () => clearTimeout(handle);
-  }, [
-    watchedContent,
-    mediaFiles.length,
-    editingPost,
-    isReply,
-    community,
-    replyingTo?.id,
-    quotedPost?.id,
-    draftsUserId,
-    currentDraftId,
-    upsertDraftAtom,
-  ]);
+    };
+  });
+
+  useEffect(() => {
+    return () => {
+      saveCurrentStateRef.current?.();
+    };
+  }, []);
 
   // Save on unload just in case
   useEffect(() => {
@@ -820,46 +816,17 @@ function ComposerContent() {
         </form>
       </Form>
 
-      {/* Drafts Modal */}
-      <Dialog open={isDraftsOpen} onOpenChange={setIsDraftsOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Drafts</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-2 max-h-80 overflow-auto">
-            {drafts.length === 0 && <div className="text-sm text-muted-foreground">No drafts yet</div>}
-            {drafts.map((d) => (
-              <div
-                key={d.id}
-                className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors"
-              >
-                <button type="button" className="flex-1 text-left" onClick={() => loadDraftIntoComposer(d.id)}>
-                  <div className="text-xs text-muted-foreground">
-                    {formatDate(new Date(d.createdAt), "MMM d, yyyy")}
-                  </div>
-                  <div className="truncate text-sm">{d.content.split("\n")[0] || "(empty)"}</div>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Delete draft"
-                  title="Delete draft"
-                  className="shrink-0 p-1 rounded-full hover:bg-muted/50"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteDraftAtom(d.id);
-                    if (currentDraftId === d.id) {
-                      setCurrentDraftId(undefined);
-                      currentDraftCreatedAtRef.current = null;
-                    }
-                  }}
-                >
-                  <X className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DraftsDialog
+        isOpen={isDraftsOpen}
+        onOpenChange={setIsDraftsOpen}
+        onLoadDraft={loadDraftIntoComposer}
+        currentDraftId={currentDraftId}
+        draftsUserId={draftsUserId}
+        onCurrentDraftChange={(draftId, createdAt) => {
+          setCurrentDraftId(draftId);
+          currentDraftCreatedAtRef.current = createdAt;
+        }}
+      />
 
       {/* Close confirmation (centralized) */}
       <Dialog
