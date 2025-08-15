@@ -118,6 +118,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       content: comment.content,
       __typename: "TextOnlyMetadata" as const,
       ...(channelMeta ? { channel: channelMeta } : {}),
+      ...(comment.channelId ? { channelId: comment.channelId } : {}),
     },
     createdAt,
     updatedAt: createdAt,

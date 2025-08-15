@@ -303,7 +303,7 @@
 
 /* Add margin to scrollbar */
 .os-scrollbar-vertical {
-  right: 3px !important;
+  right: 3px;
 }
 
 /* Expand scrollbar on hover */

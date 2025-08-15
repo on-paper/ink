@@ -43,9 +43,11 @@ export function usePostMutations(postId: string, post?: Post) {
 
   const upvoteMutation = useMutation<boolean, Error, void, PostMutationContext>({
     mutationFn: async () => {
+      const channelId = post?.metadata?.channelId;
+      const endpoint = channelId ? `/api/posts/${postId}/upvote?channelId=${channelId}` : `/api/posts/${postId}/upvote`;
       await postReaction({
         reactionType: "like",
-        endpoint: `/api/posts/${postId}/upvote`,
+        endpoint,
       });
       return true;
     },
@@ -80,9 +82,11 @@ export function usePostMutations(postId: string, post?: Post) {
 
   const repostMutation = useMutation<boolean, Error, void, PostMutationContext>({
     mutationFn: async () => {
+      const channelId = post?.metadata?.channelId;
+      const endpoint = channelId ? `/api/posts/${postId}/repost?channelId=${channelId}` : `/api/posts/${postId}/repost`;
       await postReaction({
         reactionType: "repost",
-        endpoint: `/api/posts/${postId}/repost`,
+        endpoint,
       });
       return true;
     },

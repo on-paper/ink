@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const channelId = searchParams.get("channelId") || searchParams.get("channel");
   const feed = searchParams.get("feed");
   const group = searchParams.get("group");
-  const limit = Number.parseInt(searchParams.get("limit") || "50");
+  const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
   const moderationStatus = searchParams.get("moderationStatus");
 
   const auth = await getServerAuth();

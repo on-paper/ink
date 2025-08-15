@@ -21,11 +21,13 @@ interface EthFollowAccount {
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
-  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
+  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50", 10);
 
   // Support both cursor (for Feed component) and offset parameters
   const cursor = req.nextUrl.searchParams.get("cursor");
-  const offset = cursor ? Number.parseInt(cursor) : Number.parseInt(req.nextUrl.searchParams.get("offset") ?? "0");
+  const offset = cursor
+    ? Number.parseInt(cursor, 10)
+    : Number.parseInt(req.nextUrl.searchParams.get("offset") ?? "0", 10);
 
   try {
     // Fetch followers from EthFollow API

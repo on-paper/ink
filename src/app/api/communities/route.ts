@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const cursor = searchParams.get("cursor");
-  const limit = Number.parseInt(searchParams.get("limit") || "50");
+  const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
 
   try {
     const response = await fetchChannels({

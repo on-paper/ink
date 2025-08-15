@@ -99,7 +99,7 @@ function decodeHTMLEntities(text: string): string {
     decoded = decoded.replace(new RegExp(entity, "g"), char);
   }
 
-  decoded = decoded.replace(/&#(\d+);/g, (_match, code) => String.fromCharCode(Number.parseInt(code)));
+  decoded = decoded.replace(/&#(\d+);/g, (_match, code) => String.fromCharCode(Number.parseInt(code, 10)));
   decoded = decoded.replace(/&#x([a-fA-F0-9]+);/g, (_match, code) => String.fromCharCode(Number.parseInt(code, 16)));
 
   return decoded;

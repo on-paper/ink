@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const { searchParams } = req.nextUrl;
+    const channelId = searchParams.get("channelId");
     const { author, chainId } = await req.json();
 
     if (!author) {
@@ -45,6 +47,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       app: app.address,
       parentId: params.id as `0x${string}`,
       commentType: COMMENT_TYPE_REACTION,
+      ...(channelId ? { channelId: BigInt(channelId) } : {}),
     });
 
     const typedCommentData = createCommentTypedData({

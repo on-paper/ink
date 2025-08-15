@@ -7,7 +7,7 @@ import { deleteDraftAtomFamily, draftsAtomFamily } from "~/atoms/drafts";
 import { formatDate } from "~/utils/formatDate";
 import Markdown from "../Markdown";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface DraftsDialogProps {
@@ -110,9 +110,7 @@ export function DraftsDialog({
                 return (
                   <>
                     <div className="flex items-center justify-between mb-3">
-                      <div className="text-sm text-muted-foreground">
-                        {getWordCount(draft.content)} words
-                      </div>
+                      <div className="text-sm text-muted-foreground">{getWordCount(draft.content)} words</div>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
@@ -129,7 +127,10 @@ export function DraftsDialog({
                     </div>
 
                     <ScrollArea className="flex-1 border rounded-md overflow-x-hidden">
-                      <div className="p-4 min-w-0 break-words" style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}>
+                      <div
+                        className="p-4 min-w-0 break-words"
+                        style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+                      >
                         <Markdown content={draft.content} />
                       </div>
                     </ScrollArea>

@@ -9,7 +9,7 @@ const SUPPORTED_CHAIN_IDS = [8453, 1];
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const cursor = searchParams.get("cursor") || undefined;
-  const limit = Number.parseInt(searchParams.get("limit") || "20");
+  const limit = Number.parseInt(searchParams.get("limit") || "20", 10);
   const author = searchParams.get("author") || undefined;
   const moderationStatus = searchParams.get("moderationStatus") || undefined;
 

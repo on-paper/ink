@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
-  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50");
+  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50", 10);
   const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
 
   const auth = await getServerAuth();

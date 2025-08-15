@@ -38,7 +38,6 @@ import {
   upsertDraftAtomFamily,
 } from "~/atoms/drafts";
 import { useCommunity } from "~/hooks/useCommunity";
-import { formatDate } from "~/utils/formatDate";
 import {
   castToMediaImageType,
   castToMediaVideoType,
@@ -48,9 +47,8 @@ import {
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Textarea } from "../ui/textarea";
 import { UserAvatar } from "../user/UserAvatar";
 import { truncateEthAddress } from "../web3/Address";
 import { DraftsDialog } from "./DraftsDialog";
@@ -474,23 +472,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-              .slice(1)
-              .map((m) => {
-                if (m.type.startsWith("image/")) {
-                  return {
-                    item: m.uri,
-                    type: castToMediaImageType(m.type),
-                  };
-                }
-                if (m.type.startsWith("video/")) {
-                  return {
-                    item: m.uri,
-                    type: castToMediaVideoType(m.type),
-                  };
-                }
-                return null;
-              })
-              .filter(Boolean)
+                .slice(1)
+                .map((m) => {
+                  if (m.type.startsWith("image/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaImageType(m.type),
+                    };
+                  }
+                  if (m.type.startsWith("video/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaVideoType(m.type),
+                    };
+                  }
+                  return null;
+                })
+                .filter(Boolean)
             : undefined;
 
         return {

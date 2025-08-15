@@ -78,7 +78,7 @@ const Markdown: React.FC<{
         const components = parseCAIP19URI(href);
         if (components?.assetNamespace && components.assetReference && components.chainId) {
           const { assetNamespace, assetReference, chainId, tokenId } = components;
-          const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId) : chainId;
+          const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
 
           // Generate appropriate scan URL
           let scanUrl: string;
@@ -110,7 +110,7 @@ const Markdown: React.FC<{
       // Handle legacy URLs
       if (href?.startsWith(BASE_URL)) {
         if (href.startsWith(`${BASE_URL}mention/`) && mentions) {
-          const mentionIndex = Number.parseInt(href.split("/mention/")[1]);
+          const mentionIndex = Number.parseInt(href.split("/mention/")[1], 10);
           const mention = mentions[mentionIndex];
           if (mention && mention.__typename === "AccountMention") {
             let handle = mention.localName;
