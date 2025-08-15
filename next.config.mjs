@@ -8,7 +8,7 @@ const config = {
     // due to base/account-sdk Type error: Type instantiation is excessively deep and possibly infinite.
     ignoreBuildErrors: true,
   },
-  
+
   images: {
     remotePatterns: [
       {
@@ -21,6 +21,7 @@ const config = {
   // https://github.com/WalletConnect/walletconnect-monorepo/issues/1908#issuecomment-1487801131
   webpack: (config) => {
     config.externals.push("lokijs", "encoding");
+
     return config;
   },
 };

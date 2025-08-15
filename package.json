@@ -88,14 +88,14 @@
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/bun": "latest",
     "@types/node": "^18.19.121",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "next": "^14.2.31",
     "patch-package": "^8.0.0",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.4.5",
-    "@types/bun": "latest"
+    "typescript": "5.4.5"
   },
   "packageManager": "bun@1.2.5"
 }
