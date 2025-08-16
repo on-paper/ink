@@ -12,6 +12,7 @@ interface FeedProps<T = any> {
   manualNextPage?: boolean;
   queryKey?: string[];
   refetchInterval?: number;
+  LoadingView?: React.ComponentType;
 }
 
 interface FeedResponse<T> {
@@ -25,6 +26,7 @@ export const Feed = <T extends { id: string } = any>({
   manualNextPage = false,
   queryKey,
   refetchInterval,
+  LoadingView,
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -72,7 +74,7 @@ export const Feed = <T extends { id: string } = any>({
   }, [loadNextBatch, manualNextPage, isFetchingNextPage]);
 
   if (error) throw error;
-  if (isLoading) return <FeedSuspense />;
+  if (isLoading) return LoadingView ? <LoadingView /> : <FeedSuspense />;
 
   const items = data?.pages.flatMap((page) => page.data) || [];
   const list = items.filter(Boolean).map((item) => <ItemView key={item.id} item={item} />);

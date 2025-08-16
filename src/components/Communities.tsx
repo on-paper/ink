@@ -3,6 +3,7 @@
 import type { Group } from "@cartel-sh/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CreateCommunityDialog } from "~/components/channels/CreateChannelDialog";
+import { CommunitiesListSuspense } from "~/components/communities/CommunitiesListSuspense";
 import { CommunityView } from "~/components/communities/CommunityView";
 import { Feed } from "~/components/Feed";
 import { useUser } from "~/components/user/UserContext";
@@ -37,6 +38,7 @@ export default function Communities({ initialQuery = "" }: CommunitiesProps) {
         ItemView={CommunityViewWrapper}
         endpoint={`/api/communities${query ? `?q=${encodeURIComponent(query)}` : ""}`}
         queryKey={["communities", query]}
+        LoadingView={CommunitiesListSuspense}
       />
     </>
   );
