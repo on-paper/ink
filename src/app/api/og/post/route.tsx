@@ -54,18 +54,18 @@ function cleanContent(content: string): string {
   return cleanedContent;
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-
+async function generateOGImage(params: {
+  handle?: string | null;
+  content?: string | null;
+  image?: string | null;
+  profilePictureUrl?: string | null;
+}) {
   const fontsDir = path.join(process.cwd(), "public", "fonts");
 
   const quicksandBold = await readFile(path.join(fontsDir, "Quicksand-Bold.ttf"));
   const quicksandMedium = await readFile(path.join(fontsDir, "Quicksand-Medium.ttf"));
 
-  const handle = searchParams.get("handle");
-  const content = searchParams.get("content");
-  const image = searchParams.get("image");
-  const profilePictureUrl = searchParams.get("profilePictureUrl");
+  const { handle, content, image, profilePictureUrl } = params;
 
   const pageConfig = {
     width: 1200,
@@ -90,7 +90,14 @@ export async function GET(request: Request) {
     return new ImageResponse(
       <div tw="flex items-center justify-center w-full h-full bg-[#000000] p-8 text-white flex-col">
         <div tw="text-white text-4xl font-bold pb-12">Post not found</div>
-        <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/logo-white.svg`} tw="h-8" />
+        <svg width="32" height="32" viewBox="0 0 493 487" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
+            stroke="#FFFFFF"
+            stroke-width="56"
+            stroke-linecap="round"
+          />
+        </svg>
       </div>,
       pageConfig,
     );
@@ -100,22 +107,48 @@ export async function GET(request: Request) {
     <div tw="w-full h-full flex bg-[#000000] relative overflow-hidden">
       {image && (
         <div tw="absolute inset-0 flex items-center justify-end">
-          <img src={image} tw="w-full" style={{ filter: "brightness(0.3)" }} />
+          <img
+            src={image}
+            tw="w-full h-full"
+            width="1200"
+            height="630"
+            style={{ filter: "brightness(0.3)", objectFit: "cover" }}
+          />
         </div>
       )}
 
       <div tw="absolute flex items-center justify-center bottom-[-50px] left-[-50px] w-[420px] h-[420px] opacity-10">
-        <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/logo-white.svg`} tw="w-full h-full" />
+        <svg width={420} height={420} viewBox="0 0 493 487" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
+            stroke="#FFFFFF"
+            stroke-width="56"
+            stroke-linecap="round"
+          />
+        </svg>
       </div>
       <div tw="absolute flex items-center justify-center bottom-14 right-14">
-        <img src={`${process.env.NEXT_PUBLIC_SITE_URL}/paper-logo-drop-round.png`} tw="w-20 h-20" />
+        <svg width={80} height={80} viewBox="-100 -100 693 687" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
+            stroke="#000000"
+            stroke-width="180"
+            stroke-linecap="round"
+          />
+          <path
+            d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
+            stroke="#ffffff"
+            stroke-width="56"
+            stroke-linecap="round"
+          />
+        </svg>
       </div>
 
       <div tw="relative flex flex-col justify-start p-14 w-full h-full">
         <div tw="flex items-center mb-6">
           {profilePictureUrl && (
             <div tw="flex items-center justify-center w-24 h-24 rounded-full mr-4 overflow-hidden">
-              <img src={profilePictureUrl} tw="w-full" />
+              <img src={profilePictureUrl} tw="w-24 h-24" width="96" height="96" style={{ objectFit: "cover" }} />
             </div>
           )}
           <div tw="flex items-center">
@@ -146,4 +179,19 @@ export async function GET(request: Request) {
     </div>,
     pageConfig,
   );
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  return generateOGImage(body);
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  return generateOGImage({
+    handle: searchParams.get("handle"),
+    content: searchParams.get("content"),
+    image: searchParams.get("image"),
+    profilePictureUrl: searchParams.get("profilePictureUrl"),
+  });
 }

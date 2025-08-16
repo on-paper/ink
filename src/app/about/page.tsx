@@ -1,6 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Cookie, FileIcon, Github } from "lucide-react";
 import type { Metadata } from "next";
+import { generateDefaultOGUrl } from "~/utils/generateOGUrl";
+
+const ogImageURL = generateDefaultOGUrl();
 
 export const metadata: Metadata = {
   title: "About",
@@ -8,13 +11,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "About",
     description: "About Paper",
-    images: [
-      {
-        url: "/logo.png",
-        width: 1200,
-        height: 630,
-      },
-    ],
+    images: [ogImageURL],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About",
+    description: "About Paper",
+    images: [ogImageURL],
   },
 };
 

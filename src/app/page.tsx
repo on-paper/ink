@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { generateDefaultOGUrl } from "~/utils/generateOGUrl";
 import { LandingContent } from "../components/LandingContent";
+
+const ogImageURL = generateDefaultOGUrl();
 
 export const metadata: Metadata = {
   title: "Paper",
@@ -7,13 +10,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Paper",
     description: "Permanent. Permissionless. Paper.",
-    images: [
-      {
-        url: "/logo.png",
-        width: 1200,
-        height: 630,
-      },
-    ],
+    images: [ogImageURL],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Paper",
+    description: "Permanent. Permissionless. Paper.",
+    images: [ogImageURL],
   },
 };
 
