@@ -35,3 +35,20 @@ export function generateDefaultOGUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
   return `${baseUrl}/api/og/default`;
 }
+
+export function generateCommunityOGUrl(params: { name?: string; address?: string; icon?: string }): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const searchParams = new URLSearchParams();
+
+  if (params.name) {
+    searchParams.append("name", params.name);
+  }
+  if (params.address) {
+    searchParams.append("address", params.address);
+  }
+  if (params.icon) {
+    searchParams.append("icon", params.icon);
+  }
+
+  return `${baseUrl}/api/og/community?${searchParams.toString()}`;
+}

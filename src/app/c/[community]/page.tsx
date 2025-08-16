@@ -1,14 +1,13 @@
-"use client";
-
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { CommunityHeader } from "~/components/communities/CommunityHeader";
 import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
+import { CommunityPostComposer } from "~/components/communities/CommunityPostComposer";
 import { Feed } from "~/components/Feed";
-import { FeedSuspense } from "~/components/FeedSuspense";
-import PostComposer from "~/components/post/PostComposer";
 import { PostView } from "~/components/post/PostView";
-import { Card } from "~/components/ui/card";
-import { useUser } from "~/components/user/UserContext";
-import { useCommunity } from "~/hooks/useCommunity";
+import { generateCommunityOGUrl } from "~/utils/generateOGUrl";
+import { getCommunityByAddress } from "~/utils/getCommunityByAddress";
+import { resolveUrl } from "~/utils/resolveUrl";
 
 interface CommunityPageProps {
   params: {
@@ -16,31 +15,55 @@ interface CommunityPageProps {
   };
 }
 
-export default function CommunityPage({ params }: CommunityPageProps) {
-  const { data: community, isLoading, error } = useCommunity(params.community);
-  const { user } = useUser();
+export async function generateMetadata({ params }: CommunityPageProps): Promise<Metadata> {
+  const community = await getCommunityByAddress(params.community);
 
-  if (isLoading) {
-    return (
-      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-        <div className="pt-4">
-          <FeedSuspense />
-        </div>
-      </div>
-    );
+  if (!community) {
+    return {
+      title: "Community",
+      description: "Community not found",
+    };
   }
 
-  if (error || !community) {
-    return (
-      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-        <div className="pt-4">
-          <div className="text-center text-muted-foreground">Community not found</div>
-        </div>
-      </div>
-    );
+  const name =
+    community.metadata?.name || `Community ${community.address.slice(0, 6)}...${community.address.slice(-4)}`;
+  const description = community.metadata?.description || `Join ${name} on Paper`;
+
+  const ogImageURL = generateCommunityOGUrl({
+    name: community.metadata?.name,
+    address: community.address,
+    icon: resolveUrl(community.metadata?.icon),
+  });
+
+  return {
+    title: name,
+    description,
+    openGraph: {
+      title: name,
+      description,
+      images: [ogImageURL],
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/c/${params.community}`,
+      siteName: "Paper",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: name,
+      description,
+      images: [ogImageURL],
+    },
+  };
+}
+
+export default async function CommunityPage({ params }: CommunityPageProps) {
+  const community = await getCommunityByAddress(params.community);
+
+  if (!community) {
+    notFound();
   }
 
-  const channelId = community.address; // The community address is the channel ID
+  const channelId = community.address;
   const endpoint = `/api/posts?channelId=${channelId}`;
 
   return (
@@ -48,16 +71,8 @@ export default function CommunityPage({ params }: CommunityPageProps) {
       <div className="pt-4">
         <CommunityHeader community={community} />
         <CommunityNavigation communityAddress={params.community} />
+        <CommunityPostComposer community={community} communityAddress={params.community} />
 
-        {user && (
-          <div className="">
-            {community.canPost && !community.isBanned && (
-              <Card className="p-4">
-                <PostComposer user={user} community={params.community} />
-              </Card>
-            )}
-          </div>
-        )}
         <Feed ItemView={PostView} endpoint={endpoint} />
       </div>
     </div>

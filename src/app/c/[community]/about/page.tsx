@@ -1,10 +1,11 @@
-"use client";
-
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { CommunityHeader } from "~/components/communities/CommunityHeader";
 import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
-import { FeedSuspense } from "~/components/FeedSuspense";
 import { Card, CardContent } from "~/components/ui/card";
-import { useCommunity } from "~/hooks/useCommunity";
+import { generateCommunityOGUrl } from "~/utils/generateOGUrl";
+import { getCommunityByAddress } from "~/utils/getCommunityByAddress";
+import { resolveUrl } from "~/utils/resolveUrl";
 
 interface CommunityAboutPageProps {
   params: {
@@ -12,27 +13,52 @@ interface CommunityAboutPageProps {
   };
 }
 
-export default function CommunityAboutPage({ params }: CommunityAboutPageProps) {
-  const { data: community, isLoading, error } = useCommunity(params.community);
+export async function generateMetadata({ params }: CommunityAboutPageProps): Promise<Metadata> {
+  const community = await getCommunityByAddress(params.community);
 
-  if (isLoading) {
-    return (
-      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-        <div className="pt-4">
-          <FeedSuspense />
-        </div>
-      </div>
-    );
+  if (!community) {
+    return {
+      title: "About Community",
+      description: "Community not found",
+    };
   }
 
-  if (error || !community) {
-    return (
-      <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-        <div className="pt-4">
-          <div className="text-center text-muted-foreground">Community not found</div>
-        </div>
-      </div>
-    );
+  const name =
+    community.metadata?.name || `Community ${community.address.slice(0, 6)}...${community.address.slice(-4)}`;
+  const description = `About ${name} on Paper`;
+
+  const ogImageURL = generateCommunityOGUrl({
+    name: community.metadata?.name,
+    address: community.address,
+    icon: resolveUrl(community.metadata?.icon),
+  });
+
+  return {
+    title: `About ${name}`,
+    description,
+    openGraph: {
+      title: `About ${name}`,
+      description,
+      images: [ogImageURL],
+      type: "website",
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/c/${params.community}/about`,
+      siteName: "Paper",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `About ${name}`,
+      description,
+      images: [ogImageURL],
+    },
+  };
+}
+
+export default async function CommunityAboutPage({ params }: CommunityAboutPageProps) {
+  const community = await getCommunityByAddress(params.community);
+
+  if (!community) {
+    notFound();
   }
 
   return (
@@ -41,41 +67,17 @@ export default function CommunityAboutPage({ params }: CommunityAboutPageProps) 
         <CommunityHeader community={community} />
         <CommunityNavigation communityAddress={params.community} />
 
-        <Card className="glass">
+        <Card className="mb-4">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4">About</h2>
-
-            {community.metadata?.description && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
-                <p className="text-base">{community.metadata.description}</p>
-              </div>
+            {community.metadata?.description ? (
+              <p className="text-muted-foreground">{community.metadata.description}</p>
+            ) : (
+              <p className="text-muted-foreground italic">No description available</p>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {community.address && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Community Address</h3>
-                  <p className="text-sm font-mono break-all">{community.address}</p>
-                </div>
-              )}
-
-              {community.timestamp && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Created</h3>
-                  <p className="text-sm">{new Date(community.timestamp).toLocaleDateString()}</p>
-                </div>
-              )}
-
-              {community.owner && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Owner</h3>
-                  <p className="text-sm font-mono break-all">{community.owner}</p>
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
