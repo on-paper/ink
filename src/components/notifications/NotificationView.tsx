@@ -54,7 +54,9 @@ export const NotificationView = ({ item }: { item: Notification }) => {
   const isJustMuted = item.who.some((user) => mutedUsers.has(user.id));
   const isJustBlocked = item.who.some((user) => blockedUsers.has(user.id));
 
-  const isOnUserProfile = item.who.some((user) => pathname?.startsWith(`/u/${user.username}`));
+  const isOnUserProfile = item.who.some(
+    (user) => pathname?.startsWith(`/u/${user.username}`) || pathname?.startsWith(`/u/${user.address}`),
+  );
 
   useEffect(() => {
     setTimeout(() => {
@@ -104,14 +106,17 @@ export const NotificationView = ({ item }: { item: Notification }) => {
   const notificationText = notificationTextMap[item.type];
 
   const usersText = users.reduce((acc, profile, i, arr) => {
-    const userName = profile.username;
+    const displayName =
+      profile.username ||
+      profile.name ||
+      (profile.address ? `${profile.address.slice(0, 6)}...${profile.address.slice(-4)}` : "Unknown");
     const userLink = (
       <Link
         key={profile.id + item.id + notificationTime}
         className="font-bold hover:underline whitespace-nowrap"
-        href={`/u/${profile.username}`}
+        href={`/u/${profile.username || profile.address}`}
       >
-        {userName}
+        {displayName}
       </Link>
     );
     const lastText = wasTruncated ? <span key="truncated">{amountTruncated} others</span> : userLink;
@@ -215,7 +220,7 @@ export const NotificationView = ({ item }: { item: Notification }) => {
               <>
                 <ContextMenuItem
                   onClick={() => {
-                    router.push(`/u/${primaryUser.username}`);
+                    router.push(`/u/${primaryUser.username || primaryUser.address}`);
                   }}
                 >
                   <ExternalLinkIcon size={12} className="mr-2 h-4 w-4" />
