@@ -28,7 +28,10 @@ Create a new release with the specified version bump type. This command will:
 3. Calculate new version based on type (major/minor/patch)
 4. Fetch commits in the specified range (or recent commits if no range specified)
 5. Categorize commits into features, fixes, and other changes
-6. Update changelog.json with new entry: summarize everything that has been done, be concise and user-facing. Those changelogs should make the user feel cared for.
+6. Update /public/changelog.json with new entry following this structure:
+   - use separate `"features"`, `"fixes"`, and optionally `"breaking"` arrays
+   - Include `"commits"` object with `"from"` and `"to"` short commit hashes
+   - Summarize everything that has been done, be concise
 7. Update package.json version
 8. Create a git commit with the changes
 9. Create a git tag for the new version

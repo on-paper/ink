@@ -129,6 +129,36 @@
         "from": "dc64bbb",
         "to": "603015c"
       }
+    },
+    {
+      "version": "1.9.0",
+      "date": "2025-08-16",
+      "title": "Communities & Drafts",
+      "description": "Added communities and drafts with improved performance and user experience.",
+      "features": [
+        "Create and manage communities with dedicated channels",
+        "Server-side rendered communities for better performance",
+        "Draft system in composer with auto-save",
+        "Custom quoting support for posts",
+        "OG images for social sharing",
+        "Channel selector for posting to specific communities",
+        "Switched to local fonts for better performance",
+        "Enhanced avatar generation with DiceBear",
+        "Improved menu and hover interactions",
+        "Better channel display in posts",
+        "Optimized community pages with suspense",
+        "Updated composer with write button improvements"
+      ],
+      "fixes": [
+        "Fixed likes and reposts in community channels",
+        "Resolved build issues",
+        "Fixed community layout problems",
+        "Corrected like and repost count displays"
+      ],
+      "commits": {
+        "from": "02f6a2e",
+        "to": "467ab64"
+      }
     }
   ]
 }
