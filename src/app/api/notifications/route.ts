@@ -47,13 +47,15 @@ export async function GET(request: NextRequest) {
 
     // Add query parameters
     const searchParams = request.nextUrl.searchParams;
-    const interval = searchParams.get("interval") || "all"; // Get all notifications by default
-    const limit = searchParams.get("limit") || "50"; // Increased limit
-    const offset = searchParams.get("offset") || "0";
+    const cursor = searchParams.get("cursor");
+    const limit = searchParams.get("limit") || "20";
+    const interval = searchParams.get("interval") || "all";
+
+    const offset = cursor ? Number.parseInt(cursor, 10) : 0;
 
     efpUrl.searchParams.append("interval", interval);
-    efpUrl.searchParams.append("limit", limit);
-    efpUrl.searchParams.append("offset", offset);
+    efpUrl.searchParams.append("limit", String(Number.parseInt(limit, 10) + 1)); // Fetch one extra to check if there's more
+    efpUrl.searchParams.append("offset", String(offset));
 
     const response = await fetch(efpUrl.toString(), {
       headers: {
@@ -128,11 +130,18 @@ export async function GET(request: NextRequest) {
 
     const notifications = notificationsWithUsers.filter(Boolean) as Notification[];
 
+    const requestedLimit = Number.parseInt(searchParams.get("limit") || "20", 10);
+    const hasMore = notifications.length > requestedLimit;
+    const paginatedNotifications = notifications.slice(0, requestedLimit);
+
     // Group notifications by type and user for better UX
-    const groupedNotifications = groupNotifications(notifications);
+    const groupedNotifications = groupNotifications(paginatedNotifications);
+
+    const nextCursor = hasMore ? String(offset + requestedLimit) : undefined;
 
     return NextResponse.json({
       data: groupedNotifications,
+      nextCursor,
       summary: efpData.summary,
     });
   } catch (error) {

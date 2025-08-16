@@ -13,17 +13,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const searchParams = req.nextUrl.searchParams;
+    const cursor = searchParams.get("cursor");
+    const limit = Number.parseInt(searchParams.get("limit") || "20", 10);
     const bookmarkedIds = req.headers.get("x-bookmarked-ids");
 
     if (!bookmarkedIds) {
-      return NextResponse.json({ data: [] });
+      return NextResponse.json({ data: [], nextCursor: null });
     }
 
-    const postIds = bookmarkedIds.split(",").filter(Boolean);
+    const allPostIds = bookmarkedIds.split(",").filter(Boolean);
 
-    if (postIds.length === 0) {
-      return NextResponse.json({ data: [] });
+    if (allPostIds.length === 0) {
+      return NextResponse.json({ data: [], nextCursor: null });
     }
+
+    const startIndex = cursor ? allPostIds.indexOf(cursor) + 1 : 0;
+    const endIndex = startIndex + limit;
+    const postIds = allPostIds.slice(startIndex, endIndex);
+    const hasMore = endIndex < allPostIds.length;
+    const nextCursor = hasMore ? allPostIds[endIndex] : null;
 
     const chainIdParam = SUPPORTED_CHAIN_IDS.join(",");
 
@@ -56,10 +65,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       data: validPosts,
-      pagination: {
-        hasMore: false,
-        cursor: null,
-      },
+      nextCursor,
     });
   } catch (error) {
     console.error("Error fetching bookmarked posts:", error);

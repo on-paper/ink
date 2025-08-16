@@ -13,6 +13,7 @@ interface FeedProps<T = any> {
   queryKey?: string[];
   refetchInterval?: number;
   LoadingView?: React.ComponentType;
+  headers?: Record<string, string>;
 }
 
 interface FeedResponse<T> {
@@ -27,6 +28,7 @@ export const Feed = <T extends { id: string } = any>({
   queryKey,
   refetchInterval,
   LoadingView,
+  headers,
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -35,7 +37,10 @@ export const Feed = <T extends { id: string } = any>({
       const paramsMarker = hasParams ? "&" : "?";
       const url = `${endpoint}${paramsMarker}${pageParam ? `cursor=${pageParam}` : ""}`;
 
-      const res = await fetch(url, { method: "GET" });
+      const res = await fetch(url, {
+        method: "GET",
+        headers: headers || {},
+      });
       if (!res.ok) throw new Error(res.statusText);
 
       return res.json();
