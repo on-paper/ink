@@ -49,6 +49,7 @@ import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { ScrollArea } from "../ui/scroll-area";
 import { UserAvatar } from "../user/UserAvatar";
 import { truncateEthAddress } from "../web3/Address";
 import { DraftsDialog } from "./DraftsDialog";
@@ -705,31 +706,36 @@ function ComposerContent() {
                             {selectedChannelName || "global"}
                           </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="max-h-72 overflow-auto min-w-56">
-                          {isChannelsLoading && (
-                            <DropdownMenuItem disabled className="text-muted-foreground">
-                              Loading channels...
-                            </DropdownMenuItem>
-                          )}
-                          {!isChannelsLoading && channels.length === 0 && (
-                            <DropdownMenuItem disabled className="text-muted-foreground">
-                              No channels available
-                            </DropdownMenuItem>
-                          )}
-                          {channels.map((ch) => {
-                            const name = ch.metadata?.name || ch.address;
-                            return (
-                              <DropdownMenuItem
-                                key={ch.address}
-                                onClick={() => {
-                                  setSelectedChannelId(ch.address);
-                                  setSelectedChannelName(name);
-                                }}
-                              >
-                                <span className="truncate">{name}</span>
-                              </DropdownMenuItem>
-                            );
-                          })}
+                        <DropdownMenuContent align="start" className="min-w-56 p-0 overflow-hidden">
+                          <ScrollArea className="max-h-72">
+                            <div className="p-1">
+                              {isChannelsLoading && (
+                                <DropdownMenuItem disabled className="text-muted-foreground h-8 text-sm">
+                                  Loading channels...
+                                </DropdownMenuItem>
+                              )}
+                              {!isChannelsLoading && channels.length === 0 && (
+                                <DropdownMenuItem disabled className="text-muted-foreground h-8 text-sm">
+                                  No channels available
+                                </DropdownMenuItem>
+                              )}
+                              {channels.map((ch) => {
+                                const name = ch.metadata?.name || ch.address;
+                                return (
+                                  <DropdownMenuItem
+                                    key={ch.address}
+                                    onClick={() => {
+                                      setSelectedChannelId(ch.address);
+                                      setSelectedChannelName(name);
+                                    }}
+                                    className="h-8 text-sm"
+                                  >
+                                    <span className="truncate">{name}</span>
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                            </div>
+                          </ScrollArea>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
