@@ -42,11 +42,16 @@ export async function GET(req: NextRequest) {
     const posts = await Promise.all(
       ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress, includeReplies: true })),
     );
+
+    const filteredPosts = posts.filter((post) => {
+      const content = post.metadata?.content;
+      return content !== "[deleted]";
+    });
     const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
 
     return NextResponse.json(
       {
-        data: posts,
+        data: filteredPosts,
         nextCursor,
       },
       { status: 200 },

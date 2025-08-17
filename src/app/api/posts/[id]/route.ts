@@ -30,6 +30,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const comment = await apiResponse.json();
     const post = await ecpCommentToPost(comment, { currentUserAddress, includeReplies: true });
 
+    if (post.metadata?.content === "[deleted]") {
+      return NextResponse.json({ error: "Post has been deleted" }, { status: 404 });
+    }
+
     return NextResponse.json(post, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch post: ", error);

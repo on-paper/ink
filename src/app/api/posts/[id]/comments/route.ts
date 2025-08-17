@@ -47,13 +47,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress })),
     );
 
+    const filteredComments = comments.filter((comment) => {
+      const content = comment.metadata?.content;
+      return content !== "[deleted]";
+    });
+
     const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
 
     return NextResponse.json(
       {
-        comments,
+        comments: filteredComments,
         nextCursor,
-        data: comments,
+        data: filteredComments,
       },
       { status: 200 },
     );

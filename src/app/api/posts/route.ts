@@ -70,17 +70,20 @@ export async function GET(req: NextRequest) {
 
     const ecpComments = response.results || [];
 
-    // Convert ECP comments to Post format
     const posts = await Promise.all(
       ecpComments.map((comment: any) => ecpCommentToPost(comment, { currentUserAddress, includeReplies: true })),
     );
 
-    // Use the cursor from the response for pagination
+    const filteredPosts = posts.filter((post) => {
+      const content = post.metadata?.content;
+      return content !== "[deleted]";
+    });
+
     const nextCursor = response.pagination?.hasNext ? response.pagination.endCursor : null;
 
     return NextResponse.json(
       {
-        data: posts,
+        data: filteredPosts,
         nextCursor,
       },
       { status: 200 },
