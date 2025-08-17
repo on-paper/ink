@@ -475,23 +475,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-              .slice(1)
-              .map((m) => {
-                if (m.type.startsWith("image/")) {
-                  return {
-                    item: m.uri,
-                    type: castToMediaImageType(m.type),
-                  };
-                }
-                if (m.type.startsWith("video/")) {
-                  return {
-                    item: m.uri,
-                    type: castToMediaVideoType(m.type),
-                  };
-                }
-                return null;
-              })
-              .filter(Boolean)
+                .slice(1)
+                .map((m) => {
+                  if (m.type.startsWith("image/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaImageType(m.type),
+                    };
+                  }
+                  if (m.type.startsWith("video/")) {
+                    return {
+                      item: m.uri,
+                      type: castToMediaVideoType(m.type),
+                    };
+                  }
+                  return null;
+                })
+                .filter(Boolean)
             : undefined;
 
         return {

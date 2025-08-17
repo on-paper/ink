@@ -18,11 +18,5 @@ export function NotificationsFeed() {
     return () => clearTimeout(timer);
   }, []);
 
-  return (
-    <Feed
-      ItemView={NotificationView}
-      endpoint="/api/notifications"
-      queryKey={["notifications"]}
-    />
-  );
+  return <Feed ItemView={NotificationView} endpoint="/api/notifications" queryKey={["notifications"]} />;
 }

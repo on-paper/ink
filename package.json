@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@base-org/account": "^1.1.1",
-    "@cartel-sh/ui": "^0.1.0",
+    "@cartel-sh/ui": "^0.3.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

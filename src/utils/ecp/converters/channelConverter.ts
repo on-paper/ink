@@ -2,6 +2,40 @@ import type { Group } from "@cartel-sh/ui";
 import type { ECPChannel } from "../channels";
 
 export function ecpChannelToCommunity(channel: ECPChannel): Group {
+  // Extract rules from metadata
+  let rules: Group["rules"] = undefined;
+
+  // Check if metadata has the encoded format
+  if (channel.metadata?.["0"]?.value) {
+    try {
+      // Decode hex string to JSON
+      const hexValue = channel.metadata["0"].value;
+      const decodedStr = Buffer.from(hexValue.slice(2), "hex").toString("utf8");
+      const decodedData = JSON.parse(decodedStr);
+
+      if (decodedData.rules && Array.isArray(decodedData.rules)) {
+        rules = decodedData.rules.map((rule: string | { title: string; description: string }) => {
+          if (typeof rule === "string") {
+            return { title: rule, description: "" };
+          }
+          return rule;
+        });
+      }
+    } catch (e) {
+      console.error("Failed to decode metadata:", e);
+    }
+  }
+
+  // Fallback to direct rules in metadata
+  if (!rules && channel.metadata?.rules) {
+    rules = channel.metadata.rules.map((rule: string | { title: string; description: string }) => {
+      if (typeof rule === "string") {
+        return { title: rule, description: "" };
+      }
+      return rule;
+    });
+  }
+
   return {
     id: channel.id,
     address: channel.id,
@@ -11,8 +45,10 @@ export function ecpChannelToCommunity(channel: ECPChannel): Group {
       slug: channel.name.toLowerCase().replace(/\s+/g, "-"),
       description: channel.description || undefined,
       icon: channel.metadata?.icon || undefined,
+      hook: channel.hook || undefined,
       ...(channel.metadata || {}),
     },
+    rules,
     feed: {
       address: channel.id,
     },

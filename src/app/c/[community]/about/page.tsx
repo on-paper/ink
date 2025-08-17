@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { ExternalLink } from "lucide-react";
+import type { Metadata } from "next";
 import Markdown from "~/components/Markdown";
 import { Card, CardContent } from "~/components/ui/card";
 import { generateCommunityOGUrl } from "~/utils/generateOGUrl";
@@ -65,14 +65,13 @@ export default async function CommunityAboutPage({ params }: CommunityAboutPageP
 
   // Community NFT contract address on Base
   const nftContractAddress = "0xa1043edbe1b0ffe6c12a2b8ed5afd7acb2dea396";
-  // Token ID is the community address (as decimal)
   const tokenId = community.address;
 
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">About</h2>
+          <h2 className="text-xl font-semibold mb-4">Description</h2>
           {community.metadata?.description ? (
             <Markdown content={community.metadata.description} className="text-muted-foreground" />
           ) : (
@@ -81,36 +80,57 @@ export default async function CommunityAboutPage({ params }: CommunityAboutPageP
         </CardContent>
       </Card>
 
-      {community.rules && community.rules.length > 0 && (
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Community Rules</h2>
-            <div className="space-y-4">
-              {community.rules.map((rule, index) => (
-                <div key={index}>
-                  <h3 className="font-medium mb-1">
-                    {index + 1}. {rule.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">{rule.description}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="px-6">
           <h2 className="text-xl font-semibold mb-4">Information</h2>
           <dl className="space-y-3">
             {createdDate && (
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Created</dt>
-                <dd className="text-sm mt-1">{new Date(createdDate).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}</dd>
+                <dd className="text-sm mt-1">
+                  {new Date(createdDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">Hook</dt>
+              <dd className="text-sm mt-1">
+                {community.metadata?.hook ? (
+                  <a
+                    href={getScanUrl(8453, "address", community.metadata.hook)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                  >
+                    <span className="font-mono text-xs text-muted-foreground">{community.metadata.hook}</span>
+                    <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                  </a>
+                ) : (
+                  <span className="text-muted-foreground italic">none</span>
+                )}
+              </dd>
+            </div>
+            {community.rules && community.rules.length > 0 && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Rules</dt>
+                <dd className="text-sm mt-1">
+                  <div className="space-y-2">
+                    {community.rules.map((rule, index) => (
+                      <div key={index} className="pl-2">
+                        <span className="font-medium">
+                          {index + 1}. {rule.title}
+                        </span>
+                        {rule.description && (
+                          <p className="text-muted-foreground text-xs mt-0.5">{rule.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </dd>
               </div>
             )}
             {community.owner && (
