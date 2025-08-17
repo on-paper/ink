@@ -43,10 +43,9 @@ export interface CommentToPostOptions {
   includeReplies?: boolean;
 }
 
-function processIpfsContent(content: string): string {
-  const ipfsPattern = /(ipfs:\/\/[a-zA-Z0-9]+)/g;
-  
-  const processedContent = content.replace(ipfsPattern, (match) => {
+export function processMediaContent(content: string): string {
+  const mediaPattern = /((?:ipfs|lens):\/\/[a-zA-Z0-9-_/.]+)/g;
+  const processedContent = content.replace(mediaPattern, (match) => {
     const resolvedUrl = resolveUrl(match);
     return `![](${resolvedUrl})`;
   });
@@ -123,7 +122,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
   const isUpvoted = Boolean(comment.viewerReactions?.like);
   const isReposted = Boolean(comment.viewerReactions?.repost);
 
-  const processedContent = processIpfsContent(comment.content);
+  const processedContent = processMediaContent(comment.content);
 
   const post: Post = {
     id: comment.id,

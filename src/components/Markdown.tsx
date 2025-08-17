@@ -44,7 +44,7 @@ export const extractUrlsFromText = (text: string): string[] => {
       continue;
     }
 
-    if (cleanUrl.includes("ipfs.io/ipfs/")) {
+    if (cleanUrl.includes("ipfs.io/ipfs/") || cleanUrl.includes("api.grove.storage/")) {
       continue;
     }
 
