@@ -4,7 +4,7 @@ import { atomWithStorage } from "jotai/utils";
 export interface RecentlyVisitedPage {
   path: string;
   title: string;
-  type: "home" | "explore" | "community" | "activity" | "user";
+  type: "home" | "communities" | "community" | "activity" | "user";
   communityId?: string;
   userId?: string;
   timestamp: number;
@@ -18,9 +18,9 @@ const defaultPages: RecentlyVisitedPage[] = [
     timestamp: Date.now() - 2000,
   },
   {
-    path: "/explore",
-    title: "Explore",
-    type: "explore",
+    path: "/communities",
+    title: "Communities",
+    type: "communities",
     timestamp: Date.now() - 1000,
   },
   {

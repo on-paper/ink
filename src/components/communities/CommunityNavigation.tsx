@@ -35,7 +35,7 @@ export const CommunityNavigation = ({ communityAddress }: { communityAddress: st
               {isActive && (
                 <motion.div
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                  layoutId="activeTab"
+                  layoutId="communityActiveTab"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

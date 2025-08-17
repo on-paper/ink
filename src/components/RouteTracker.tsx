@@ -26,11 +26,11 @@ export function RouteTracker() {
         title: "Home",
         type: "home",
       });
-    } else if (pathname === "/explore") {
+    } else if (pathname === "/communities") {
       addRecentlyVisited({
         path: pathname,
-        title: "Explore",
-        type: "explore",
+        title: "Communities",
+        type: "communities",
       });
     } else if (pathname === "/activity") {
       addRecentlyVisited({
