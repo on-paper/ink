@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { extractConsecutiveImages, extractUrlsFromText } from "../../components/Markdown";
+import { extractUrlsFromText } from "../../components/Markdown";
+import { extractConsecutiveMedia } from "../../components/MarkdownMediaGallery";
 import { processMediaContent } from "../ecp/converters/commentConverter";
 import { parseContent } from "../parseContent";
 
@@ -274,7 +275,7 @@ describe("extractUrlsFromText", () => {
   });
 });
 
-describe("extractConsecutiveImages", () => {
+describe("extractConsecutiveMedia", () => {
   it("should group two consecutive images into a gallery", () => {
     const content = `Some text before
 
@@ -283,14 +284,14 @@ describe("extractConsecutiveImages", () => {
 
 Some text after`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(1);
-    expect(result.imageGroups[0]).toEqual([
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0]).toEqual([
       "https://api.grove.storage/image1.jpg",
       "https://api.grove.storage/image2.jpg",
     ]);
-    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
     expect(result.processedContent).toContain("Some text before");
     expect(result.processedContent).toContain("Some text after");
   });
@@ -306,12 +307,12 @@ Some text after`;
 
 Text after`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(1);
-    expect(result.imageGroups[0]).toHaveLength(3);
-    expect(result.imageGroups[0]).toContain("https://api.grove.storage/third.jpg");
-    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0]).toHaveLength(3);
+    expect(result.mediaGroups[0][2]).toEqual("https://api.grove.storage/third.jpg");
+    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
   });
 
   it("should keep single images as standalone", () => {
@@ -325,12 +326,12 @@ Some text
 
 More text`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(0);
+    expect(result.mediaGroups).toHaveLength(0);
     expect(result.processedContent).toContain("![](https://api.grove.storage/single.jpg)");
     expect(result.processedContent).toContain("![](https://api.grove.storage/another.jpg)");
-    expect(result.processedContent).not.toContain('GALLERY_PLACEHOLDER');
+    expect(result.processedContent).not.toContain('MEDIA_GALLERY_PLACEHOLDER');
   });
 
   it("should handle multiple gallery groups in one content", () => {
@@ -349,13 +350,13 @@ Second gallery:
 
 End text`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(2);
-    expect(result.imageGroups[0]).toHaveLength(2);
-    expect(result.imageGroups[1]).toHaveLength(3);
-    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
-    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_1');
+    expect(result.mediaGroups).toHaveLength(2);
+    expect(result.mediaGroups[0]).toHaveLength(2);
+    expect(result.mediaGroups[1]).toHaveLength(3);
+    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_1');
     expect(result.processedContent).toContain("Middle text");
   });
 
@@ -363,25 +364,28 @@ End text`;
     const content = `![Alt text 1](https://example.com/1.jpg)
 ![Alt text 2](https://example.com/2.jpg)`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(1);
-    expect(result.imageGroups[0]).toEqual(["https://example.com/1.jpg", "https://example.com/2.jpg"]);
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0]).toEqual([
+      "https://example.com/1.jpg",
+      "https://example.com/2.jpg"
+    ]);
   });
 
   it("should handle empty content", () => {
     const content = "";
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(0);
+    expect(result.mediaGroups).toHaveLength(0);
     expect(result.processedContent).toBe("");
   });
 
   it("should handle content with no images", () => {
     const content = "Just plain text without any images";
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(0);
+    expect(result.mediaGroups).toHaveLength(0);
     expect(result.processedContent).toBe(content);
   });
 
@@ -389,11 +393,11 @@ End text`;
     const content = `![](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)
 ![](https://ipfs.io/ipfs/Qm123abc)`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(1);
-    expect(result.imageGroups[0]).toContain("https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ");
-    expect(result.imageGroups[0]).toContain("https://ipfs.io/ipfs/Qm123abc");
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0][0]).toBe("https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ");
+    expect(result.mediaGroups[0][1]).toBe("https://ipfs.io/ipfs/Qm123abc");
   });
 
   it("should not group images separated by text", () => {
@@ -401,9 +405,9 @@ End text`;
 Some text between
 ![](https://example.com/2.jpg)`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(0);
+    expect(result.mediaGroups).toHaveLength(0);
     expect(result.processedContent).toContain("![](https://example.com/1.jpg)");
     expect(result.processedContent).toContain("Some text between");
     expect(result.processedContent).toContain("![](https://example.com/2.jpg)");
@@ -417,10 +421,41 @@ Some text between
 
     Code block or indented text`;
 
-    const result = extractConsecutiveImages(content);
+    const result = extractConsecutiveMedia(content);
 
-    expect(result.imageGroups).toHaveLength(1);
+    expect(result.mediaGroups).toHaveLength(1);
     expect(result.processedContent).toContain("  Indented text");
     expect(result.processedContent).toContain("    Code block or indented text");
+  });
+
+  it("should handle mixed media galleries with images and videos", () => {
+    const content = `Mixed media:
+
+![](https://example.com/image.jpg)
+![](https://example.com/video.mp4)
+![](https://example.com/another.png)
+
+End`;
+
+    const result = extractConsecutiveMedia(content);
+
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0]).toEqual([
+      "https://example.com/image.jpg",
+      "https://example.com/video.mp4",
+      "https://example.com/another.png"
+    ]);
+    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
+  });
+
+  it("should extract URLs without determining type", () => {
+    const content = `![](https://api.grove.storage/file1)
+![](https://api.grove.storage/file2)`;
+
+    const result = extractConsecutiveMedia(content);
+
+    expect(result.mediaGroups).toHaveLength(1);
+    expect(result.mediaGroups[0][0]).toBe("https://api.grove.storage/file1");
+    expect(result.mediaGroups[0][1]).toBe("https://api.grove.storage/file2");
   });
 });
