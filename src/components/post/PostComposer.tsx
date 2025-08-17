@@ -475,23 +475,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-                .slice(1)
-                .map((m) => {
-                  if (m.type.startsWith("image/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaImageType(m.type),
-                    };
-                  }
-                  if (m.type.startsWith("video/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaVideoType(m.type),
-                    };
-                  }
-                  return null;
-                })
-                .filter(Boolean)
+              .slice(1)
+              .map((m) => {
+                if (m.type.startsWith("image/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaImageType(m.type),
+                  };
+                }
+                if (m.type.startsWith("video/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaVideoType(m.type),
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean)
             : undefined;
 
         return {
@@ -692,12 +692,7 @@ function ComposerContent() {
                           {currentCommunity.metadata.name}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-2">
-                          <span className="inline-block h-4 w-16 rounded-full bg-muted animate-pulse" />
-                          <span className="font-bold text-muted-foreground truncate max-w-[10rem] inline-block align-bottom">
-                            {community || communityFromPath}
-                          </span>
-                        </span>
+                        <span className="inline-block h-4 w-16 rounded-full bg-muted animate-pulse" />
                       )
                     ) : (
                       <DropdownMenu modal={false}>
