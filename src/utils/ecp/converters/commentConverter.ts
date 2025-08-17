@@ -49,7 +49,7 @@ export function processMediaContent(content: string): string {
     const resolvedUrl = resolveUrl(match);
     return `![](${resolvedUrl})`;
   });
-  
+
   return processedContent;
 }
 
@@ -129,13 +129,13 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     author,
     metadata: {
       content: processedContent,
-      __typename: "TextOnlyMetadata" as const,
+      __typename: "MarkdownMetadata" as const,
       ...(channelMeta ? { channel: channelMeta } : {}),
       ...(comment.channelId ? { channelId: comment.channelId } : {}),
     },
     createdAt,
     updatedAt: createdAt,
-    platform: "lens" as const,
+    platform: "ecp" as const,
     __typename: "Post" as const,
     isEdited: false,
     reactions: {

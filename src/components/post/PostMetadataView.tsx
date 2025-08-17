@@ -8,6 +8,7 @@ import type {
   ImageMetadataDetails,
   LinkMetadataDetails,
   LiveStreamMetadataDetails,
+  MarkdownMetadataDetails,
   MintMetadataDetails,
   SpaceMetadataDetails,
   StoryMetadataDetails,
@@ -33,6 +34,7 @@ export const getPostTextContent = (
 
   switch (metadata.__typename) {
     case "TextOnlyMetadata":
+    case "MarkdownMetadata":
     case "ArticleMetadata":
     case "ImageMetadata":
     case "VideoMetadata":
@@ -79,6 +81,10 @@ export const getPostLinkPreviews = (metadata: any): string[] => {
     return [];
   }
 
+  if (metadata.__typename === "MarkdownMetadata") {
+    return extractUrlsFromText(content);
+  }
+
   return extractUrlsFromText(content);
 };
 
@@ -86,6 +92,8 @@ export const getPostMetadataView = (metadata: any, mentions?: PostMention[]) => 
   switch (metadata.__typename) {
     case "TextOnlyMetadata":
       return <TextOnlyView metadata={metadata as TextOnlyMetadataDetails} mentions={mentions} />;
+    case "MarkdownMetadata":
+      return <MarkdownView metadata={metadata} mentions={mentions} />;
     case "ArticleMetadata":
       return <ArticleView metadata={metadata as ArticleMetadataDetails} mentions={mentions} />;
     case "ImageMetadata":
@@ -139,6 +147,16 @@ export const TextOnlyView = ({
   mentions?: PostMention[];
 }) => {
   return <ContentView content={metadata.content} mentions={mentions} />;
+};
+
+export const MarkdownView = ({
+  metadata,
+  mentions,
+}: {
+  metadata: MarkdownMetadataDetails;
+  mentions?: PostMention[];
+}) => {
+  return <ContentView content={metadata.content} mentions={mentions} showLinkPreviews={false} />;
 };
 
 export const ArticleView = ({ metadata, mentions }: { metadata: ArticleMetadataDetails; mentions?: PostMention[] }) => {

@@ -1,5 +1,3 @@
-// Native type definitions for post metadata (replacing lens-protocol types)
-
 export interface MediaAsset {
   item: string;
   type: string;
@@ -18,6 +16,10 @@ export interface BaseMetadata {
 
 export interface TextOnlyMetadataDetails extends BaseMetadata {
   __typename: "TextOnlyMetadata";
+}
+
+export interface MarkdownMetadataDetails extends BaseMetadata {
+  __typename: "MarkdownMetadata";
 }
 
 export interface ArticleMetadataDetails extends BaseMetadata {
@@ -91,6 +93,7 @@ export type MediaAttachment = {
 
 export type AnyMetadata =
   | TextOnlyMetadataDetails
+  | MarkdownMetadataDetails
   | ArticleMetadataDetails
   | ImageMetadataDetails
   | VideoMetadataDetails
