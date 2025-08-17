@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { CommunityHeader } from "~/components/communities/CommunityHeader";
-import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
 import { Card, CardContent } from "~/components/ui/card";
 import { generateCommunityOGUrl } from "~/utils/generateOGUrl";
 import { getCommunityByAddress } from "~/utils/getCommunityByAddress";
@@ -58,27 +55,19 @@ export default async function CommunityAboutPage({ params }: CommunityAboutPageP
   const community = await getCommunityByAddress(params.community);
 
   if (!community) {
-    notFound();
+    return null;
   }
 
   return (
-    <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-      <div className="pt-4">
-        <CommunityHeader community={community} />
-        <CommunityNavigation communityAddress={params.community} />
-
-        <Card className="mb-4">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-4">About</h2>
-            {community.metadata?.description ? (
-              <p className="text-muted-foreground">{community.metadata.description}</p>
-            ) : (
-              <p className="text-muted-foreground italic">No description available</p>
-            )}
-          </CardContent>
-        </Card>
-
-      </div>
-    </div>
+    <Card className="mb-4">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-4">About</h2>
+        {community.metadata?.description ? (
+          <p className="text-muted-foreground">{community.metadata.description}</p>
+        ) : (
+          <p className="text-muted-foreground italic">No description available</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { CommunityHeader } from "~/components/communities/CommunityHeader";
-import { CommunityNavigation } from "~/components/communities/CommunityNavigation";
 import { CommunityPostComposer } from "~/components/communities/CommunityPostComposer";
 import { Feed } from "~/components/Feed";
 import { PostView } from "~/components/post/PostView";
@@ -60,21 +57,16 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
   const community = await getCommunityByAddress(params.community);
 
   if (!community) {
-    notFound();
+    return null;
   }
 
   const channelId = community.address;
   const endpoint = `/api/posts?channelId=${channelId}`;
 
   return (
-    <div className="z-[30] max-w-3xl mx-auto p-4 py-0">
-      <div className="pt-4">
-        <CommunityHeader community={community} />
-        <CommunityNavigation communityAddress={params.community} />
-        <CommunityPostComposer community={community} communityAddress={params.community} />
-
-        <Feed ItemView={PostView} endpoint={endpoint} />
-      </div>
-    </div>
+    <>
+      <CommunityPostComposer community={community} communityAddress={params.community} />
+      <Feed ItemView={PostView} endpoint={endpoint} />
+    </>
   );
 }
