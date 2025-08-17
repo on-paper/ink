@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { parseContent } from "../parseContent";
+import { extractConsecutiveImages, extractUrlsFromText } from "../../components/Markdown";
 import { processMediaContent } from "../ecp/converters/commentConverter";
-import { extractUrlsFromText } from "../../components/Markdown";
+import { parseContent } from "../parseContent";
 
 describe("parseContent", () => {
   describe("replaceHandles", () => {
@@ -122,9 +122,7 @@ describe("processMediaContent", () => {
   it("should convert IPFS URLs to markdown images", () => {
     const input = "Check this out!\n\nipfs://QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ";
     const result = processMediaContent(input);
-    expect(result).toBe(
-      "Check this out!\n\n![](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)",
-    );
+    expect(result).toBe("Check this out!\n\n![](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)");
   });
 
   it("should convert lens:// URLs to markdown images", () => {
@@ -273,5 +271,156 @@ describe("extractUrlsFromText", () => {
     `;
     const result = extractUrlsFromText(input);
     expect(result).toEqual(["https://example.com"]);
+  });
+});
+
+describe("extractConsecutiveImages", () => {
+  it("should group two consecutive images into a gallery", () => {
+    const content = `Some text before
+
+![](https://api.grove.storage/image1.jpg)
+![](https://api.grove.storage/image2.jpg)
+
+Some text after`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(1);
+    expect(result.imageGroups[0]).toEqual([
+      "https://api.grove.storage/image1.jpg",
+      "https://api.grove.storage/image2.jpg",
+    ]);
+    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain("Some text before");
+    expect(result.processedContent).toContain("Some text after");
+  });
+
+  it("should group three consecutive images with empty lines between them", () => {
+    const content = `Text before
+
+![](https://api.grove.storage/76bcc7f1c8e3011a235ac329cf1806eb1fa3a41a710a973bd79070aec733d4cf)
+
+![](https://api.grove.storage/4a8af5e9bdc11943b657f38c6b498b04600fc1718eb6d0cac9f389bba573fe80)
+
+![](https://api.grove.storage/third.jpg)
+
+Text after`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(1);
+    expect(result.imageGroups[0]).toHaveLength(3);
+    expect(result.imageGroups[0]).toContain("https://api.grove.storage/third.jpg");
+    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
+  });
+
+  it("should keep single images as standalone", () => {
+    const content = `Single image:
+
+![](https://api.grove.storage/single.jpg)
+
+Some text
+
+![](https://api.grove.storage/another.jpg)
+
+More text`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(0);
+    expect(result.processedContent).toContain("![](https://api.grove.storage/single.jpg)");
+    expect(result.processedContent).toContain("![](https://api.grove.storage/another.jpg)");
+    expect(result.processedContent).not.toContain('GALLERY_PLACEHOLDER');
+  });
+
+  it("should handle multiple gallery groups in one content", () => {
+    const content = `First gallery:
+
+![](https://example.com/1.jpg)
+![](https://example.com/2.jpg)
+
+Middle text
+
+Second gallery:
+
+![](https://example.com/3.jpg)
+![](https://example.com/4.jpg)
+![](https://example.com/5.jpg)
+
+End text`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(2);
+    expect(result.imageGroups[0]).toHaveLength(2);
+    expect(result.imageGroups[1]).toHaveLength(3);
+    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain('GALLERY_PLACEHOLDER_1');
+    expect(result.processedContent).toContain("Middle text");
+  });
+
+  it("should handle images with alt text", () => {
+    const content = `![Alt text 1](https://example.com/1.jpg)
+![Alt text 2](https://example.com/2.jpg)`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(1);
+    expect(result.imageGroups[0]).toEqual(["https://example.com/1.jpg", "https://example.com/2.jpg"]);
+  });
+
+  it("should handle empty content", () => {
+    const content = "";
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(0);
+    expect(result.processedContent).toBe("");
+  });
+
+  it("should handle content with no images", () => {
+    const content = "Just plain text without any images";
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(0);
+    expect(result.processedContent).toBe(content);
+  });
+
+  it("should handle IPFS image URLs in galleries", () => {
+    const content = `![](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)
+![](https://ipfs.io/ipfs/Qm123abc)`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(1);
+    expect(result.imageGroups[0]).toContain("https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ");
+    expect(result.imageGroups[0]).toContain("https://ipfs.io/ipfs/Qm123abc");
+  });
+
+  it("should not group images separated by text", () => {
+    const content = `![](https://example.com/1.jpg)
+Some text between
+![](https://example.com/2.jpg)`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(0);
+    expect(result.processedContent).toContain("![](https://example.com/1.jpg)");
+    expect(result.processedContent).toContain("Some text between");
+    expect(result.processedContent).toContain("![](https://example.com/2.jpg)");
+  });
+
+  it("should preserve indentation and formatting", () => {
+    const content = `  Indented text
+
+![](https://example.com/1.jpg)
+![](https://example.com/2.jpg)
+
+    Code block or indented text`;
+
+    const result = extractConsecutiveImages(content);
+
+    expect(result.imageGroups).toHaveLength(1);
+    expect(result.processedContent).toContain("  Indented text");
+    expect(result.processedContent).toContain("    Code block or indented text");
   });
 });
