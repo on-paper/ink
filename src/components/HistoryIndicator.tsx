@@ -1,15 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  isNavigatingFromHistoryAtom,
-  navigationModeAtom,
-  navigationPositionAtom,
-  showNavigationIndicatorAtom,
-} from "~/atoms/navigation";
+import { isNavigatingFromHistoryAtom, navigationPositionAtom, showNavigationIndicatorAtom } from "~/atoms/navigation";
 import { recentlyVisitedPagesAtom } from "~/atoms/recentlyVisited";
 
 export function HistoryIndicator() {
@@ -18,7 +13,6 @@ export function HistoryIndicator() {
   const [showIndicator, setShowIndicator] = useAtom(showNavigationIndicatorAtom);
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
-  const setNavigationMode = useSetAtom(navigationModeAtom);
   const setNavigationPosition = useSetAtom(navigationPositionAtom);
   const setIsNavigatingFromHistory = useSetAtom(isNavigatingFromHistoryAtom);
 
@@ -54,24 +48,27 @@ export function HistoryIndicator() {
         >
           <motion.div
             data-history-indicator
-            className="bg-background/80 backdrop-blur-md border rounded-2xl overflow-hidden cursor-pointer min-w-xs"
+            className="bg-background/80 backdrop-blur-md border rounded-2xl cursor-pointer min-w-[120px] overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             animate={{
-              width: isHovered ? "auto" : "auto",
-              height: isHovered ? "auto" : "auto",
+              width: isHovered ? 220 : 120,
+              height: isHovered ? recentlyVisitedPages.length * 36 + 8 : 36,
             }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 25,
+              mass: 0.5,
+            }}
           >
-            <AnimatePresence>
+            <motion.div className="relative w-full h-full" animate={{ opacity: 1 }}>
               {!isHovered ? (
                 <motion.div
-                  key="dots"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 px-3 py-2 flex items-center justify-center gap-1.5"
+                  initial={false}
+                  animate={{ opacity: isHovered ? 0 : 1 }}
                   transition={{ duration: 0.15 }}
-                  className="px-3 py-2 flex items-center gap-1.5"
                 >
                   {recentlyVisitedPages.map((_, index) => (
                     <div
@@ -81,17 +78,17 @@ export function HistoryIndicator() {
                     />
                   ))}
                 </motion.div>
-              ) : (
+              ) : null}
+              {isHovered ? (
                 <motion.div
-                  key="list"
+                  className="absolute inset-0 p-1 flex flex-col gap-1"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="p-1 flex flex-col gap-1"
+                  transition={{ duration: 0.15, delay: 0.1 }}
                 >
                   {recentlyVisitedPages.map((page, index) => (
                     <button
+                      type="button"
                       key={index}
                       onClick={() => {
                         setIsNavigatingFromHistory(true);
@@ -109,12 +106,12 @@ export function HistoryIndicator() {
                         className={`w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-200 
                           ${index === navigationPosition ? "bg-primary" : "bg-muted"}`}
                       />
-                      <span className="text-sm truncate max-w-[200px] block">{page.title}</span>
+                      <span className="text-sm truncate max-w-[180px] block">{page.title}</span>
                     </button>
                   ))}
                 </motion.div>
-              )}
-            </AnimatePresence>
+              ) : null}
+            </motion.div>
           </motion.div>
         </motion.div>
       )}
