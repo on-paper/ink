@@ -1,6 +1,7 @@
 import type { Post } from "@cartel-sh/ui";
 import { fetchChannel } from "~/utils/ecp/channels";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
+import { resolveUrl } from "~/utils/resolveUrl";
 
 export interface ECPComment {
   id: string;
@@ -40,6 +41,17 @@ export interface ECPComment {
 export interface CommentToPostOptions {
   currentUserAddress?: string;
   includeReplies?: boolean;
+}
+
+function processIpfsContent(content: string): string {
+  const ipfsPattern = /(ipfs:\/\/[a-zA-Z0-9]+)/g;
+  
+  const processedContent = content.replace(ipfsPattern, (match) => {
+    const resolvedUrl = resolveUrl(match);
+    return `![](${resolvedUrl})`;
+  });
+  
+  return processedContent;
 }
 
 export async function ecpCommentToPost(comment: ECPComment, options: CommentToPostOptions = {}): Promise<Post> {
@@ -111,11 +123,13 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
   const isUpvoted = Boolean(comment.viewerReactions?.like);
   const isReposted = Boolean(comment.viewerReactions?.repost);
 
+  const processedContent = processIpfsContent(comment.content);
+
   const post: Post = {
     id: comment.id,
     author,
     metadata: {
-      content: comment.content,
+      content: processedContent,
       __typename: "TextOnlyMetadata" as const,
       ...(channelMeta ? { channel: channelMeta } : {}),
       ...(comment.channelId ? { channelId: comment.channelId } : {}),

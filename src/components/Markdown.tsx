@@ -19,10 +19,11 @@ const BASE_URL = getBaseUrl();
 export const extractUrlsFromText = (text: string): string[] => {
   const uniqueUrls = new Map<string, string>();
 
-  const urlRegex = /https?:\/\/[^\s<>"\]]+/gi;
+  const urlRegex = /https?:\/\/[^\s<>"\])]+/gi;
   const allMatches = text.match(urlRegex) || [];
 
   const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   const markdownUrls = new Set<string>();
   let match: RegExpExecArray | null;
 
@@ -31,10 +32,19 @@ export const extractUrlsFromText = (text: string): string[] => {
     markdownUrls.add(linkUrl);
   }
 
+  while ((match = markdownImageRegex.exec(text)) !== null) {
+    const imageUrl = match[2].trim();
+    markdownUrls.add(imageUrl);
+  }
+
   for (const rawUrl of allMatches) {
     const cleanUrl = rawUrl.replace(/[.,;:!?]+$/, "").trim();
 
     if (cleanUrl.startsWith(BASE_URL) || markdownUrls.has(cleanUrl)) {
+      continue;
+    }
+
+    if (cleanUrl.includes("ipfs.io/ipfs/")) {
       continue;
     }
 
