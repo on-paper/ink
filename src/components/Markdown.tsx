@@ -191,6 +191,22 @@ const Markdown: React.FC<{
         }
       }
 
+      if (Array.isArray(children) && children.length === 1) {
+        const child = children[0];
+        if (child && typeof child === 'object' && 'props' in child && child.props?.src) {
+          const mimeType = mediaMimeTypes?.[child.props.src];
+          if (mimeType?.startsWith('video/')) {
+            return <MarkdownMediaItem url={child.props.src} mimeType={mimeType} />;
+          }
+        }
+      } else if (!Array.isArray(children) && children && typeof children === 'object' && 'props' in children && (children as any).props?.src) {
+        const props = (children as any).props;
+        const mimeType = mediaMimeTypes?.[props.src];
+        if (mimeType?.startsWith('video/')) {
+          return <MarkdownMediaItem url={props.src} mimeType={mimeType} />;
+        }
+      }
+
       return <p className="lexical-paragraph mb-4 last:mb-0">{children}</p>;
     },
     h1: ({ children }) => <h1 className="lexical-h1">{children}</h1>,

@@ -1,7 +1,10 @@
+"use client";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ImageViewer } from "./ImageViewer";
 import { VideoPlayer } from "./VideoPlayer";
 
-// Extract consecutive media (images/videos) from markdown content
 export const extractConsecutiveMedia = (
   content: string,
 ): {
@@ -13,14 +16,13 @@ export const extractConsecutiveMedia = (
   let currentGroup: string[] = [];
   const processedLines: string[] = [];
 
-  // Regex to match markdown images/media
+  // markdown image regex
   const mediaRegex = /^!\[([^\]]*)\]\(([^)]+)\)$/;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmedLine = line.trim();
 
-    // Check if this line is markdown media
     if (trimmedLine.match(mediaRegex)) {
       const match = trimmedLine.match(mediaRegex);
       if (match) {
@@ -76,41 +78,110 @@ export const extractConsecutiveMedia = (
 };
 
 export const MarkdownMediaGallery = ({ urls, mimeTypes }: { urls: string[]; mimeTypes?: Record<string, string> }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    return () => window.removeEventListener('resize', checkScrollButtons);
+  }, [urls]);
+
+  const scrollToDirection = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = scrollContainerRef.current.clientWidth * 0.8;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+      setTimeout(checkScrollButtons, 300);
+    }
+  };
 
   return (
-    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide my-2" style={{ height: "300px" }}>
-      <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
-        {urls.map((url, index) => {
-          const mimeType = mimeTypes?.[url];
-          const isVideo = mimeType?.startsWith("video/") || url.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|m4v)(\?|$)/);
+    <div className="relative my-2 group">
+      <div 
+        ref={scrollContainerRef}
+        className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" 
+        style={{ height: "300px" }}
+        onScroll={checkScrollButtons}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            scrollToDirection('left');
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            scrollToDirection('right');
+          }
+        }}
+      >
+        <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
+          {urls.map((url, index) => {
+            const mimeType = mimeTypes?.[url];
+            const isVideo = mimeType?.startsWith("video/") || url.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|m4v)(\?|$)/);
 
-          return (
-            <div key={`gallery-media-${url}`} className="h-full flex items-center">
-              {isVideo ? (
-                <div className="h-full flex items-center" style={{ height: "300px" }}>
-                  <VideoPlayer url={url} preview="" autoplay={index === 0} />
-                </div>
-              ) : (
-                <ImageViewer
-                  src={url}
-                  alt=""
-                  className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
-                />
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div key={`gallery-media-${url}`} className="h-full flex items-center">
+                {isVideo ? (
+                  <div className="h-full flex items-center">
+                    <VideoPlayer url={url} preview="" autoplay={index === 0} />
+                  </div>
+                ) : (
+                  <ImageViewer
+                    src={url}
+                    alt=""
+                    className="h-full max-h-[300px] w-auto object-contain border rounded-xl cursor-pointer"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+      
+      {/* Navigation Arrows */}
+      {urls.length > 1 && (
+        <>
+          <button
+            onClick={() => scrollToDirection('left')}
+            className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white transition-opacity ${
+              canScrollLeft ? 'opacity-0 group-hover:opacity-100' : 'hidden'
+            }`}
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <button
+            onClick={() => scrollToDirection('right')}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white transition-opacity ${
+              canScrollRight ? 'opacity-0 group-hover:opacity-100' : 'hidden'
+            }`}
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
 export const MarkdownMediaItem = ({ url, mimeType }: { url: string; mimeType?: string }) => {
   const isVideo = mimeType?.startsWith("video/");
-
   if (isVideo) {
     return (
-      <div className="my-2" style={{ maxHeight: "min(100%, 300px)" }}>
+      <div className="my-2 w-fit">
         <VideoPlayer url={url} preview="" autoplay={true} />
       </div>
     );

@@ -356,9 +356,6 @@ type MediaAttachment = {
 };
 
 const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; authorHandle?: string }) => {
-  const hasMixedMedia =
-    items.some((item) => item.type && isImageMimeType(String(item.type))) &&
-    items.some((item) => item.type && !isImageMimeType(String(item.type)));
   const firstVideoIndex = items.findIndex((item) => item.type && !isImageMimeType(String(item.type)));
 
   return (
@@ -386,7 +383,6 @@ const MediaGallery = ({ items, authorHandle }: { items: MediaAttachment[]; autho
                     currentIndex={index}
                     autoplay={isFirstVideo}
                     authorHandle={authorHandle}
-                    useModal={hasMixedMedia}
                   />
                 </div>
               )}

@@ -21,6 +21,20 @@ import { useVideoState } from "../hooks/useVideoState";
 import { useVideoViewportManager } from "../hooks/useVideoViewportManager";
 
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
+  const cacheKey = `video-thumb-${videoUrl}`;
+  
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const data = JSON.parse(cached);
+      if (data.thumbnail && data.aspectRatio) {
+        return Promise.resolve(data);
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to read thumbnail cache:", e);
+  }
+
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
     const canvas = document.createElement("canvas");
@@ -28,25 +42,44 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
 
     video.crossOrigin = "anonymous";
     video.muted = true;
+    video.preload = "metadata";
+
+    const timeout = setTimeout(() => {
+      reject(new Error("Thumbnail generation timeout"));
+      video.src = "";
+    }, 10000);
 
     video.onloadedmetadata = () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      video.currentTime = 0;
+      const maxWidth = 640;
+      canvas.width = Math.min(video.videoWidth, maxWidth);
+      canvas.height = video.videoHeight * (canvas.width / video.videoWidth);
+      video.currentTime = 0.1;
     };
 
     video.onseeked = () => {
+      clearTimeout(timeout);
       if (ctx) {
-        ctx.drawImage(video, 0, 0);
-        const thumbnail = canvas.toDataURL("image/jpeg", 0.8);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnail = canvas.toDataURL("image/jpeg", 0.6);
         const aspectRatio = video.videoHeight / video.videoWidth;
-        resolve({ thumbnail, aspectRatio });
+        video.src = "";
+        
+        const result = { thumbnail, aspectRatio };
+        
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(result));
+        } catch (e) {
+          console.warn("Failed to cache thumbnail:", e);
+        }
+        
+        resolve(result);
       } else {
         reject(new Error("Canvas context not available"));
       }
     };
 
     video.onerror = (error) => {
+      clearTimeout(timeout);
       reject(new Error(`Video loading failed: ${error}`));
     };
 
@@ -60,26 +93,19 @@ export const VideoPlayer = ({
   galleryItems,
   currentIndex,
   autoplay = true,
-  autoplayThreshold = 0.5,
-  autoplayRootMargin = "-10% 0px",
   authorHandle,
-  useModal = false,
 }: {
   url: string;
   preview: string;
   galleryItems?: any[];
   currentIndex?: number;
   autoplay?: boolean;
-  autoplayThreshold?: number;
-  autoplayRootMargin?: string;
   authorHandle?: string;
-  useModal?: boolean;
 }) => {
   const playerWithControlsRef = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [shown, setShown] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
@@ -419,7 +445,6 @@ export const VideoPlayer = ({
       }
 
       setModalOpen(true);
-      setIsFullscreen(true);
       setShown(true);
       setPlaying(true);
       // Always pause other videos when opening fullscreen, regardless of mute state
@@ -431,7 +456,6 @@ export const VideoPlayer = ({
         cancelAnimationFrame(progressAnimationRef.current);
       }
       setModalOpen(false);
-      setIsFullscreen(false);
       // Reset modal session preference when closing
       setModalSessionWantsAudio(false);
       // Don't reset videoStarted - keep showing video when exiting fullscreen
@@ -491,9 +515,13 @@ export const VideoPlayer = ({
 
   useEffect(() => {
     if (!preview && url && !generatedThumbnail) {
-      generateVideoThumbnail(url).then(({ thumbnail }) => {
-        setGeneratedThumbnail(thumbnail);
-      });
+      generateVideoThumbnail(url)
+        .then(({ thumbnail }) => {
+          setGeneratedThumbnail(thumbnail);
+        })
+        .catch((error) => {
+          console.warn("Failed to generate video thumbnail:", error);
+        });
     }
   }, [url, preview, generatedThumbnail]);
 
@@ -503,8 +531,7 @@ export const VideoPlayer = ({
 
       if (e.key === "Escape") {
         setModalOpen(false);
-        setIsFullscreen(false);
-        // Reset modal session preference when closing
+          // Reset modal session preference when closing
         setModalSessionWantsAudio(false);
         // Don't reset videoStarted - keep showing video when exiting fullscreen
       }
@@ -607,8 +634,7 @@ export const VideoPlayer = ({
                 e.stopPropagation();
                 e.preventDefault();
                 setModalOpen(false);
-                setIsFullscreen(false);
-                // Reset modal session preference when closing
+                          // Reset modal session preference when closing
                 setModalSessionWantsAudio(false);
                 // Don't reset videoStarted - keep showing video when exiting fullscreen
               }}
@@ -913,10 +939,9 @@ export const VideoPlayer = ({
           playerWithControlsRef.current = node;
           autoplayRef.current = node;
         }}
-        className={`relative flex justify-center items-center rounded-lg overflow-hidden 
+        className={`relative inline-flex justify-center items-center rounded-lg overflow-hidden 
            ${isClickingMutePreview ? "" : "active:scale-[99%]"}
-           transition-all
-        ${preview !== "" ? "max-h-[300px] w-fit" : "h-fit"}
+           transition-all w-fit mx-auto
       `}
         onClick={handleFullscreen}
         onKeyDown={(e) => {
@@ -969,7 +994,7 @@ export const VideoPlayer = ({
             </div>
 
             <div
-              className={`${videoStarted ? "opacity-0" : "opacity-100"} transition-opacity duration-300 flex items-center justify-center relative h-full w-full cursor-pointer`}
+              className={`${videoStarted ? "opacity-0" : "opacity-100"} transition-opacity duration-300 flex items-center justify-center relative cursor-pointer`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -994,11 +1019,11 @@ export const VideoPlayer = ({
                 return (
                   <>
                     {videoPreview ? (
-                      <>
+                      <div className="relative">
                         <img
                           src={videoPreview}
                           alt="Video preview"
-                          className="max-h-[300px] object-contain rounded-xl mx-auto"
+                          className="max-h-[300px] w-auto object-contain rounded-xl"
                           draggable={false}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
@@ -1006,21 +1031,23 @@ export const VideoPlayer = ({
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
                           </div>
                         </div>
-                      </>
+                      </div>
                     ) : generatedThumbnail && activeIndex === (currentIndex || 0) ? (
-                      <>
-                        <img src={generatedThumbnail} alt="" className="h-[300px] rounded-xl" draggable={false} />
+                      <div className="relative">
+                        <img src={generatedThumbnail} alt="" className="max-h-[300px] w-auto object-contain rounded-xl" draggable={false} />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
                           </div>
                         </div>
-                      </>
+                      </div>
                     ) : (
-                      <div className="absolute inset-0 bg-muted rounded-xl flex items-center justify-center">
-                        <VideoIcon className="w-16 h-16 text-muted-foreground" />
+                      <div className="h-[300px] w-[533px] bg-gradient-to-br from-muted to-muted/80 rounded-xl flex items-center justify-center animate-pulse relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <VideoIcon className="w-12 h-12 text-muted-foreground/50" />
+                        </div>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
+                          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />
                           </div>
                         </div>
