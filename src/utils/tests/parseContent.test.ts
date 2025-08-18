@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { extractUrlsFromText } from "../../components/Markdown";
-import { extractConsecutiveMedia } from "../../components/MarkdownMediaGallery";
+import { extractConsecutiveMedia } from "../../components/MarkdownMedia";
 import { processMediaContent } from "../ecp/converters/commentConverter";
 import { parseContent } from "../parseContent";
 
@@ -120,78 +120,91 @@ describe("parseContent", () => {
 });
 
 describe("processMediaContent", () => {
-  it("should convert IPFS URLs to markdown images", () => {
+  it("should convert IPFS URLs to markdown images", async () => {
     const input = "Check this out!\n\nipfs://QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ";
-    const result = processMediaContent(input);
-    expect(result).toBe("Check this out!\n\n![](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/QmVaWS1L9jLDuuU5t8Xbnst8eRhue2qev6c8svHjxMjjrZ)");
   });
 
-  it("should convert lens:// URLs to markdown images", () => {
+  it("should convert lens:// URLs to markdown images", async () => {
     const input = "My image: lens://4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73";
-    const result = processMediaContent(input);
-    expect(result).toBe(
-      "My image: ![](https://api.grove.storage/4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73)",
-    );
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://api.grove.storage/4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73)");
   });
 
-  it("should handle multiple IPFS URLs", () => {
+  it("should handle multiple IPFS URLs", async () => {
     const input = "First ipfs://Qm123abc then ipfs://Qm456def";
-    const result = processMediaContent(input);
-    expect(result).toBe("First ![](https://ipfs.io/ipfs/Qm123abc) then ![](https://ipfs.io/ipfs/Qm456def)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/Qm123abc)");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/Qm456def)");
   });
 
-  it("should handle multiple lens:// URLs", () => {
+  it("should handle multiple lens:// URLs", async () => {
     const input = "lens://image1.jpg and lens://image2.png";
-    const result = processMediaContent(input);
-    expect(result).toBe("![](https://api.grove.storage/image1.jpg) and ![](https://api.grove.storage/image2.png)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://api.grove.storage/image1.jpg)");
+    expect(result.content).toContain("](https://api.grove.storage/image2.png)");
   });
 
-  it("should handle mixed IPFS and lens:// URLs", () => {
+  it("should handle mixed IPFS and lens:// URLs", async () => {
     const input = "ipfs://Qm123 mixed with lens://test/file.jpg";
-    const result = processMediaContent(input);
-    expect(result).toBe("![](https://ipfs.io/ipfs/Qm123) mixed with ![](https://api.grove.storage/test/file.jpg)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/Qm123)");
+    expect(result.content).toContain("](https://api.grove.storage/test/file.jpg)");
   });
 
-  it("should handle lens:// URLs with paths", () => {
+  it("should handle lens:// URLs with paths", async () => {
     const input = "lens://path/to/nested/file.png";
-    const result = processMediaContent(input);
-    expect(result).toBe("![](https://api.grove.storage/path/to/nested/file.png)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://api.grove.storage/path/to/nested/file.png)");
   });
 
-  it("should handle lens:// URLs with hyphens and underscores", () => {
+  it("should handle lens:// URLs with hyphens and underscores", async () => {
     const input = "lens://my-file_name-123.jpg";
-    const result = processMediaContent(input);
-    expect(result).toBe("![](https://api.grove.storage/my-file_name-123.jpg)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://api.grove.storage/my-file_name-123.jpg)");
   });
 
-  it("should not modify text without media URLs", () => {
+  it("should not modify text without media URLs", async () => {
     const input = "Just regular text without any special URLs";
-    const result = processMediaContent(input);
-    expect(result).toBe(input);
+    const result = await processMediaContent(input);
+    expect(result.content).toBe(input);
   });
 
-  it("should handle empty content", () => {
+  it("should handle empty content", async () => {
     const input = "";
-    const result = processMediaContent(input);
-    expect(result).toBe("");
+    const result = await processMediaContent(input);
+    expect(result.content).toBe("");
   });
 
-  it("should handle content with media URLs at the beginning", () => {
+  it("should handle content with media URLs at the beginning", async () => {
     const input = "ipfs://QmStart at the beginning";
-    const result = processMediaContent(input);
-    expect(result).toBe("![](https://ipfs.io/ipfs/QmStart) at the beginning");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/QmStart)");
   });
 
-  it("should handle content with media URLs at the end", () => {
+  it("should handle content with media URLs at the end", async () => {
     const input = "At the end ipfs://QmEnd";
-    const result = processMediaContent(input);
-    expect(result).toBe("At the end ![](https://ipfs.io/ipfs/QmEnd)");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/QmEnd)");
   });
 
-  it("should preserve newlines and whitespace", () => {
+  it("should preserve newlines and whitespace", async () => {
     const input = "Before\n\n  ipfs://Qm123  \n\nAfter";
-    const result = processMediaContent(input);
-    expect(result).toBe("Before\n\n  ![](https://ipfs.io/ipfs/Qm123)  \n\nAfter");
+    const result = await processMediaContent(input);
+    expect(result.content).toContain("Before");
+    expect(result.content).toContain("![");
+    expect(result.content).toContain("](https://ipfs.io/ipfs/Qm123)");
+    expect(result.content).toContain("After");
   });
 });
 

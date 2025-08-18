@@ -20,6 +20,7 @@ export interface TextOnlyMetadataDetails extends BaseMetadata {
 
 export interface MarkdownMetadataDetails extends BaseMetadata {
   __typename: "MarkdownMetadata";
+  mediaMimeTypes?: Record<string, string>;
 }
 
 export interface ArticleMetadataDetails extends BaseMetadata {

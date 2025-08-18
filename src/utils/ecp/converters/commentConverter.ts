@@ -1,6 +1,7 @@
 import type { Post } from "@cartel-sh/ui";
 import { fetchChannel } from "~/utils/ecp/channels";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
+import { detectMimeType } from "~/utils/media/detectMediaType";
 import { resolveUrl } from "~/utils/resolveUrl";
 
 export interface ECPComment {
@@ -43,14 +44,39 @@ export interface CommentToPostOptions {
   includeReplies?: boolean;
 }
 
-export function processMediaContent(content: string): string {
+export async function processMediaContent(
+  content: string,
+): Promise<{ content: string; mediaMimeTypes?: Record<string, string> }> {
   const mediaPattern = /((?:ipfs|lens):\/\/[a-zA-Z0-9-_/.]+)/g;
-  const processedContent = content.replace(mediaPattern, (match) => {
-    const resolvedUrl = resolveUrl(match);
-    return `![](${resolvedUrl})`;
+  const matches = Array.from(content.matchAll(mediaPattern));
+  
+  if (matches.length === 0) {
+    return { content };
+  }
+
+  const mediaMimeTypes: Record<string, string> = {};
+
+  const detectionPromises = matches.map(async (match) => {
+    const originalUrl = match[0];
+    const resolvedUrl = resolveUrl(originalUrl);
+    const mimeType = await detectMimeType(resolvedUrl);
+    if (mimeType) {
+      mediaMimeTypes[resolvedUrl] = mimeType;
+    }
+    return { originalUrl, resolvedUrl, mimeType };
   });
 
-  return processedContent;
+  const detectedMedia = await Promise.all(detectionPromises);
+
+  let processedContent = content;
+  for (const { originalUrl, resolvedUrl } of detectedMedia) {
+    processedContent = processedContent.replace(originalUrl, `![](${resolvedUrl})`);
+  }
+
+  return { 
+    content: processedContent, 
+    mediaMimeTypes: Object.keys(mediaMimeTypes).length > 0 ? mediaMimeTypes : undefined 
+  };
 }
 
 export async function ecpCommentToPost(comment: ECPComment, options: CommentToPostOptions = {}): Promise<Post> {
@@ -122,7 +148,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
   const isUpvoted = Boolean(comment.viewerReactions?.like);
   const isReposted = Boolean(comment.viewerReactions?.repost);
 
-  const processedContent = processMediaContent(comment.content);
+  const { content: processedContent, mediaMimeTypes } = await processMediaContent(comment.content);
 
   const post: Post = {
     id: comment.id,
@@ -130,6 +156,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     metadata: {
       content: processedContent,
       __typename: "MarkdownMetadata" as const,
+      ...(mediaMimeTypes ? { mediaMimeTypes } : {}),
       ...(channelMeta ? { channel: channelMeta } : {}),
       ...(comment.channelId ? { channelId: comment.channelId } : {}),
     },

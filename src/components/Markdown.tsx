@@ -1,3 +1,5 @@
+"use client";
+
 import type { PostMention } from "@cartel-sh/ui";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
@@ -10,7 +12,7 @@ import { getBaseUrl } from "~/utils/getBaseUrl";
 import { getScanUrl } from "~/utils/getScanUrl";
 import { parseContent } from "~/utils/parseContent";
 import { LinkPreview } from "./embeds/LinkPreview";
-import { extractConsecutiveMedia, MarkdownMediaGallery, MarkdownMediaItem } from "./MarkdownMediaGallery";
+import { extractConsecutiveMedia, MarkdownMediaGallery, MarkdownMediaItem } from "./MarkdownMedia";
 import { UserLazyHandle } from "./user/UserLazyHandle";
 import "~/components/composer/lexical.css";
 
@@ -69,7 +71,8 @@ const Markdown: React.FC<{
   mentions?: PostMention[];
   className?: string;
   showLinkPreviews?: boolean;
-}> = ({ content, mentions, className = "", showLinkPreviews = false }) => {
+  mediaMimeTypes?: Record<string, string>;
+}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaMimeTypes }) => {
   let processedText = content;
 
   processedText = parseContent(content).replaceHandles().toString();
@@ -156,6 +159,15 @@ const Markdown: React.FC<{
     };
   };
 
+  const createCustomImage = (mediaMimeTypes?: Record<string, string>): Components["img"] => {
+    return ({ node, ...props }) => {
+      const { src } = props;
+      if (!src) return null;
+      const mimeType = mediaMimeTypes?.[src];
+      return <MarkdownMediaItem url={src} mimeType={mimeType} />;
+    };
+  };
+
   const components: Components = {
     p: ({ children }) => {
       // Check if this paragraph contains a media gallery placeholder
@@ -174,7 +186,7 @@ const Markdown: React.FC<{
         if (match) {
           const galleryIndex = Number.parseInt(match[1], 10);
           if (mediaGroups[galleryIndex]) {
-            return <MarkdownMediaGallery urls={mediaGroups[galleryIndex]} />;
+            return <MarkdownMediaGallery urls={mediaGroups[galleryIndex]} mimeTypes={mediaMimeTypes} />;
           }
         }
       }
@@ -197,7 +209,7 @@ const Markdown: React.FC<{
     ol: ({ children }) => <ol className="lexical-list-ol">{children}</ol>,
     li: ({ children }) => <li className="lexical-listitem">{children}</li>,
     a: createCustomLink(colorClasses, mentions),
-    img: CustomImage,
+    img: createCustomImage(mediaMimeTypes),
     u: ({ children }) => <u className="lexical-text-underline">{children}</u>,
   };
 
@@ -224,12 +236,6 @@ const Markdown: React.FC<{
       )}
     </>
   );
-};
-
-const CustomImage: Components["img"] = ({ node, ...props }) => {
-  const { src } = props;
-  if (!src) return null;
-  return <MarkdownMediaItem url={src} />;
 };
 
 export default Markdown;
