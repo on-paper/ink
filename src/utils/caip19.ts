@@ -1,8 +1,6 @@
-import { base, mainnet } from "viem/chains";
-
 export type CAIP19URI = `eip155:${string}`;
 
-export type AssetNamespace = "erc20" | "erc721" | "erc1155" | "farcaster";
+export type AssetNamespace = string;
 
 export interface CAIP19Components {
   namespace: string;
@@ -14,11 +12,6 @@ export interface CAIP19Components {
 
 export const CHAIN_NAMESPACE = "eip155";
 
-export const SUPPORTED_CHAINS = {
-  [mainnet.id]: mainnet,
-  [base.id]: base,
-} as const;
-
 export function formatCAIP19URI(components: CAIP19Components): CAIP19URI {
   const { namespace, chainId, assetNamespace, assetReference, tokenId } = components;
 
@@ -26,9 +19,20 @@ export function formatCAIP19URI(components: CAIP19Components): CAIP19URI {
     return `${namespace}:${chainId}` as CAIP19URI;
   }
 
+  if (!/^erc[a-z0-9]{2,5}$/.test(assetNamespace)) {
+    throw new Error(`Invalid asset namespace: ${assetNamespace}`);
+  }
+
+  if (!/^0x[a-fA-F0-9]{40}$/.test(assetReference)) {
+    throw new Error(`Invalid asset reference: ${assetReference}`);
+  }
+
   let uri = `${namespace}:${chainId}/${assetNamespace}:${assetReference}`;
 
   if (tokenId) {
+    if (!/^\d{1,78}$/.test(tokenId)) {
+      throw new Error(`Invalid token ID: ${tokenId}`);
+    }
     uri += `/${tokenId}`;
   }
 
@@ -36,34 +40,23 @@ export function formatCAIP19URI(components: CAIP19Components): CAIP19URI {
 }
 
 export function parseCAIP19URI(uri: string): CAIP19Components | null {
-  if (!uri.startsWith("eip155:")) {
+  const caip19Pattern = /^eip155:(\d+)(?:\/(erc[a-z0-9]{2,5}):(0x[a-fA-F0-9]{40})(?:\/(\d{1,78}))?)?$/;
+  const match = uri.match(caip19Pattern);
+
+  if (!match) {
     return null;
   }
 
-  const parts = uri.split("/");
-
-  if (parts.length === 0) {
-    return null;
-  }
-
-  const [namespaceAndChain, assetInfo, tokenId] = parts;
-  const [namespace, chainId] = namespaceAndChain.split(":");
-
-  if (!namespace || !chainId || namespace !== "eip155") {
-    return null;
-  }
+  const [, chainId, assetNamespace, assetReference, tokenId] = match;
 
   const components: CAIP19Components = {
-    namespace,
-    chainId: Number.isNaN(Number(chainId)) ? chainId : Number(chainId),
+    namespace: "eip155",
+    chainId: Number.parseInt(chainId, 10),
   };
 
-  if (assetInfo) {
-    const [assetNamespace, assetReference] = assetInfo.split(":");
-    if (assetNamespace && assetReference) {
-      components.assetNamespace = assetNamespace as AssetNamespace;
-      components.assetReference = assetReference;
-    }
+  if (assetNamespace && assetReference) {
+    components.assetNamespace = assetNamespace;
+    components.assetReference = assetReference.toLowerCase();
   }
 
   if (tokenId) {

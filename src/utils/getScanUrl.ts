@@ -1,22 +1,22 @@
-export function getScanUrl(chainId: number, type: "address" | "token" | "tx", identifier: string): string {
-  const scanners: Record<number, string> = {
-    1: "https://etherscan.io", // Ethereum Mainnet
-    8453: "https://basescan.org", // Base
-    10: "https://optimistic.etherscan.io", // Optimism
-    137: "https://polygonscan.com", // Polygon
-    42161: "https://arbiscan.io", // Arbitrum
-  };
+import * as chains from "viem/chains";
 
-  const baseUrl = scanners[chainId] || scanners[1]; // Default to Etherscan
+export function getScanUrl(chainId: number, type: "address" | "token" | "tx", identifier: string): string {
+  const chain = Object.values(chains).find((c) => c.id === chainId);
+  const explorer = chain?.blockExplorers?.default;
+
+  if (!explorer?.url) {
+    const baseUrl = "https://etherscan.io";
+    return `${baseUrl}/${type}/${identifier}`;
+  }
 
   switch (type) {
     case "address":
-      return `${baseUrl}/address/${identifier}`;
+      return `${explorer.url}/address/${identifier}`;
     case "token":
-      return `${baseUrl}/token/${identifier}`;
+      return `${explorer.url}/token/${identifier}`;
     case "tx":
-      return `${baseUrl}/tx/${identifier}`;
+      return `${explorer.url}/tx/${identifier}`;
     default:
-      return `${baseUrl}/address/${identifier}`;
+      return `${explorer.url}/address/${identifier}`;
   }
 }

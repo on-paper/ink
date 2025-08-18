@@ -1,7 +1,7 @@
 "use client";
 
 import type { PostMention } from "@cartel-sh/ui";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown/lib/ast-to-react";
 import rehypeRaw from "rehype-raw";
@@ -13,6 +13,8 @@ import { getScanUrl } from "~/utils/getScanUrl";
 import { parseContent } from "~/utils/parseContent";
 import { LinkPreview } from "./embeds/LinkPreview";
 import { extractConsecutiveMedia, MarkdownMediaGallery, MarkdownMediaItem } from "./MarkdownMedia";
+import { NFTLink } from "./NFTLink";
+import { TokenLink } from "./TokenLink";
 import { UserLazyHandle } from "./user/UserLazyHandle";
 import "~/components/composer/lexical.css";
 
@@ -87,34 +89,89 @@ const Markdown: React.FC<{
       .filter((cls) => cls.includes("text-"))
       .join(" ") || "";
 
+  // Process text to detect and render CAIP-19 URIs
+  const processTextForCAIP19 = (text: string): (string | React.ReactElement)[] => {
+    const caipRegex = /\b(eip155:\d+\/erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}(?:\/\d{1,78})?)\b/gi;
+    const parts: (string | React.ReactElement)[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = caipRegex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+
+      const caipUri = match[1];
+      const components = parseCAIP19URI(caipUri);
+
+      if (components?.assetNamespace && components.assetReference && components.chainId) {
+        const { assetNamespace, assetReference, chainId, tokenId } = components;
+        const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
+
+        let scanUrl: string;
+        if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
+          scanUrl = `${getScanUrl(chainIdNum, "token", assetReference)}?a=${tokenId}`;
+        } else {
+          scanUrl = getScanUrl(chainIdNum, "token", assetReference);
+        }
+
+        if (assetNamespace === "erc20") {
+          // For ERC20 tokens, use TokenLink component
+          parts.push(
+            <TokenLink
+              key={`caip19-${match.index}`}
+              chainId={chainIdNum}
+              tokenAddress={assetReference}
+              scanUrl={scanUrl}
+              colorClasses={colorClasses}
+            />,
+          );
+        } else if (assetNamespace === "erc721" || assetNamespace === "erc1155") {
+          // For NFTs, use NFTLink component
+          parts.push(
+            <NFTLink
+              key={`caip19-${match.index}`}
+              chainId={chainIdNum}
+              contractAddress={assetReference}
+              tokenId={tokenId}
+              assetNamespace={assetNamespace}
+              colorClasses={colorClasses}
+            />,
+          );
+        } else {
+          // For other token standards, link to block explorer
+          parts.push(
+            <a
+              key={`caip19-${match.index}`}
+              href={scanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`lexical-link ${colorClasses}`}
+            >
+              {caipUri}
+            </a>,
+          );
+        }
+      } else {
+        // If parsing failed, just add the text as is
+        parts.push(caipUri);
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add any remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : [text];
+  };
+
   const createCustomLink = (colorClasses: string, _mentions?: PostMention[]): Components["a"] => {
     return ({ node, ...props }) => {
       const { href, children } = props;
-
-      // Handle CAIP-19 URIs (eip155 format)
-      if (href?.match(/^eip155:\d+\/(erc20|erc721|erc1155):/)) {
-        const components = parseCAIP19URI(href);
-        if (components?.assetNamespace && components.assetReference && components.chainId) {
-          const { assetNamespace, assetReference, chainId, tokenId } = components;
-          const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
-
-          // Generate appropriate scan URL
-          let scanUrl: string;
-          if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
-            // For NFTs with token ID, link to the specific token
-            scanUrl = `${getScanUrl(chainIdNum, "token", assetReference)}?a=${tokenId}`;
-          } else {
-            // For fungible tokens or collections
-            scanUrl = getScanUrl(chainIdNum, "token", assetReference);
-          }
-
-          return (
-            <a href={scanUrl} target="_blank" rel="noopener noreferrer" className={`lexical-link ${colorClasses}`}>
-              {children || href}
-            </a>
-          );
-        }
-      }
 
       // Handle all user profile links (from parseContent)
       if (href?.startsWith(`${BASE_URL}/u/`)) {
@@ -143,6 +200,22 @@ const Markdown: React.FC<{
       const mimeType = mediaMimeTypes?.[src];
       return <MarkdownMediaItem url={src} mimeType={mimeType} />;
     };
+  };
+
+  // Process children to detect CAIP-19 URIs in text
+  const processChildren = (children: React.ReactNode): React.ReactNode => {
+    if (typeof children === "string") {
+      return processTextForCAIP19(children);
+    }
+    if (Array.isArray(children)) {
+      return children.map((child, index) => {
+        if (typeof child === "string") {
+          return <React.Fragment key={index}>{processTextForCAIP19(child)}</React.Fragment>;
+        }
+        return child;
+      });
+    }
+    return children;
   };
 
   const components: Components = {
@@ -190,7 +263,7 @@ const Markdown: React.FC<{
         }
       }
 
-      return <p className="lexical-paragraph mb-4 last:mb-0">{children}</p>;
+      return <p className="lexical-paragraph mb-4 last:mb-0">{processChildren(children)}</p>;
     },
     h1: ({ children }) => <h1 className="lexical-h1">{children}</h1>,
     h2: ({ children }) => <h2 className="lexical-h2">{children}</h2>,
