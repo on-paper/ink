@@ -3,7 +3,7 @@ export async function detectMimeType(url: string): Promise<string | null> {
     try {
       const response = await fetch(url, {
         method: "HEAD",
-        signal: AbortSignal.timeout(5000), 
+        signal: AbortSignal.timeout(5000),
       });
 
       const contentType = response.headers.get("content-type");

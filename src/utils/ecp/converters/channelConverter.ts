@@ -2,13 +2,10 @@ import type { Group } from "@cartel-sh/ui";
 import type { ECPChannel } from "../channels";
 
 export function ecpChannelToCommunity(channel: ECPChannel): Group {
-  // Extract rules from metadata
-  let rules: Group["rules"] = undefined;
+  let rules: Group["rules"];
 
-  // Check if metadata has the encoded format
   if (channel.metadata?.["0"]?.value) {
     try {
-      // Decode hex string to JSON
       const hexValue = channel.metadata["0"].value;
       const decodedStr = Buffer.from(hexValue.slice(2), "hex").toString("utf8");
       const decodedData = JSON.parse(decodedStr);
@@ -26,7 +23,6 @@ export function ecpChannelToCommunity(channel: ECPChannel): Group {
     }
   }
 
-  // Fallback to direct rules in metadata
   if (!rules && channel.metadata?.rules) {
     rules = channel.metadata.rules.map((rule: string | { title: string; description: string }) => {
       if (typeof rule === "string") {

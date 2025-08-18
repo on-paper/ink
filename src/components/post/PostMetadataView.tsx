@@ -48,7 +48,14 @@ export const getPostTextContent = (
     case "ThreeDMetadata":
       return <ContentView content={content} mentions={mentions} showLinkPreviews={showLinkPreviews} />;
     case "MarkdownMetadata":
-      return <ContentView content={content} mentions={mentions} showLinkPreviews={showLinkPreviews} mediaMimeTypes={metadata.mediaMimeTypes} />;
+      return (
+        <ContentView
+          content={content}
+          mentions={mentions}
+          showLinkPreviews={showLinkPreviews}
+          mediaMimeTypes={metadata.mediaMimeTypes}
+        />
+      );
     case "LinkMetadata":
       return <LinkView metadata={metadata as LinkMetadataDetails} mentions={mentions} />;
     case "EventMetadata":
@@ -139,7 +146,14 @@ const ContentView = ({
   showLinkPreviews?: boolean;
   mediaMimeTypes?: Record<string, string>;
 }) => {
-  return <Markdown content={content} mentions={mentions} showLinkPreviews={showLinkPreviews} mediaMimeTypes={mediaMimeTypes} />;
+  return (
+    <Markdown
+      content={content}
+      mentions={mentions}
+      showLinkPreviews={showLinkPreviews}
+      mediaMimeTypes={mediaMimeTypes}
+    />
+  );
 };
 
 export const TextOnlyView = ({
@@ -159,7 +173,14 @@ export const MarkdownView = ({
   metadata: MarkdownMetadataDetails;
   mentions?: PostMention[];
 }) => {
-  return <ContentView content={metadata.content} mentions={mentions} showLinkPreviews={false} mediaMimeTypes={metadata.mediaMimeTypes} />;
+  return (
+    <ContentView
+      content={metadata.content}
+      mentions={mentions}
+      showLinkPreviews={false}
+      mediaMimeTypes={metadata.mediaMimeTypes}
+    />
+  );
 };
 
 export const ArticleView = ({ metadata, mentions }: { metadata: ArticleMetadataDetails; mentions?: PostMention[] }) => {

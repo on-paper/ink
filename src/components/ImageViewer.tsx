@@ -27,7 +27,6 @@ export function ImageViewer({
   const [direction, setDirection] = useState(0);
   const [isInitialOpen, setIsInitialOpen] = useState(true);
 
-
   const close = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();

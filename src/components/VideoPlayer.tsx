@@ -22,7 +22,7 @@ import { useVideoViewportManager } from "../hooks/useVideoViewportManager";
 
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
   const cacheKey = `video-thumb-${videoUrl}`;
-  
+
   try {
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
@@ -63,15 +63,15 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
         const thumbnail = canvas.toDataURL("image/jpeg", 0.6);
         const aspectRatio = video.videoHeight / video.videoWidth;
         video.src = "";
-        
+
         const result = { thumbnail, aspectRatio };
-        
+
         try {
           sessionStorage.setItem(cacheKey, JSON.stringify(result));
         } catch (e) {
           console.warn("Failed to cache thumbnail:", e);
         }
-        
+
         resolve(result);
       } else {
         reject(new Error("Canvas context not available"));
@@ -531,7 +531,7 @@ export const VideoPlayer = ({
 
       if (e.key === "Escape") {
         setModalOpen(false);
-          // Reset modal session preference when closing
+        // Reset modal session preference when closing
         setModalSessionWantsAudio(false);
         // Don't reset videoStarted - keep showing video when exiting fullscreen
       }
@@ -634,7 +634,7 @@ export const VideoPlayer = ({
                 e.stopPropagation();
                 e.preventDefault();
                 setModalOpen(false);
-                          // Reset modal session preference when closing
+                // Reset modal session preference when closing
                 setModalSessionWantsAudio(false);
                 // Don't reset videoStarted - keep showing video when exiting fullscreen
               }}
@@ -1034,7 +1034,12 @@ export const VideoPlayer = ({
                       </div>
                     ) : generatedThumbnail && activeIndex === (currentIndex || 0) ? (
                       <div className="relative">
-                        <img src={generatedThumbnail} alt="" className="max-h-[300px] w-auto object-contain rounded-xl" draggable={false} />
+                        <img
+                          src={generatedThumbnail}
+                          alt=""
+                          className="max-h-[300px] w-auto object-contain rounded-xl"
+                          draggable={false}
+                        />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl pointer-events-none">
                           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/30 transition-all duration-200">
                             <PlayIcon className="w-8 h-8 text-white fill-white" />

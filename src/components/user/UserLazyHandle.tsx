@@ -13,7 +13,7 @@ export const UserLazyHandle = ({ handle, className }: { handle: string; classNam
         style={{ color: "currentColor" }}
         className={className}
       >
-        @{handle}
+        {handle}
       </Link>
     </UserCard>
   );

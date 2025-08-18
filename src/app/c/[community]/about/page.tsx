@@ -124,9 +124,7 @@ export default async function CommunityAboutPage({ params }: CommunityAboutPageP
                         <span className="font-medium">
                           {index + 1}. {rule.title}
                         </span>
-                        {rule.description && (
-                          <p className="text-muted-foreground text-xs mt-0.5">{rule.description}</p>
-                        )}
+                        {rule.description && <p className="text-muted-foreground text-xs mt-0.5">{rule.description}</p>}
                       </div>
                     ))}
                   </div>

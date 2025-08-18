@@ -6,39 +6,63 @@ import { parseContent } from "../parseContent";
 
 describe("parseContent", () => {
   describe("replaceHandles", () => {
-    it("should replace @username.eth mentions with markdown links", () => {
+    it("should replace @username.eth mentions with markdown links (without @ in display)", () => {
       const input = "anyone familiar with this address @vitalik.eth ? curious";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "anyone familiar with this address [@vitalik.eth](http://localhost:3010/u/vitalik.eth) ? curious",
+        "anyone familiar with this address [vitalik.eth](http://localhost:3010/u/vitalik.eth) ? curious",
       );
     });
 
-    it("should replace @username mentions without .eth", () => {
+    it("should NOT replace @username mentions without domain", () => {
       const input = "hey @alice check this out";
       const result = parseContent(input).replaceHandles().toString();
-      expect(result).toBe("hey [@alice](http://localhost:3010/u/alice) check this out");
+      expect(result).toBe("hey @alice check this out");
+    });
+
+    it("should NOT replace @username.com mentions (not ENS-like)", () => {
+      const input = "contact @alice.com for info";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("contact @alice.com for info");
+    });
+
+    it("should replace @username.xyz mentions", () => {
+      const input = "follow @alice.xyz on chain";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("follow [alice.xyz](http://localhost:3010/u/alice.xyz) on chain");
+    });
+
+    it("should replace @username.base.eth subname mentions", () => {
+      const input = "message @alice.base.eth about this";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("message [alice.base.eth](http://localhost:3010/u/alice.base.eth) about this");
+    });
+
+    it("should replace standalone subnames like alice.base.eth", () => {
+      const input = "alice.base.eth just posted";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("[alice.base.eth](http://localhost:3010/u/alice.base.eth) just posted");
     });
 
     it("should replace @0xaddress mentions", () => {
       const input = "wallet @0x1234567890123456789012345678901234567890 is interesting";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "wallet [@0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) is interesting",
+        "wallet [0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) is interesting",
       );
     });
 
     it("should replace standalone ENS names", () => {
       const input = "check out vitalik.eth profile";
       const result = parseContent(input).replaceHandles().toString();
-      expect(result).toBe("check out [@vitalik.eth](http://localhost:3010/u/vitalik.eth) profile");
+      expect(result).toBe("check out [vitalik.eth](http://localhost:3010/u/vitalik.eth) profile");
     });
 
     it("should replace standalone ethereum addresses", () => {
       const input = "address 0x1234567890123456789012345678901234567890 has activity";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "address [@0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) has activity",
+        "address [0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) has activity",
       );
     });
 
@@ -46,12 +70,12 @@ describe("parseContent", () => {
       const input = "both @alice.eth and @bob.eth are here";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "both [@alice.eth](http://localhost:3010/u/alice.eth) and [@bob.eth](http://localhost:3010/u/bob.eth) are here",
+        "both [alice.eth](http://localhost:3010/u/alice.eth) and [bob.eth](http://localhost:3010/u/bob.eth) are here",
       );
     });
 
     it("should not replace handles already in markdown links", () => {
-      const input = "already linked [@test.eth](http://localhost:3010/u/test.eth) should not change";
+      const input = "already linked [test.eth](http://localhost:3010/u/test.eth) should not change";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(input);
     });
@@ -86,6 +110,172 @@ describe("parseContent", () => {
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(input); // CAIP-19 URIs should not be modified by handle parsing
     });
+
+    it("should not replace @handles inside URLs", () => {
+      const input = "check https://zora.co/@yanayatsuk for more info";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("check https://zora.co/@yanayatsuk for more info");
+    });
+
+    it("should not replace ENS names inside URLs", () => {
+      const input = "visit https://example.com/user/vitalik.eth for profile";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("visit https://example.com/user/vitalik.eth for profile");
+    });
+
+    it("should handle the zora.co/@yanayatsuk case correctly", () => {
+      const input = "https://zora.co/@yanayatsuk (Instagram verified)";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("https://zora.co/@yanayatsuk (Instagram verified)");
+    });
+
+    it("should not replace @handles without domain outside of URLs", () => {
+      const input = "@username without domain stays as is";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("@username without domain stays as is");
+    });
+
+    it("should replace @handle.eth correctly", () => {
+      const input = "Follow @vitalik.eth for updates";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Follow [vitalik.eth](http://localhost:3010/u/vitalik.eth) for updates");
+    });
+
+    it("should handle mixed content with URLs and mentions", () => {
+      const input = "Check https://zora.co/@artist and follow @vitalik.eth";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe(
+        "Check https://zora.co/@artist and follow [vitalik.eth](http://localhost:3010/u/vitalik.eth)",
+      );
+    });
+
+    it("should not replace handles in http URLs", () => {
+      const input = "Visit http://example.com/@user for more";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Visit http://example.com/@user for more");
+    });
+
+    it("should handle standalone .eth names at start of sentence", () => {
+      const input = "vitalik.eth posted a new article";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("[vitalik.eth](http://localhost:3010/u/vitalik.eth) posted a new article");
+    });
+
+    it("should handle standalone .eth names at end of sentence", () => {
+      const input = "Article written by vitalik.eth";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Article written by [vitalik.eth](http://localhost:3010/u/vitalik.eth)");
+    });
+
+    it("should not replace partial matches in URLs", () => {
+      const input = "See https://app.ens.domains/name/nick.eth for ENS details";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("See https://app.ens.domains/name/nick.eth for ENS details");
+    });
+
+    it("should handle multiple URLs with @ symbols", () => {
+      const input = "https://twitter.com/@user and https://instagram.com/@artist are different";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("https://twitter.com/@user and https://instagram.com/@artist are different");
+    });
+
+    it("should not split example.com/@kualta.eth into two links", () => {
+      const input = "Visit example.com/@kualta.eth for profile";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Visit example.com/@kualta.eth for profile");
+    });
+
+    it("should not split www.example.com/@user.eth", () => {
+      const input = "Check www.example.com/@user.eth";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Check www.example.com/@user.eth");
+    });
+
+    it("should handle mixed URL formats with @ in path", () => {
+      const input = "Links: https://site.com/@alice.eth and example.com/@bob.eth";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("Links: https://site.com/@alice.eth and example.com/@bob.eth");
+    });
+
+    it("should handle complex subnames with multiple levels", () => {
+      const input = "contact @sub.alice.base.eth or sub.alice.base.eth";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe(
+        "contact [sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth) or [sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth)",
+      );
+    });
+
+    it("should handle various ENS TLDs", () => {
+      const input = "@user.xyz @user.id @user.art @user.dao @user.nft";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe(
+        "[user.xyz](http://localhost:3010/u/user.xyz) [user.id](http://localhost:3010/u/user.id) [user.art](http://localhost:3010/u/user.art) [user.dao](http://localhost:3010/u/user.dao) [user.nft](http://localhost:3010/u/user.nft)",
+      );
+    });
+
+    it("should not replace common file extensions", () => {
+      const input = "file.txt image.png document.pdf";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe("file.txt image.png document.pdf");
+    });
+
+    describe("display format without @ symbol", () => {
+      it("should display @vitalik.eth as vitalik.eth in link text", () => {
+        const input = "@vitalik.eth posted";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe("[vitalik.eth](http://localhost:3010/u/vitalik.eth) posted");
+      });
+
+      it("should display standalone vitalik.eth as vitalik.eth in link text", () => {
+        const input = "vitalik.eth posted";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe("[vitalik.eth](http://localhost:3010/u/vitalik.eth) posted");
+      });
+
+      it("should display @alice.base.eth subname without @ in link text", () => {
+        const input = "@alice.base.eth commented";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe("[alice.base.eth](http://localhost:3010/u/alice.base.eth) commented");
+      });
+
+      it("should display standalone alice.base.eth without @ in link text", () => {
+        const input = "alice.base.eth commented";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe("[alice.base.eth](http://localhost:3010/u/alice.base.eth) commented");
+      });
+
+      it("should display @0xaddress without @ in link text", () => {
+        const input = "@0x1234567890123456789012345678901234567890 sent";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe(
+          "[0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) sent",
+        );
+      });
+
+      it("should display standalone 0xaddress without @ in link text", () => {
+        const input = "0x1234567890123456789012345678901234567890 sent";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe(
+          "[0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) sent",
+        );
+      });
+
+      it("should handle multiple @ mentions all without @ in display", () => {
+        const input = "@alice.eth and @bob.base.eth and @0x1234567890123456789012345678901234567890";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe(
+          "[alice.eth](http://localhost:3010/u/alice.eth) and [bob.base.eth](http://localhost:3010/u/bob.base.eth) and [0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890)",
+        );
+      });
+
+      it("should handle mixed @ mentions and standalone names", () => {
+        const input = "@alice.eth mentioned bob.eth";
+        const result = parseContent(input).replaceHandles().toString();
+        expect(result).toBe(
+          "[alice.eth](http://localhost:3010/u/alice.eth) mentioned [bob.eth](http://localhost:3010/u/bob.eth)",
+        );
+      });
+    });
   });
 
   describe("parseLinks", () => {
@@ -93,6 +283,18 @@ describe("parseContent", () => {
       const input = "check out https://example.com for more";
       const result = parseContent(input).parseLinks().toString();
       expect(result).toBe("check out [example.com](https://example.com) for more");
+    });
+
+    it("should convert bare domain URLs to markdown links", () => {
+      const input = "visit example.com today";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("visit [example.com](https://example.com) today");
+    });
+
+    it("should convert URLs with @ in path to markdown links", () => {
+      const input = "check example.com/@kualta.eth for profile";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("check [example.com/@kualta.eth](https://example.com/@kualta.eth) for profile");
     });
 
     it("should handle www URLs", () => {
@@ -106,6 +308,18 @@ describe("parseContent", () => {
       const result = parseContent(input).parseLinks().toString();
       expect(result).toBe(input);
     });
+
+    it("should NOT convert standalone ENS domains", () => {
+      const input = "alice.eth posted something";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe(input); // Should not be converted by parseLinks
+    });
+
+    it("should convert ENS domains with paths", () => {
+      const input = "visit alice.eth/profile for more";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("visit [alice.eth/profile](https://alice.eth/profile) for more");
+    });
   });
 
   describe("combined operations", () => {
@@ -113,7 +327,21 @@ describe("parseContent", () => {
       const input = "hey @alice.eth check https://example.com out";
       const result = parseContent(input).replaceHandles().parseLinks().toString();
       expect(result).toBe(
-        "hey [@alice.eth](http://localhost:3010/u/alice.eth) check [example.com](https://example.com) out",
+        "hey [alice.eth](http://localhost:3010/u/alice.eth) check [example.com](https://example.com) out",
+      );
+    });
+
+    it("should convert URL with @ in path to single link when parseLinks is called", () => {
+      const input = "Visit example.com/@kualta.eth for profile";
+      const result = parseContent(input).parseLinks().replaceHandles().toString();
+      expect(result).toBe("Visit [example.com/@kualta.eth](https://example.com/@kualta.eth) for profile");
+    });
+
+    it("should handle parseLinks then replaceHandles correctly", () => {
+      const input = "Check example.com/@alice.eth and @bob.eth";
+      const result = parseContent(input).parseLinks().replaceHandles().toString();
+      expect(result).toBe(
+        "Check [example.com/@alice.eth](https://example.com/@alice.eth) and [bob.eth](http://localhost:3010/u/bob.eth)",
       );
     });
   });
@@ -131,7 +359,9 @@ describe("processMediaContent", () => {
     const input = "My image: lens://4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73";
     const result = await processMediaContent(input);
     expect(result.content).toContain("![");
-    expect(result.content).toContain("](https://api.grove.storage/4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73)");
+    expect(result.content).toContain(
+      "](https://api.grove.storage/4f4d42d8021b17b6e51f43c2baa14c8d8baf96cfaddbcad36fdfb8ac0c88eb73)",
+    );
   });
 
   it("should handle multiple IPFS URLs", async () => {
@@ -304,7 +534,7 @@ Some text after`;
       "https://api.grove.storage/image1.jpg",
       "https://api.grove.storage/image2.jpg",
     ]);
-    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain("MEDIA_GALLERY_PLACEHOLDER_0");
     expect(result.processedContent).toContain("Some text before");
     expect(result.processedContent).toContain("Some text after");
   });
@@ -325,7 +555,7 @@ Text after`;
     expect(result.mediaGroups).toHaveLength(1);
     expect(result.mediaGroups[0]).toHaveLength(3);
     expect(result.mediaGroups[0][2]).toEqual("https://api.grove.storage/third.jpg");
-    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain("MEDIA_GALLERY_PLACEHOLDER_0");
   });
 
   it("should keep single images as standalone", () => {
@@ -344,7 +574,7 @@ More text`;
     expect(result.mediaGroups).toHaveLength(0);
     expect(result.processedContent).toContain("![](https://api.grove.storage/single.jpg)");
     expect(result.processedContent).toContain("![](https://api.grove.storage/another.jpg)");
-    expect(result.processedContent).not.toContain('MEDIA_GALLERY_PLACEHOLDER');
+    expect(result.processedContent).not.toContain("MEDIA_GALLERY_PLACEHOLDER");
   });
 
   it("should handle multiple gallery groups in one content", () => {
@@ -368,8 +598,8 @@ End text`;
     expect(result.mediaGroups).toHaveLength(2);
     expect(result.mediaGroups[0]).toHaveLength(2);
     expect(result.mediaGroups[1]).toHaveLength(3);
-    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
-    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_1');
+    expect(result.processedContent).toContain("MEDIA_GALLERY_PLACEHOLDER_0");
+    expect(result.processedContent).toContain("MEDIA_GALLERY_PLACEHOLDER_1");
     expect(result.processedContent).toContain("Middle text");
   });
 
@@ -380,10 +610,7 @@ End text`;
     const result = extractConsecutiveMedia(content);
 
     expect(result.mediaGroups).toHaveLength(1);
-    expect(result.mediaGroups[0]).toEqual([
-      "https://example.com/1.jpg",
-      "https://example.com/2.jpg"
-    ]);
+    expect(result.mediaGroups[0]).toEqual(["https://example.com/1.jpg", "https://example.com/2.jpg"]);
   });
 
   it("should handle empty content", () => {
@@ -456,9 +683,9 @@ End`;
     expect(result.mediaGroups[0]).toEqual([
       "https://example.com/image.jpg",
       "https://example.com/video.mp4",
-      "https://example.com/another.png"
+      "https://example.com/another.png",
     ]);
-    expect(result.processedContent).toContain('MEDIA_GALLERY_PLACEHOLDER_0');
+    expect(result.processedContent).toContain("MEDIA_GALLERY_PLACEHOLDER_0");
   });
 
   it("should extract URLs without determining type", () => {

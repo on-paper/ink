@@ -49,7 +49,7 @@ export async function processMediaContent(
 ): Promise<{ content: string; mediaMimeTypes?: Record<string, string> }> {
   const mediaPattern = /((?:ipfs|lens):\/\/[a-zA-Z0-9-_/.]+)/g;
   const matches = Array.from(content.matchAll(mediaPattern));
-  
+
   if (matches.length === 0) {
     return { content };
   }
@@ -73,9 +73,9 @@ export async function processMediaContent(
     processedContent = processedContent.replace(originalUrl, `![](${resolvedUrl})`);
   }
 
-  return { 
-    content: processedContent, 
-    mediaMimeTypes: Object.keys(mediaMimeTypes).length > 0 ? mediaMimeTypes : undefined 
+  return {
+    content: processedContent,
+    mediaMimeTypes: Object.keys(mediaMimeTypes).length > 0 ? mediaMimeTypes : undefined,
   };
 }
 

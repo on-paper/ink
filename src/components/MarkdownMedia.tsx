@@ -92,16 +92,16 @@ export const MarkdownMediaGallery = ({ urls, mimeTypes }: { urls: string[]; mime
 
   useEffect(() => {
     checkScrollButtons();
-    window.addEventListener('resize', checkScrollButtons);
-    return () => window.removeEventListener('resize', checkScrollButtons);
+    window.addEventListener("resize", checkScrollButtons);
+    return () => window.removeEventListener("resize", checkScrollButtons);
   }, [urls]);
 
-  const scrollToDirection = (direction: 'left' | 'right') => {
+  const scrollToDirection = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
       const scrollAmount = scrollContainerRef.current.clientWidth * 0.8;
       scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
       });
       setTimeout(checkScrollButtons, 300);
     }
@@ -109,26 +109,26 @@ export const MarkdownMediaGallery = ({ urls, mimeTypes }: { urls: string[]; mime
 
   return (
     <div className="relative my-2 group">
-      <div 
+      <div
         ref={scrollContainerRef}
-        className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide" 
+        className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
         style={{ height: "300px" }}
         onScroll={checkScrollButtons}
-        tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'ArrowLeft') {
+          if (e.key === "ArrowLeft") {
             e.preventDefault();
-            scrollToDirection('left');
-          } else if (e.key === 'ArrowRight') {
+            scrollToDirection("left");
+          } else if (e.key === "ArrowRight") {
             e.preventDefault();
-            scrollToDirection('right');
+            scrollToDirection("right");
           }
         }}
       >
         <div className="flex gap-2 h-full items-center" style={{ width: "max-content" }}>
           {urls.map((url, index) => {
             const mimeType = mimeTypes?.[url];
-            const isVideo = mimeType?.startsWith("video/") || url.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|m4v)(\?|$)/);
+            const isVideo =
+              mimeType?.startsWith("video/") || url.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|m4v)(\?|$)/);
 
             return (
               <div key={`gallery-media-${url}`} className="h-full flex items-center">
@@ -148,24 +148,24 @@ export const MarkdownMediaGallery = ({ urls, mimeTypes }: { urls: string[]; mime
           })}
         </div>
       </div>
-      
+
       {/* Navigation Arrows */}
       {urls.length > 1 && (
         <>
           <button
-            onClick={() => scrollToDirection('left')}
+            onClick={() => scrollToDirection("left")}
             className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white transition-opacity ${
-              canScrollLeft ? 'opacity-0 group-hover:opacity-100' : 'hidden'
+              canScrollLeft ? "opacity-0 group-hover:opacity-100" : "hidden"
             }`}
             aria-label="Previous image"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          
+
           <button
-            onClick={() => scrollToDirection('right')}
+            onClick={() => scrollToDirection("right")}
             className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white transition-opacity ${
-              canScrollRight ? 'opacity-0 group-hover:opacity-100' : 'hidden'
+              canScrollRight ? "opacity-0 group-hover:opacity-100" : "hidden"
             }`}
             aria-label="Next image"
           >

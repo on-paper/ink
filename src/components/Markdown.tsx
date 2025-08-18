@@ -75,7 +75,7 @@ const Markdown: React.FC<{
 }> = ({ content, mentions, className = "", showLinkPreviews = false, mediaMimeTypes }) => {
   let processedText = content;
 
-  processedText = parseContent(content).replaceHandles().toString();
+  processedText = parseContent(content).parseLinks().replaceHandles().toString();
 
   const { mediaGroups, processedContent } = useMemo(() => {
     return extractConsecutiveMedia(processedText);
@@ -87,7 +87,7 @@ const Markdown: React.FC<{
       .filter((cls) => cls.includes("text-"))
       .join(" ") || "";
 
-  const createCustomLink = (colorClasses: string, mentions?: PostMention[]): Components["a"] => {
+  const createCustomLink = (colorClasses: string, _mentions?: PostMention[]): Components["a"] => {
     return ({ node, ...props }) => {
       const { href, children } = props;
 
@@ -116,41 +116,18 @@ const Markdown: React.FC<{
         }
       }
 
-      // Handle standalone ENS names and addresses
-      if (href && (href.match(/^[\w]+\.eth$/) || href.match(/^0x[a-fA-F0-9]{40}$/))) {
-        return (
-          <span className={`lexical-link ${colorClasses}`}>
-            <UserLazyHandle handle={href} />
-          </span>
-        );
-      }
-
-      // Handle legacy URLs
-      if (href?.startsWith(BASE_URL)) {
-        if (href.startsWith(`${BASE_URL}mention/`) && mentions) {
-          const mentionIndex = Number.parseInt(href.split("/mention/")[1], 10);
-          const mention = mentions[mentionIndex];
-          if (mention && mention.__typename === "AccountMention") {
-            let handle = mention.localName;
-            if (!handle) {
-              handle = mention.account;
-            }
-
-            return (
-              <span className={`lexical-link ${colorClasses}`}>
-                <UserLazyHandle handle={handle} className={colorClasses} />
-              </span>
-            );
-          }
-        }
-        if (href.startsWith(`${BASE_URL}u/`)) {
+      // Handle all user profile links (from parseContent)
+      if (href?.startsWith(`${BASE_URL}/u/`)) {
+        const handle = href.split("/u/")[1];
+        if (handle) {
           return (
             <span className={`lexical-link ${colorClasses}`}>
-              <UserLazyHandle handle={href.split("/u/")[1]} />
+              <UserLazyHandle handle={handle} />
             </span>
           );
         }
       }
+
       return (
         <a {...props} className={`lexical-link ${colorClasses}`}>
           {children}
@@ -193,16 +170,22 @@ const Markdown: React.FC<{
 
       if (Array.isArray(children) && children.length === 1) {
         const child = children[0];
-        if (child && typeof child === 'object' && 'props' in child && child.props?.src) {
+        if (child && typeof child === "object" && "props" in child && child.props?.src) {
           const mimeType = mediaMimeTypes?.[child.props.src];
-          if (mimeType?.startsWith('video/')) {
+          if (mimeType?.startsWith("video/")) {
             return <MarkdownMediaItem url={child.props.src} mimeType={mimeType} />;
           }
         }
-      } else if (!Array.isArray(children) && children && typeof children === 'object' && 'props' in children && (children as any).props?.src) {
+      } else if (
+        !Array.isArray(children) &&
+        children &&
+        typeof children === "object" &&
+        "props" in children &&
+        (children as any).props?.src
+      ) {
         const props = (children as any).props;
         const mimeType = mediaMimeTypes?.[props.src];
-        if (mimeType?.startsWith('video/')) {
+        if (mimeType?.startsWith("video/")) {
           return <MarkdownMediaItem url={props.src} mimeType={mimeType} />;
         }
       }
