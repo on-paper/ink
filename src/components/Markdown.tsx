@@ -74,7 +74,8 @@ const Markdown: React.FC<{
   className?: string;
   showLinkPreviews?: boolean;
   mediaMimeTypes?: Record<string, string>;
-}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaMimeTypes }) => {
+  tokenMetadata?: Record<string, { symbol: string; name: string; address: string; chainId: number }>;
+}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaMimeTypes, tokenMetadata }) => {
   let processedText = content;
 
   processedText = parseContent(content).parseLinks().replaceHandles().toString();
@@ -117,14 +118,14 @@ const Markdown: React.FC<{
         }
 
         if (assetNamespace === "erc20") {
-          // For ERC20 tokens, use TokenLink component
+          const metadata = tokenMetadata?.[caipUri];
           parts.push(
             <TokenLink
               key={`caip19-${match.index}`}
-              chainId={chainIdNum}
               tokenAddress={assetReference}
               scanUrl={scanUrl}
               colorClasses={colorClasses}
+              tokenMetadata={metadata}
             />,
           );
         } else if (assetNamespace === "erc721" || assetNamespace === "erc1155") {

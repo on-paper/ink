@@ -2,6 +2,7 @@ import type { Post } from "@cartel-sh/ui";
 import { fetchChannel } from "~/utils/ecp/channels";
 import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 import { detectMimeType } from "~/utils/media/detectMediaType";
+import { resolveTokenMetadataFromContent } from "~/utils/resolveTokenMetadata";
 import { resolveUrl } from "~/utils/resolveUrl";
 
 export interface ECPComment {
@@ -150,6 +151,8 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
 
   const { content: processedContent, mediaMimeTypes } = await processMediaContent(comment.content);
 
+  const tokenMetadata = await resolveTokenMetadataFromContent(processedContent);
+
   const post: Post = {
     id: comment.id,
     author,
@@ -157,6 +160,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       content: processedContent,
       __typename: "MarkdownMetadata" as const,
       ...(mediaMimeTypes ? { mediaMimeTypes } : {}),
+      ...(Object.keys(tokenMetadata).length > 0 ? { tokenMetadata } : {}),
       ...(channelMeta ? { channel: channelMeta } : {}),
       ...(comment.channelId ? { channelId: comment.channelId } : {}),
     },

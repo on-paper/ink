@@ -54,6 +54,7 @@ export const getPostTextContent = (
           mentions={mentions}
           showLinkPreviews={showLinkPreviews}
           mediaMimeTypes={metadata.mediaMimeTypes}
+          tokenMetadata={(metadata as any).tokenMetadata}
         />
       );
     case "LinkMetadata":
@@ -140,11 +141,13 @@ const ContentView = ({
   mentions,
   showLinkPreviews = false,
   mediaMimeTypes,
+  tokenMetadata,
 }: {
   content: string;
   mentions?: PostMention[];
   showLinkPreviews?: boolean;
   mediaMimeTypes?: Record<string, string>;
+  tokenMetadata?: Record<string, { symbol: string; name: string; address: string; chainId: number }>;
 }) => {
   return (
     <Markdown
@@ -152,6 +155,7 @@ const ContentView = ({
       mentions={mentions}
       showLinkPreviews={showLinkPreviews}
       mediaMimeTypes={mediaMimeTypes}
+      tokenMetadata={tokenMetadata}
     />
   );
 };
@@ -179,6 +183,7 @@ export const MarkdownView = ({
       mentions={mentions}
       showLinkPreviews={false}
       mediaMimeTypes={metadata.mediaMimeTypes}
+      tokenMetadata={(metadata as any).tokenMetadata}
     />
   );
 };
