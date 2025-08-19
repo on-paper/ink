@@ -65,7 +65,7 @@ export function HistoryIndicator() {
             <motion.div className="relative w-full h-full" animate={{ opacity: 1 }}>
               {!isHovered ? (
                 <motion.div
-                  className="absolute inset-0 px-3 py-2 flex items-center justify-center gap-1.5"
+                  className="absolute inset-0 px-3 py-1.5 flex items-center justify-center gap-1.5"
                   initial={false}
                   animate={{ opacity: isHovered ? 0 : 1 }}
                   transition={{ duration: 0.15 }}

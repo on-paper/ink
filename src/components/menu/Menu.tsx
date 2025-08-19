@@ -88,7 +88,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         type="button"
         aria-current={isHome ? "page" : undefined}
         className={cn(
-          "relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
+          "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
           isHome && "bg-accent/50 text-accent-foreground",
         )}
         onClick={() => router.push("/home")}
@@ -100,7 +100,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         type="button"
         aria-current={isCommunities ? "page" : undefined}
         className={cn(
-          "relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
+          "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
           isCommunities && "bg-accent/50 text-accent-foreground",
         )}
         onClick={() => router.push("/communities")}
@@ -161,7 +161,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           type="button"
           aria-current={isProfile ? "page" : undefined}
           className={cn(
-            "relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
+            "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
             isProfile && "bg-accent/50 text-accent-foreground",
           )}
           onClick={goProfile}
@@ -173,7 +173,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           type="button"
           aria-current={isSettings ? "page" : undefined}
           className={cn(
-            "relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
+            "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
             isSettings && "bg-accent/50 text-accent-foreground",
           )}
           onClick={() => router.push("/settings")}
@@ -183,7 +183,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         </button>
         <button
           type="button"
-          className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
+          className="relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
           {theme === "light" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
@@ -191,7 +191,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         </button>
         <button
           type="button"
-          className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
+          className="relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
           onClick={async () => {
             await signOut();
           }}

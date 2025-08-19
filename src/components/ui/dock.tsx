@@ -216,7 +216,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(({ items, className }, 
                   {hoveredItem.extra ? (
                     hoveredItem.extra
                   ) : (
-                    <div className="px-3 py-2 text-base select-none font-medium text-muted-foreground whitespace-nowrap">
+                    <div className="px-3 py-1.5 text-base select-none font-medium text-muted-foreground whitespace-nowrap">
                       {hoveredItem.label}
                     </div>
                   )}

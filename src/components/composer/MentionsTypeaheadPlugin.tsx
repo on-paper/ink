@@ -156,7 +156,7 @@ export function MentionsTypeaheadPlugin() {
                 </>
               )}
               {!loading && options.length === 0 && debouncedQuery && (
-                <li className="px-3 py-2 text-sm text-muted-foreground text-center">No users found</li>
+                <li className="px-3 py-1.5 text-sm text-muted-foreground text-center">No users found</li>
               )}
               {options.map((option, index) => (
                 <MentionMenuItem
