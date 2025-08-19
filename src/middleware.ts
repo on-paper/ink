@@ -8,7 +8,9 @@ const protectedPaths = ["/settings", "/activity", "/bookmarks"];
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  const isProtectedPath = protectedPaths.some((protectedPath) => path === protectedPath || path.startsWith(`${protectedPath}/`));
+  const isProtectedPath = protectedPaths.some(
+    (protectedPath) => path === protectedPath || path.startsWith(`${protectedPath}/`),
+  );
 
   if (!isProtectedPath) {
     return NextResponse.next();

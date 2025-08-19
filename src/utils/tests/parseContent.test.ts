@@ -324,13 +324,17 @@ describe("parseContent", () => {
     it("should handle Twitter/X.com URLs with query parameters", () => {
       const input = "check x.com/danqing_liu/status/1957533865607680482?s=46 for details";
       const result = parseContent(input).parseLinks().toString();
-      expect(result).toBe("check [x.com/danqing_liu/status/1957533865607680482?s=46](https://x.com/danqing_liu/status/1957533865607680482?s=46) for details");
+      expect(result).toBe(
+        "check [x.com/danqing_liu/status/1957533865607680482?s=46](https://x.com/danqing_liu/status/1957533865607680482?s=46) for details",
+      );
     });
 
     it("should handle Twitter URLs with multiple query parameters", () => {
       const input = "see twitter.com/user/status/123456?s=20&t=abc123xyz";
       const result = parseContent(input).parseLinks().toString();
-      expect(result).toBe("see [twitter.com/user/status/123456?s=20&t=abc123xyz](https://twitter.com/user/status/123456?s=20&t=abc123xyz)");
+      expect(result).toBe(
+        "see [twitter.com/user/status/123456?s=20&t=abc123xyz](https://twitter.com/user/status/123456?s=20&t=abc123xyz)",
+      );
     });
 
     it("should handle URLs with query parameters and hash fragments", () => {

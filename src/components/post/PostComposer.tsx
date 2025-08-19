@@ -209,7 +209,7 @@ function ComposerContent() {
   const isReply = Boolean(replyingTo);
   const communityFromPath = pathname.split("/")[1] === "c" ? pathname.split("/")[2] : "";
   const replyingToChannel = (replyingTo as any)?.metadata?.channel as { id?: string } | undefined;
-  const replyingToChannelId = replyingTo?.metadata?.channelId || replyingToChannel?.id;
+  const replyingToChannelId = replyingToChannel?.id;
   const channelIdForContext = replyingToChannelId || community || communityFromPath || undefined;
   const isChannelComposer = Boolean(channelIdForContext);
 

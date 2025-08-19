@@ -162,7 +162,6 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       ...(mediaMimeTypes ? { mediaMimeTypes } : {}),
       ...(Object.keys(tokenMetadata).length > 0 ? { tokenMetadata } : {}),
       ...(channelMeta ? { channel: channelMeta } : {}),
-      ...(comment.channelId ? { channelId: comment.channelId } : {}),
     },
     createdAt,
     updatedAt: createdAt,
