@@ -3,14 +3,14 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
 
-const publicPaths = ["/", "/login", "/u", "/p", "/changelog"];
+const protectedPaths = ["/settings", "/activity", "/bookmarks"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`));
+  const isProtectedPath = protectedPaths.some((protectedPath) => path === protectedPath || path.startsWith(`${protectedPath}/`));
 
-  if (isPublicPath) {
+  if (!isProtectedPath) {
     return NextResponse.next();
   }
 
