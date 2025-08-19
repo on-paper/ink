@@ -163,7 +163,6 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(({ items, className }, 
         className={cn(
           "relative flex items-center gap-2 md:gap-3 p-2 rounded-2xl w-full",
           "flex-row justify-around sm:flex-col sm:justify-center sm:w-auto",
-          // "shadow-lg",
         )}
       >
         <AnimatePresence mode="popLayout">

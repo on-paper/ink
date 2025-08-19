@@ -225,7 +225,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   return (
     <>
       <div className="fixed backdrop-blur-xl sm:backdrop-blur-none bottom-0 left-0 w-full sm:bottom-auto sm:top-1/2 sm:right-2 sm:left-auto sm:w-auto sm:-translate-y-1/2 z-50">
-        <div className="absolute inset-0 bg-gradient-to-t from-secondary to-transparent pointer-events-none sm:hidden" />
+        <div className="absolute inset-0 bg-background/90 pointer-events-none sm:hidden" />
         <div className="relative ">
           <Dock items={dockItems} />
         </div>
