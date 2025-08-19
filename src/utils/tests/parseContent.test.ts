@@ -320,6 +320,24 @@ describe("parseContent", () => {
       const result = parseContent(input).parseLinks().toString();
       expect(result).toBe("visit [alice.eth/profile](https://alice.eth/profile) for more");
     });
+
+    it("should handle Twitter/X.com URLs with query parameters", () => {
+      const input = "check x.com/danqing_liu/status/1957533865607680482?s=46 for details";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("check [x.com/danqing_liu/status/1957533865607680482?s=46](https://x.com/danqing_liu/status/1957533865607680482?s=46) for details");
+    });
+
+    it("should handle Twitter URLs with multiple query parameters", () => {
+      const input = "see twitter.com/user/status/123456?s=20&t=abc123xyz";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("see [twitter.com/user/status/123456?s=20&t=abc123xyz](https://twitter.com/user/status/123456?s=20&t=abc123xyz)");
+    });
+
+    it("should handle URLs with query parameters and hash fragments", () => {
+      const input = "visit example.com/page?param=value#section";
+      const result = parseContent(input).parseLinks().toString();
+      expect(result).toBe("visit [example.com/page?param=value#section](https://example.com/page?param=value#section)");
+    });
   });
 
   describe("combined operations", () => {

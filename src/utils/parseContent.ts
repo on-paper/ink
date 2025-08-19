@@ -43,7 +43,7 @@ class ContentParser {
   parseLinks(): ContentParser {
     // Match URLs - including those without protocol but with clear domain structure
     // Stop at common punctuation that typically ends URLs
-    const linkRegex = /<?((?:https?:\/\/|www\.)?[\w-]+(?:\.[\w-]+)*\.[a-zA-Z]{2,}(?:\/[^\s<>*_~`,;!?)"]*)?)>?/gi;
+    const linkRegex = /<?((?:https?:\/\/|www\.)?[\w-]+(?:\.[\w-]+)*\.[a-zA-Z]{2,}(?:\/[^\s<>*~`,;!)"]*)?)>?/gi;
     this.content = this.content.replace(linkRegex, (match, link, offset, fullString) => {
       // Skip if we're already inside a markdown link
       const beforeText = fullString.substring(Math.max(0, offset - 10), offset);
