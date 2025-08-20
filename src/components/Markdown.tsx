@@ -1,6 +1,6 @@
 "use client";
 
-import type { PostMention, MediaData, TokenData } from "@cartel-sh/ui";
+import type { MediaData, PostMention, TokenData } from "@cartel-sh/ui";
 import React, { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown/lib/ast-to-react";
@@ -174,10 +174,18 @@ const Markdown: React.FC<{
     return ({ node, ...props }) => {
       const { href, children } = props;
 
-      // Handle all user profile links (from parseContent)
       if (href?.startsWith(`${BASE_URL}/u/`)) {
-        const handle = href.split("/u/")[1];
-        if (handle) {
+        const urlHandle = href.split("/u/")[1];
+        if (urlHandle) {
+          let linkText = urlHandle;
+          if (typeof children === "string") {
+            linkText = children;
+          } else if (Array.isArray(children) && children.length > 0 && typeof children[0] === "string") {
+            linkText = children[0];
+          }
+
+          const handle = linkText;
+
           return (
             <span className={`lexical-link ${colorClasses}`}>
               <UserLazyHandle handle={handle} />

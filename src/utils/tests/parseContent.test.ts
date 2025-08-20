@@ -6,11 +6,11 @@ import { parseContent } from "../parseContent";
 
 describe("parseContent", () => {
   describe("replaceHandles", () => {
-    it("should replace @username.eth mentions with markdown links (without @ in display)", () => {
+    it("should replace @username.eth mentions with markdown links (keeping @ in display)", () => {
       const input = "anyone familiar with this address @vitalik.eth ? curious";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "anyone familiar with this address [vitalik.eth](http://localhost:3010/u/vitalik.eth) ? curious",
+        "anyone familiar with this address [@vitalik.eth](http://localhost:3010/u/vitalik.eth) ? curious",
       );
     });
 
@@ -29,13 +29,13 @@ describe("parseContent", () => {
     it("should replace @username.xyz mentions", () => {
       const input = "follow @alice.xyz on chain";
       const result = parseContent(input).replaceHandles().toString();
-      expect(result).toBe("follow [alice.xyz](http://localhost:3010/u/alice.xyz) on chain");
+      expect(result).toBe("follow [@alice.xyz](http://localhost:3010/u/alice.xyz) on chain");
     });
 
     it("should replace @username.base.eth subname mentions", () => {
       const input = "message @alice.base.eth about this";
       const result = parseContent(input).replaceHandles().toString();
-      expect(result).toBe("message [alice.base.eth](http://localhost:3010/u/alice.base.eth) about this");
+      expect(result).toBe("message [@alice.base.eth](http://localhost:3010/u/alice.base.eth) about this");
     });
 
     it("should replace standalone subnames like alice.base.eth", () => {
@@ -48,7 +48,7 @@ describe("parseContent", () => {
       const input = "wallet @0x1234567890123456789012345678901234567890 is interesting";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "wallet [0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) is interesting",
+        "wallet [@0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) is interesting",
       );
     });
 
@@ -70,7 +70,7 @@ describe("parseContent", () => {
       const input = "both @alice.eth and @bob.eth are here";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "both [alice.eth](http://localhost:3010/u/alice.eth) and [bob.eth](http://localhost:3010/u/bob.eth) are here",
+        "both [@alice.eth](http://localhost:3010/u/alice.eth) and [@bob.eth](http://localhost:3010/u/bob.eth) are here",
       );
     });
 
@@ -138,14 +138,14 @@ describe("parseContent", () => {
     it("should replace @handle.eth correctly", () => {
       const input = "Follow @vitalik.eth for updates";
       const result = parseContent(input).replaceHandles().toString();
-      expect(result).toBe("Follow [vitalik.eth](http://localhost:3010/u/vitalik.eth) for updates");
+      expect(result).toBe("Follow [@vitalik.eth](http://localhost:3010/u/vitalik.eth) for updates");
     });
 
     it("should handle mixed content with URLs and mentions", () => {
       const input = "Check https://zora.co/@artist and follow @vitalik.eth";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "Check https://zora.co/@artist and follow [vitalik.eth](http://localhost:3010/u/vitalik.eth)",
+        "Check https://zora.co/@artist and follow [@vitalik.eth](http://localhost:3010/u/vitalik.eth)",
       );
     });
 
@@ -201,7 +201,7 @@ describe("parseContent", () => {
       const input = "contact @sub.alice.base.eth or sub.alice.base.eth";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "contact [sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth) or [sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth)",
+        "contact [@sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth) or [sub.alice.base.eth](http://localhost:3010/u/sub.alice.base.eth)",
       );
     });
 
@@ -209,7 +209,7 @@ describe("parseContent", () => {
       const input = "@user.xyz @user.id @user.art @user.dao @user.nft";
       const result = parseContent(input).replaceHandles().toString();
       expect(result).toBe(
-        "[user.xyz](http://localhost:3010/u/user.xyz) [user.id](http://localhost:3010/u/user.id) [user.art](http://localhost:3010/u/user.art) [user.dao](http://localhost:3010/u/user.dao) [user.nft](http://localhost:3010/u/user.nft)",
+        "[@user.xyz](http://localhost:3010/u/user.xyz) [@user.id](http://localhost:3010/u/user.id) [@user.art](http://localhost:3010/u/user.art) [@user.dao](http://localhost:3010/u/user.dao) [@user.nft](http://localhost:3010/u/user.nft)",
       );
     });
 
@@ -219,11 +219,11 @@ describe("parseContent", () => {
       expect(result).toBe("file.txt image.png document.pdf");
     });
 
-    describe("display format without @ symbol", () => {
-      it("should display @vitalik.eth as vitalik.eth in link text", () => {
+    describe("display format with @ symbol preservation", () => {
+      it("should display @vitalik.eth as @vitalik.eth in link text", () => {
         const input = "@vitalik.eth posted";
         const result = parseContent(input).replaceHandles().toString();
-        expect(result).toBe("[vitalik.eth](http://localhost:3010/u/vitalik.eth) posted");
+        expect(result).toBe("[@vitalik.eth](http://localhost:3010/u/vitalik.eth) posted");
       });
 
       it("should display standalone vitalik.eth as vitalik.eth in link text", () => {
@@ -232,10 +232,10 @@ describe("parseContent", () => {
         expect(result).toBe("[vitalik.eth](http://localhost:3010/u/vitalik.eth) posted");
       });
 
-      it("should display @alice.base.eth subname without @ in link text", () => {
+      it("should display @alice.base.eth subname with @ in link text", () => {
         const input = "@alice.base.eth commented";
         const result = parseContent(input).replaceHandles().toString();
-        expect(result).toBe("[alice.base.eth](http://localhost:3010/u/alice.base.eth) commented");
+        expect(result).toBe("[@alice.base.eth](http://localhost:3010/u/alice.base.eth) commented");
       });
 
       it("should display standalone alice.base.eth without @ in link text", () => {
@@ -244,11 +244,11 @@ describe("parseContent", () => {
         expect(result).toBe("[alice.base.eth](http://localhost:3010/u/alice.base.eth) commented");
       });
 
-      it("should display @0xaddress without @ in link text", () => {
+      it("should display @0xaddress with @ in link text", () => {
         const input = "@0x1234567890123456789012345678901234567890 sent";
         const result = parseContent(input).replaceHandles().toString();
         expect(result).toBe(
-          "[0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) sent",
+          "[@0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890) sent",
         );
       });
 
@@ -260,11 +260,11 @@ describe("parseContent", () => {
         );
       });
 
-      it("should handle multiple @ mentions all without @ in display", () => {
+      it("should handle multiple @ mentions all with @ in display", () => {
         const input = "@alice.eth and @bob.base.eth and @0x1234567890123456789012345678901234567890";
         const result = parseContent(input).replaceHandles().toString();
         expect(result).toBe(
-          "[alice.eth](http://localhost:3010/u/alice.eth) and [bob.base.eth](http://localhost:3010/u/bob.base.eth) and [0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890)",
+          "[@alice.eth](http://localhost:3010/u/alice.eth) and [@bob.base.eth](http://localhost:3010/u/bob.base.eth) and [@0x1234567890123456789012345678901234567890](http://localhost:3010/u/0x1234567890123456789012345678901234567890)",
         );
       });
 
@@ -272,7 +272,7 @@ describe("parseContent", () => {
         const input = "@alice.eth mentioned bob.eth";
         const result = parseContent(input).replaceHandles().toString();
         expect(result).toBe(
-          "[alice.eth](http://localhost:3010/u/alice.eth) mentioned [bob.eth](http://localhost:3010/u/bob.eth)",
+          "[@alice.eth](http://localhost:3010/u/alice.eth) mentioned [bob.eth](http://localhost:3010/u/bob.eth)",
         );
       });
     });
@@ -349,7 +349,7 @@ describe("parseContent", () => {
       const input = "hey @alice.eth check https://example.com out";
       const result = parseContent(input).replaceHandles().parseLinks().toString();
       expect(result).toBe(
-        "hey [alice.eth](http://localhost:3010/u/alice.eth) check [example.com](https://example.com) out",
+        "hey [@alice.eth](http://localhost:3010/u/alice.eth) check [example.com](https://example.com) out",
       );
     });
 
@@ -363,7 +363,7 @@ describe("parseContent", () => {
       const input = "Check example.com/@alice.eth and @bob.eth";
       const result = parseContent(input).parseLinks().replaceHandles().toString();
       expect(result).toBe(
-        "Check [example.com/@alice.eth](https://example.com/@alice.eth) and [bob.eth](http://localhost:3010/u/bob.eth)",
+        "Check [example.com/@alice.eth](https://example.com/@alice.eth) and [@bob.eth](http://localhost:3010/u/bob.eth)",
       );
     });
   });

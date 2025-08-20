@@ -21,8 +21,9 @@ class ContentParser {
       "gi",
     );
 
-    this.content = this.content.replace(mentionRegex, (_match, handle) => {
-      return `[${handle}](${BASE_URL}/u/${handle})`;
+    this.content = this.content.replace(mentionRegex, (match, handle) => {
+      const displayHandle = match.startsWith("@") ? `@${handle}` : handle;
+      return `[${displayHandle}](${BASE_URL}/u/${handle})`;
     });
 
     // Then handle standalone ENS names and addresses
