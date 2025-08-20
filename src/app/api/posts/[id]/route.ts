@@ -37,6 +37,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json(post, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch post: ", error);
-    return NextResponse.json({ error: `Failed to fetch post: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Failed to fetch post: ${error instanceof Error ? error.message : "Unknown error"}` }, { status: 500 });
   }
 }

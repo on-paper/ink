@@ -96,7 +96,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
     username: displayName,
     namespace: "ens",
     profilePictureUrl: `https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${authorAddress}`,
-    description: null,
+    description: undefined,
     actions: {
       followed: false,
       following: false,

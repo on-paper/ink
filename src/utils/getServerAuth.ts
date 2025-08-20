@@ -8,7 +8,7 @@ export interface ServerAuthResult {
   isAuthenticated: boolean;
   address?: string;
   chainId?: number;
-  user?: User | null;
+  user: User | null;
 }
 
 export async function getServerAuth(): Promise<ServerAuthResult> {
@@ -16,7 +16,7 @@ export async function getServerAuth(): Promise<ServerAuthResult> {
     const session = await getIronSession<SessionData>(cookies(), sessionOptions);
 
     if (!session.siwe?.address) {
-      return { isAuthenticated: false };
+      return { isAuthenticated: false, user: null };
     }
 
     // Check if session has expired
@@ -25,7 +25,7 @@ export async function getServerAuth(): Promise<ServerAuthResult> {
 
     if (now > expirationTime) {
       session.destroy();
-      return { isAuthenticated: false };
+      return { isAuthenticated: false, user: null };
     }
 
     const user = await fetchEnsUser(session.siwe.address, session.siwe.address);
@@ -38,6 +38,6 @@ export async function getServerAuth(): Promise<ServerAuthResult> {
     };
   } catch (error) {
     console.error("Server auth error:", error);
-    return { isAuthenticated: false };
+    return { isAuthenticated: false, user: null };
   }
 }

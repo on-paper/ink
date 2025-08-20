@@ -27,6 +27,10 @@ const user = async ({ params }: { params: { user: string } }) => {
   const handle = params.user;
   const user = await getUserByUsername(handle);
 
+  if (!user) {
+    return <div>User not found</div>;
+  }
+
   return <Feed ItemView={PostView} endpoint={`/api/posts?address=${user.address}&type=comment`} />;
 };
 

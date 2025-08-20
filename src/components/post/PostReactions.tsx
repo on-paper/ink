@@ -28,7 +28,7 @@ export function ReactionsList({
 
   const handleLikeClick = () => {
     requireAuth(() => {
-      if (!post.reactions.isUpvoted && likeButtonRef.current) {
+      if (!post.reactions?.isUpvoted && likeButtonRef.current) {
         triggerExplosion("like", likeButtonRef.current);
       }
       upvote();
@@ -41,7 +41,7 @@ export function ReactionsList({
         variant={isComment ? "comment" : "post"}
         reactionType="Comment"
         reaction={{
-          count: post.reactions.Comment,
+          count: post.reactions?.Comment || 0,
           isActive: isReplyOpen,
         }}
         onClick={() => requireAuth(() => context.handleReply())}
@@ -50,8 +50,8 @@ export function ReactionsList({
         post={post}
         variant={isComment ? "comment" : "post"}
         reactions={{
-          reacted: post.reactions.isReposted,
-          count: post.reactions.Repost,
+          reacted: post.reactions?.isReposted || false,
+          count: post.reactions?.Repost || 0,
           canRepost: post.reactions?.canRepost || false,
           canQuote: post.reactions?.canQuote || false,
         }}
@@ -61,8 +61,8 @@ export function ReactionsList({
           variant={isComment ? "comment" : "post"}
           reactionType="Like"
           reaction={{
-            count: post.reactions.upvotes || 0,
-            isActive: post.reactions.isUpvoted || false,
+            count: post.reactions?.upvotes || 0,
+            isActive: post.reactions?.isUpvoted || false,
           }}
           onClick={handleLikeClick}
         />

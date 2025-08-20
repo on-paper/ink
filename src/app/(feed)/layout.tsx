@@ -16,7 +16,7 @@ export default async function layout({ children }: PropsWithChildren) {
       <ServerSignedIn>
         <div className="pt-4">
           <Card className="p-4">
-            <PostComposer user={user} />
+            <PostComposer user={user ?? undefined} />
           </Card>
         </div>
       </ServerSignedIn>

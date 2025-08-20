@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export const maxDuration = 60;
 
-export default async function RootLayout({ children }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = await getServerAuth();
 
   return (

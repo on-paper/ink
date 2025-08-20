@@ -92,7 +92,7 @@ export const VideoView = ({ metadata, mentions }: { metadata: VideoMetadata; men
     <div>
       {metadata.content && <ContentView content={metadata.content} mentions={mentions} />}
       <div className="mt-2" style={{ maxHeight: "min(100%, 300px)" }}>
-        <VideoPlayer url={url} preview={cover} autoplay={true} />
+        <VideoPlayer url={url!} preview={cover!} autoplay={true} />
       </div>
     </div>
   );
@@ -109,7 +109,7 @@ export const AudioView = ({ metadata, mentions }: { metadata: AudioMetadata; men
   return (
     <div>
       {metadata.content && <ContentView content={metadata.content} mentions={mentions} />}
-      <AudioPlayer url={url} cover={cover} author={artist} title={title} />
+      <AudioPlayer url={url!} cover={cover!} author={artist!} title={title!} />
     </div>
   );
 };

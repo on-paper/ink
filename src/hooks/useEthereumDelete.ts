@@ -35,7 +35,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
 
       try {
         // Check if current chain is supported
-        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId as keyof typeof SUPPORTED_CHAINS];
         let chainIdToUse = chainId;
 
         if (!currentChainSupported) {
@@ -88,7 +88,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
         // Transaction will be confirmed by useWaitForTransactionReceipt
         return { hash, postId };
       } catch (error) {
-        toast.error(error.message || "Failed to delete post", { id: toastId });
+        toast.error(error instanceof Error ? error.message : "Failed to delete post", { id: toastId });
         throw error;
       }
     },

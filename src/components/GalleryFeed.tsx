@@ -6,7 +6,7 @@ import { LoadingSpinner } from "./LoadingSpinner";
 import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 
 export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: string }) => {
-  const [data, setData] = useState<any[]>(null);
+  const [data, setData] = useState<any[] | null>(null);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +32,10 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
       const { data: newData, nextCursor } = await res.json();
 
       if (data) {
-        const existingIds = new Set(data.map((item) => item.id));
-        const uniqueNewData = newData.filter((item) => !existingIds.has(item.id));
+        const existingIds = new Set(data.map((item: any) => item.id));
+        const uniqueNewData = newData.filter((item: any) => !existingIds.has(item.id));
 
-        setData((prevData) => [...prevData, ...uniqueNewData]);
+        setData((prevData) => [...(prevData || []), ...uniqueNewData]);
       } else {
         setData(newData);
       }

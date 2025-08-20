@@ -102,7 +102,7 @@ export const VideoPlayer = ({
   autoplay?: boolean;
   authorHandle?: string;
 }) => {
-  const playerWithControlsRef = useRef(null);
+  const playerWithControlsRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -125,7 +125,7 @@ export const VideoPlayer = ({
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
   const { registerPlayer, setUnmutedState } = useVideoState(videoId);
-  const autoplayRef = useRef<HTMLElement>(null);
+  const autoplayRef = useRef<HTMLElement | null>(null);
   const stopAudio = useSetAtom(stopAudioAtom);
 
   // Viewport manager integration
@@ -415,7 +415,7 @@ export const VideoPlayer = ({
       });
 
       navigator.mediaSession.setActionHandler("seekto", (details) => {
-        if (videoRef.current && details.seekTime !== null) {
+        if (videoRef.current && details.seekTime !== null && details.seekTime !== undefined) {
           videoRef.current.currentTime = details.seekTime;
         }
       });
@@ -594,15 +594,15 @@ export const VideoPlayer = ({
       if (!videoRef.current) return;
 
       setTimeout(() => {
-        if (modalOpen && isVideo && modalContainerRef.current) {
+        if (modalOpen && isVideo && modalContainerRef.current && videoRef.current) {
           modalContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "max-h-[100vh] max-w-full";
           videoRef.current.style.cssText = "object-fit: contain; height: auto; width: auto; display: block;";
-        } else if (previewContainerRef.current && isVideo) {
+        } else if (previewContainerRef.current && isVideo && videoRef.current) {
           previewContainerRef.current.appendChild(videoRef.current);
           videoRef.current.className = "h-full w-full object-contain";
           videoRef.current.style.cssText = `max-height: ${preview !== "" ? "100%" : "300px"}; display: block;`;
-        } else {
+        } else if (videoRef.current) {
           videoRef.current.style.display = "none";
         }
       }, 50);

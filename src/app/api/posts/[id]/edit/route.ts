@@ -41,13 +41,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const defaultChainId = getDefaultChainId();
     let chainIdToUse = chainId || defaultChainId;
-    let chain = SUPPORTED_CHAINS[chainIdToUse];
+    let chain = SUPPORTED_CHAINS[chainIdToUse as keyof typeof SUPPORTED_CHAINS];
 
     if (!chain) {
       // If the chain is not supported, use the default chain instead of throwing an error
       console.warn(`Unsupported chain ID: ${chainIdToUse}, falling back to default chain ${defaultChainId}`);
       chainIdToUse = defaultChainId;
-      chain = SUPPORTED_CHAINS[defaultChainId];
+      chain = SUPPORTED_CHAINS[defaultChainId as keyof typeof SUPPORTED_CHAINS];
       if (!chain) {
         return NextResponse.json({ error: `Default chain ${defaultChainId} is not supported` }, { status: 500 });
       }
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json(
       {
         error: "Failed to sign edit comment",
-        details: error.message,
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

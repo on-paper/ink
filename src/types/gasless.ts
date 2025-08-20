@@ -30,7 +30,7 @@ export const PrepareGaslessEditCommentRequestSchema = z
   .transform((val) => {
     return {
       ...val,
-      chainConfig: SUPPORTED_CHAINS[val.chainId],
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
     };
   });
 
@@ -62,7 +62,7 @@ export const GaslessEditRequestBodySchema = z
   .transform((val) => {
     return {
       ...val,
-      chainConfig: SUPPORTED_CHAINS[val.chainId],
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
     };
   });
 
@@ -84,7 +84,7 @@ export const PrepareGaslessDeleteCommentRequestSchema = z
   .transform((val) => {
     return {
       ...val,
-      chainConfig: SUPPORTED_CHAINS[val.chainId],
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
     };
   });
 
@@ -110,7 +110,7 @@ export const GaslessDeleteCommentRequestBodySchema = z
   .transform((val) => {
     return {
       ...val,
-      chainConfig: SUPPORTED_CHAINS[val.chainId],
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
     };
   });
 

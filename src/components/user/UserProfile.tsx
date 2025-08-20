@@ -88,7 +88,7 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
   const { unmuteUser, unblockUser } = userActions;
 
   const isUserProfile = user.id === authedUser?.id;
-  const isFollowingMe = user.actions.following;
+  const isFollowingMe = user.actions?.following;
   const isMuted = user.actions?.muted;
   const isBlocked = user.actions?.blocked;
   const followingCount = stats?.following ?? 0;
@@ -240,7 +240,7 @@ export const UserProfile = ({ user, stats }: { user?: User; stats?: UserStats | 
           <Card className="p-4">
             <PostComposer
               ref={composerRef as any}
-              user={authedUser}
+              user={authedUser ?? undefined}
               initialContent={`@lens/${user.username} `}
               onSuccess={() => setIsMentionDialogOpen(false)}
             />

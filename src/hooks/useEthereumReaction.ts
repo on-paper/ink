@@ -34,7 +34,7 @@ export function useEthereumReaction(options?: UseEthereumReactionOptions) {
       const defaultChainId = getDefaultChainId();
 
       try {
-        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId as keyof typeof SUPPORTED_CHAINS];
         let chainIdToUse = chainId;
 
         if (!currentChainSupported) {
@@ -83,7 +83,7 @@ export function useEthereumReaction(options?: UseEthereumReactionOptions) {
 
         return hash;
       } catch (error) {
-        toast.error(error.message || `Failed to ${reactionType}`, { id: toastId });
+        toast.error(error instanceof Error ? error.message : `Failed to ${reactionType}`, { id: toastId });
         throw error;
       }
     },

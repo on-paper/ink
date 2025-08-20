@@ -452,7 +452,7 @@ function ComposerContent() {
             return { uri: item.url, type: item.mimeType, originalId: item.id };
           } catch (error) {
             console.error(`Failed to upload file ${index + 1}:`, error);
-            throw new Error(`Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error.message}`);
+            throw new Error(`Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error instanceof Error ? error.message : "Unknown error"}`);
           }
         });
 
@@ -633,7 +633,7 @@ function ComposerContent() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2 w-full">
           <div className="flex flex-row gap-4 w-full">
             <div className={`shrink-0 z-20 grow-0 rounded-full ${isSmallAvatar ? "w-6 h-6" : "w-10 h-10"}`}>
-              <UserAvatar user={currentUser} />
+              {currentUser && <UserAvatar user={currentUser} />}
             </div>
             <div className="grow flex-1">
               <div className="flex h-5 gap-1.5 items-center">

@@ -74,7 +74,7 @@ export function CreateCommunityDialog({ onChannelCreated }: CreateChannelDialogP
         throw new Error("Community name is required");
       }
 
-      const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+      const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId as keyof typeof SUPPORTED_CHAINS];
 
       if (!currentChainSupported) {
         toast.info("Switching to supported network...");

@@ -48,7 +48,7 @@ export function useMintEFP() {
       console.log("[useMintEFP] Mint transaction hash:", mintHash);
 
       // Wait for the mint transaction to be confirmed
-      const mintReceipt = await publicClient.waitForTransactionReceipt({
+      const mintReceipt = await publicClient?.waitForTransactionReceipt({
         hash: mintHash,
       });
 
@@ -74,7 +74,7 @@ export function useMintEFP() {
       console.log("[useMintEFP] Set user transaction hash:", setUserHash);
 
       // Wait for the set user transaction to be confirmed
-      const setUserReceipt = await publicClient.waitForTransactionReceipt({
+      const setUserReceipt = await publicClient?.waitForTransactionReceipt({
         hash: setUserHash,
       });
 

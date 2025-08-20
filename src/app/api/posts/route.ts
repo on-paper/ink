@@ -45,7 +45,9 @@ export async function GET(req: NextRequest) {
     } else if (channelId || feed || group) {
       // For channel/group feeds, use the channel ID as targetUri
       const targetChannelId = channelId || feed || group;
-      queryParams.append("channelId", targetChannelId);
+      if (targetChannelId) {
+        queryParams.append("channelId", targetChannelId);
+      }
     } else {
       // For main feed, query our app-specific targetUri
       queryParams.append("targetUri", "https://paper.ink");
@@ -90,7 +92,7 @@ export async function GET(req: NextRequest) {
     );
   } catch (error) {
     console.error("Failed to fetch posts: ", error);
-    return NextResponse.json({ error: `Failed to fetch posts: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Failed to fetch posts: ${error instanceof Error ? error.message : "Unknown error"}` }, { status: 500 });
   }
 }
 

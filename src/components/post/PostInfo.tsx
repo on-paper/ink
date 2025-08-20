@@ -105,12 +105,10 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
       {channel?.id && channelName && (
         <Link
           href={`/c/${formatChannelIdForUrl(channel.id)}`}
-          className="flex items-center justify-center font-bold gap-1.5 transition-opacity hover:opacity-70"
+          className="flex items-center justify-center font-bold gap-1.5 transition-opacity "
         >
           <ChevronRight strokeWidth={2.2} className="w-4 h-4 text-muted-foreground -mx-1 " />
-          {/* <Badge variant="outline" className="rounded-sm px-2 py-0 h-5 text-xs hover:bg-accent/50 leading-4"> */}
-          {channelName}
-          {/* </Badge> */}
+          <span className="text-foreground hover:opacity-70">{channelName}</span>
         </Link>
       )}
       <span className="text-muted-foreground font-medium">

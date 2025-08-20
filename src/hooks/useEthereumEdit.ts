@@ -35,7 +35,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
 
       try {
         // Check if current chain is supported
-        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId as keyof typeof SUPPORTED_CHAINS];
         let chainIdToUse = chainId;
 
         if (!currentChainSupported) {
@@ -90,7 +90,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
         // Transaction will be confirmed by useWaitForTransactionReceipt
         return hash;
       } catch (error) {
-        toast.error(error.message || "Failed to edit post", { id: toastId });
+        toast.error(error instanceof Error ? error.message : "Failed to edit post", { id: toastId });
         throw error;
       }
     },

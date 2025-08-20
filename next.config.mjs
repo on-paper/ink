@@ -5,8 +5,7 @@ const config = {
   reactStrictMode: true,
   transpilePackages: ['ethereum-identity-kit', 'lucide-react'],
   typescript: {
-    // due to base/account-sdk Type error: Type instantiation is excessively deep and possibly infinite.
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   images: {

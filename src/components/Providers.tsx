@@ -45,7 +45,7 @@ const wagmiConfig = createConfig({
       appLogoUrl: "https://paper.ink/favicon.ico",
     }),
     walletConnect({
-      projectId: projectId,
+      projectId: projectId!,
       metadata: {
         name: "Paper",
         description: "minimalistic decentralized social",

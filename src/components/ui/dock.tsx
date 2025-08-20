@@ -174,11 +174,11 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(({ items, className }, 
                   ? {
                       right: "calc(100% + 6px)",
                       top: `${buttonRefs.current[hoveredIndex]?.offsetTop}px`,
-                      transform: `translateY(calc(-50% + ${buttonRefs.current[hoveredIndex]?.offsetHeight / 2}px))`,
+                      transform: `translateY(calc(-50% + ${(buttonRefs.current[hoveredIndex]?.offsetHeight || 0) / 2}px))`,
                     }
                   : {
                       bottom: "calc(100% + 6px)",
-                      left: `${buttonRefs.current[hoveredIndex]?.offsetLeft + buttonRefs.current[hoveredIndex]?.offsetWidth / 2}px`,
+                      left: `${(buttonRefs.current[hoveredIndex]?.offsetLeft || 0) + (buttonRefs.current[hoveredIndex]?.offsetWidth || 0) / 2}px`,
                     }),
               }}
             >

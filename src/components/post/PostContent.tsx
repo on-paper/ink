@@ -62,7 +62,7 @@ export const PostContent = forwardRef<
           className="p-3 border bg-transparent hover:bg-muted/30 transition-colors cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            router.push(`/p/${post.quoteOn.id}`);
+            router.push(`/p/${post.quoteOn!.id}`);
           }}
         >
           <div className="flex items-center gap-2">

@@ -43,7 +43,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
       try {
         // Check if current chain is supported
-        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId];
+        const currentChainSupported = chainId && SUPPORTED_CHAINS[chainId as keyof typeof SUPPORTED_CHAINS];
         let chainIdToUse = chainId;
 
         if (!currentChainSupported) {
@@ -109,7 +109,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
         // Transaction will be confirmed by useWaitForTransactionReceipt
         return hash;
       } catch (error) {
-        toast.error(error.message || "Failed to post comment", { id: toastId });
+        toast.error(error instanceof Error ? error.message : "Failed to post comment", { id: toastId });
         throw error;
       }
     },

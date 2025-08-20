@@ -38,10 +38,10 @@ export function UserAvatarArray({ users, amountTruncated }: { users: User[]; amo
     </div>
   ));
 
-  const formatAmount = Intl.NumberFormat("en-US", {
+  const formatAmount = amountTruncated ? Intl.NumberFormat("en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
-  }).format(amountTruncated);
+  }).format(amountTruncated) : "";
 
   return (
     <div className="flex flex-row pl-4">

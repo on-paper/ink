@@ -65,7 +65,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   } catch (error) {
     console.error("Failed to load comments from ECP: ", error);
     return NextResponse.json(
-      { error: `Failed to fetch comments: ${error.message || "Unknown error"}` },
+      { error: `Failed to fetch comments: ${error instanceof Error ? error.message : "Unknown error"}` },
       { status: 500 },
     );
   }

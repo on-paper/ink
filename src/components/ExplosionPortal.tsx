@@ -93,7 +93,7 @@ const ExplosionEffect = ({ type, x, y }: { type: ExplosionType; x: number; y: nu
     [],
   );
 
-  const onInitHandler = ({ conductor }) => {
+  const onInitHandler = ({ conductor }: { conductor: any }) => {
     controllerRef.current = conductor;
     setIsReady(true);
   };

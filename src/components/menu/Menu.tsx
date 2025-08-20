@@ -150,7 +150,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           isProfile && "ring-2 ring-primary/50 ring-offset-2 ring-offset-background",
         )}
       >
-        <UserAvatar link={false} card={false} user={user} />
+        {user && <UserAvatar link={false} card={false} user={user} />}
       </div>
     ),
     onClick: goProfile,
@@ -246,7 +246,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           <DialogContent className="max-w-full sm:max-w-[700px]">
             <PostComposer
               ref={composerRef as any}
-              user={user}
+              user={user ?? undefined}
               onDirtyChange={() => {
                 /* handled via ref */
               }}

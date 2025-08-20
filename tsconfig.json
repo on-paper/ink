@@ -3,7 +3,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
@@ -52,6 +52,8 @@
     "src/components_old/**/*.tsx",
     "node_modules",
     ".next",
-    "node_modules/@base-org/account/**/*"
+    "node_modules/@base-org/account/**/*",
+    "**/node_modules/**/ox/**/*",
+    "node_modules/viem/node_modules/**/*"
   ]
 }

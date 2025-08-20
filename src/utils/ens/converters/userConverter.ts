@@ -63,9 +63,9 @@ export function ensAccountToUser(account: EthFollowAccount): User {
   const user: User = {
     id: address,
     address: address,
-    username: ensName,
+    username: ensName || address,
     profilePictureUrl: avatar || `https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${address}`,
-    description: description || null,
+    description: description || undefined,
     namespace: "ens",
     metadata:
       attributes.length > 0
@@ -144,7 +144,9 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
           const isFollowing = followingData.following?.some(
             (account: any) => account.address?.toLowerCase() === user.address.toLowerCase(),
           );
-          user.actions.followed = isFollowing || false;
+          if (user.actions) {
+            user.actions.followed = isFollowing || false;
+          }
         }
 
         // Check if this user follows current user
@@ -157,7 +159,9 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
           const followsMe = followerData.following?.some(
             (account: any) => account.address?.toLowerCase() === currentUserAddress.toLowerCase(),
           );
-          user.actions.following = followsMe || false;
+          if (user.actions) {
+            user.actions.following = followsMe || false;
+          }
         }
       } catch (error) {
         console.error("Failed to fetch following relationships:", error);

@@ -328,7 +328,7 @@ export const NotificationView = ({ item }: { item: Notification }) => {
                     </Link>
                   )}
 
-                  {showReactions && (
+                  {showReactions && item.actedOn && (
                     <div className="-mt-1">
                       <ReactionsList post={item.actedOn} isComment={true} isReplyOpen={isReplyWizardOpen} />
                     </div>
@@ -354,7 +354,7 @@ export const NotificationView = ({ item }: { item: Notification }) => {
   );
 
   // Wrap in PostStateProvider if needed
-  if (showReactions) {
+  if (showReactions && item.actedOn) {
     return (
       <PostStateProvider post={item.actedOn} onReply={handleReply}>
         {notificationContent}

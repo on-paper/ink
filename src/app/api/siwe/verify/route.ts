@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isValid = await publicClient.verifyMessage({
-      address: parsedMessage.address,
+      address: parsedMessage.address as `0x${string}`,
       message,
       signature,
     });
@@ -51,13 +51,13 @@ export async function POST(req: NextRequest) {
 
     // Store complete session data as recommended by wagmi
     session.siwe = {
-      address: parsedMessage.address,
-      chainId: parsedMessage.chainId,
-      domain: parsedMessage.domain,
-      uri: parsedMessage.uri,
+      address: parsedMessage.address || "",
+      chainId: parsedMessage.chainId || 1,
+      domain: parsedMessage.domain || "",
+      uri: parsedMessage.uri || "",
       issued: now.toISOString(),
       expirationTime: expirationTime.toISOString(),
-      statement: parsedMessage.statement,
+      statement: parsedMessage.statement || "",
     };
 
     // Clear the nonce after successful verification

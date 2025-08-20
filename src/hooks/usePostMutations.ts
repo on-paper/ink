@@ -62,8 +62,8 @@ export function usePostMutations(postId: string, post?: Post) {
           ...old,
           reactions: {
             ...old.reactions,
-            upvotes: (old.reactions.upvotes || 0) + (old.reactions.isUpvoted ? -1 : 1),
-            isUpvoted: !old.reactions.isUpvoted,
+            upvotes: (old.reactions?.upvotes || 0) + (old.reactions?.isUpvoted ? -1 : 1),
+            isUpvoted: !old.reactions?.isUpvoted,
           },
         }),
         post,
@@ -102,8 +102,8 @@ export function usePostMutations(postId: string, post?: Post) {
           ...old,
           reactions: {
             ...old.reactions,
-            Repost: old.reactions.Repost + (old.reactions.isReposted ? -1 : 1),
-            isReposted: !old.reactions.isReposted,
+            Repost: (old.reactions?.Repost || 0) + (old.reactions?.isReposted ? -1 : 1),
+            isReposted: !old.reactions?.isReposted,
           },
         }),
         post,
@@ -140,7 +140,7 @@ export function usePostMutations(postId: string, post?: Post) {
           ...old,
           reactions: {
             ...old.reactions,
-            isBookmarked: !old.reactions.isBookmarked,
+            isBookmarked: !old.reactions?.isBookmarked,
           },
         }),
         post,

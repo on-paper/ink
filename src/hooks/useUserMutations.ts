@@ -44,8 +44,10 @@ export function useUserMutations(userId: string) {
       updateUserInCache((old) => ({
         ...old,
         actions: {
-          ...old.actions,
           followed: !old.actions?.followed,
+          following: old.actions?.following || false,
+          blocked: old.actions?.blocked || false,
+          muted: old.actions?.muted || false,
         },
       }));
 
@@ -82,7 +84,9 @@ export function useUserMutations(userId: string) {
       updateUserInCache((old) => ({
         ...old,
         actions: {
-          ...old.actions,
+          followed: old.actions?.followed || false,
+          following: old.actions?.following || false,
+          blocked: old.actions?.blocked || false,
           muted: true,
         },
       }));
@@ -117,7 +121,9 @@ export function useUserMutations(userId: string) {
       updateUserInCache((old) => ({
         ...old,
         actions: {
-          ...old.actions,
+          followed: old.actions?.followed || false,
+          following: old.actions?.following || false,
+          blocked: old.actions?.blocked || false,
           muted: false,
         },
       }));
@@ -152,8 +158,10 @@ export function useUserMutations(userId: string) {
       updateUserInCache((old) => ({
         ...old,
         actions: {
-          ...old.actions,
+          followed: old.actions?.followed || false,
+          following: old.actions?.following || false,
           blocked: true,
+          muted: old.actions?.muted || false,
         },
       }));
 
@@ -187,8 +195,10 @@ export function useUserMutations(userId: string) {
       updateUserInCache((old) => ({
         ...old,
         actions: {
-          ...old.actions,
+          followed: old.actions?.followed || false,
+          following: old.actions?.following || false,
           blocked: false,
+          muted: old.actions?.muted || false,
         },
       }));
 
