@@ -1,6 +1,6 @@
 "use client";
 
-import type { PostMention } from "@cartel-sh/ui";
+import type { PostMention, MediaData, TokenData } from "@cartel-sh/ui";
 import React, { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown/lib/ast-to-react";
@@ -73,9 +73,9 @@ const Markdown: React.FC<{
   mentions?: PostMention[];
   className?: string;
   showLinkPreviews?: boolean;
-  mediaMimeTypes?: Record<string, string>;
-  tokenMetadata?: Record<string, { symbol: string; name: string; address: string; chainId: number }>;
-}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaMimeTypes, tokenMetadata }) => {
+  mediaData?: MediaData;
+  tokenData?: TokenData;
+}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaData, tokenData }) => {
   let processedText = content;
 
   processedText = parseContent(content).parseLinks().replaceHandles().toString();
@@ -118,14 +118,14 @@ const Markdown: React.FC<{
         }
 
         if (assetNamespace === "erc20") {
-          const metadata = tokenMetadata?.[caipUri];
+          const metadata = tokenData?.[caipUri];
           parts.push(
             <TokenLink
               key={`caip19-${match.index}`}
               tokenAddress={assetReference}
               scanUrl={scanUrl}
               colorClasses={colorClasses}
-              tokenMetadata={metadata}
+              tokenData={metadata}
             />,
           );
         } else if (assetNamespace === "erc721" || assetNamespace === "erc1155") {
@@ -194,11 +194,11 @@ const Markdown: React.FC<{
     };
   };
 
-  const createCustomImage = (mediaMimeTypes?: Record<string, string>): Components["img"] => {
+  const createCustomImage = (mediaData?: MediaData): Components["img"] => {
     return ({ node, ...props }) => {
       const { src } = props;
       if (!src) return null;
-      const mimeType = mediaMimeTypes?.[src];
+      const mimeType = mediaData?.[src];
       return <MarkdownMediaItem url={src} mimeType={mimeType} />;
     };
   };
@@ -237,7 +237,7 @@ const Markdown: React.FC<{
         if (match) {
           const galleryIndex = Number.parseInt(match[1], 10);
           if (mediaGroups[galleryIndex]) {
-            return <MarkdownMediaGallery urls={mediaGroups[galleryIndex]} mimeTypes={mediaMimeTypes} />;
+            return <MarkdownMediaGallery urls={mediaGroups[galleryIndex]} mimeTypes={mediaData} />;
           }
         }
       }
@@ -245,7 +245,7 @@ const Markdown: React.FC<{
       if (Array.isArray(children) && children.length === 1) {
         const child = children[0];
         if (child && typeof child === "object" && "props" in child && child.props?.src) {
-          const mimeType = mediaMimeTypes?.[child.props.src];
+          const mimeType = mediaData?.[child.props.src];
           if (mimeType?.startsWith("video/")) {
             return <MarkdownMediaItem url={child.props.src} mimeType={mimeType} />;
           }
@@ -258,7 +258,7 @@ const Markdown: React.FC<{
         (children as any).props?.src
       ) {
         const props = (children as any).props;
-        const mimeType = mediaMimeTypes?.[props.src];
+        const mimeType = mediaData?.[props.src];
         if (mimeType?.startsWith("video/")) {
           return <MarkdownMediaItem url={props.src} mimeType={mimeType} />;
         }
@@ -282,7 +282,7 @@ const Markdown: React.FC<{
     ol: ({ children }) => <ol className="lexical-list-ol">{children}</ol>,
     li: ({ children }) => <li className="lexical-listitem">{children}</li>,
     a: createCustomLink(colorClasses, mentions),
-    img: createCustomImage(mediaMimeTypes),
+    img: createCustomImage(mediaData),
     u: ({ children }) => <u className="lexical-text-underline">{children}</u>,
   };
 

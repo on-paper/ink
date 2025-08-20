@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { GallerySuspense } from "./GallerySuspense";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 
 export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: string }) => {
   const [data, setData] = useState<any[]>(null);
@@ -57,9 +58,7 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
   const [filteredUniqueMedia, setFilteredUniqueMedia] = useState<any[]>([]);
   useEffect(() => {
     const newFilteredUniqueMedia =
-      data?.filter(
-        (item) => item.metadata?.__typename === "ImageMetadata" || item.metadata?.__typename === "VideoMetadata",
-      ) || [];
+      data?.filter((item) => isImageMetadata(item.metadata) || isVideoMetadata(item.metadata)) || [];
     setFilteredUniqueMedia(newFilteredUniqueMedia);
   }, [data]);
 

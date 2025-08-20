@@ -24,8 +24,9 @@ export const PostOptimisticView = ({ author, isComment = false }: { author: User
       canQuote: true,
     },
     createdAt: new Date(),
-    metadata: {},
-    __typename: "Post" as const,
+    metadata: {
+      content: "",
+    },
     platform: "lens" as const,
     comments: [],
   } as Post;

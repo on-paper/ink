@@ -4,6 +4,7 @@ import { PostComments } from "~/components/post/PostComments";
 import { PostView } from "~/components/post/PostView";
 import { generatePostOGUrl } from "~/utils/generateOGUrl";
 import { getBaseUrl } from "~/utils/getBaseUrl";
+import { isImageMetadata } from "@cartel-sh/ui";
 
 export async function generateMetadata({ params }: { params: { post: string } }): Promise<Metadata> {
   try {
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: { post: string } })
       "Anonymous";
     const content = post.metadata?.content || "";
     const profilePictureUrl = post.author?.profilePictureUrl || "";
-    const postImage = post.metadata?.__typename === "ImageMetadata" ? post.metadata?.image?.item : "";
+    const postImage = isImageMetadata(post.metadata) ? post.metadata?.image?.item : "";
 
     const title = `${handle} on Paper`;
     const description = content.length > 160 ? `${content.slice(0, 160)}...` : content || "View post on Paper";

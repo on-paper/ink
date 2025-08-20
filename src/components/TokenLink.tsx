@@ -2,15 +2,15 @@ interface TokenLinkProps {
   tokenAddress: string;
   scanUrl: string;
   colorClasses?: string;
-  tokenMetadata?: {
+  tokenData?: {
     symbol: string;
     name: string;
   };
 }
 
-export function TokenLink({ tokenAddress, scanUrl, colorClasses = "", tokenMetadata }: TokenLinkProps) {
-  const displayText = tokenMetadata?.symbol
-    ? `$${tokenMetadata.symbol}`
+export function TokenLink({ tokenAddress, scanUrl, colorClasses = "", tokenData }: TokenLinkProps) {
+  const displayText = tokenData?.symbol
+    ? `$${tokenData.symbol}`
     : `${tokenAddress.slice(0, 6)}...${tokenAddress.slice(-4)}`;
 
   return (
@@ -19,7 +19,7 @@ export function TokenLink({ tokenAddress, scanUrl, colorClasses = "", tokenMetad
       target="_blank"
       rel="noopener noreferrer"
       className={`lexical-link ${colorClasses}`}
-      title={tokenMetadata?.name || tokenAddress}
+      title={tokenData?.name || tokenAddress}
     >
       {displayText}
     </a>

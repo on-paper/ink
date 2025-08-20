@@ -26,6 +26,7 @@ import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { storageClient } from "~/utils/lens/storage";
+import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 
 export const MAX_CONTENT_LENGTH = 1000;
 
@@ -379,14 +380,14 @@ function ComposerContent() {
       const existingMedia: MediaItem[] = [];
       const metadata = editingPost.metadata;
 
-      if (metadata.__typename === "ImageMetadata" && metadata.image?.item) {
+      if (isImageMetadata(metadata) && metadata.image?.item) {
         existingMedia.push({
           type: "url",
           url: metadata.image.item,
           mimeType: normalizeImageMimeType(metadata.image.type) || "image/jpeg",
           id: `existing-${Date.now()}-0`,
         });
-      } else if (metadata.__typename === "VideoMetadata" && metadata.video?.item) {
+      } else if (isVideoMetadata(metadata) && metadata.video?.item) {
         existingMedia.push({
           type: "url",
           url: metadata.video.item,

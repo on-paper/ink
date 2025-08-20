@@ -31,7 +31,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
   const author = post.author;
   const handle = author.username;
   const displayName = handle || truncateEthAddress(author.address, "....");
-  const tags = post?.metadata?.tags || [];
+  const tags = (post?.metadata as any)?.tags || [];
   const content = "content" in post.metadata ? (post.metadata.content as string) : "";
   const channel = (post as any)?.metadata?.channel as { id?: string; name?: string } | undefined;
   const channelNameRaw = channel?.name || channel?.id || "";

@@ -41,25 +41,22 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
 
 export const PostGallery = ({ post }: { post: Post }) => {
   const metadata = post.metadata;
-  const type = metadata?.__typename;
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
 
   let src: string | undefined;
   let isVideo = false;
 
-  if (type === "ImageMetadata") {
-    src = metadata?.image?.item;
-  } else if (type === "VideoMetadata") {
-    src = metadata?.video?.cover;
-    isVideo = true;
-    if (!src && metadata?.video?.item) {
-      src = generatedThumbnail || metadata.video.item;
-    }
+  const attachments = (metadata as any)?.attachments || [];
+  const firstAttachment = attachments[0];
+  
+  if (firstAttachment) {
+    isVideo = firstAttachment.type?.startsWith('video/') || false;
+    src = isVideo ? (firstAttachment.cover || generatedThumbnail || firstAttachment.item) : firstAttachment.item;
   }
 
   useEffect(() => {
-    if (type === "VideoMetadata" && !metadata?.video?.cover && metadata?.video?.item && !generatedThumbnail) {
-      generateVideoThumbnail(metadata.video.item)
+    if (isVideo && src && !generatedThumbnail && !firstAttachment?.cover) {
+      generateVideoThumbnail(src)
         .then(({ thumbnail }) => {
           setGeneratedThumbnail(thumbnail);
         })
@@ -67,7 +64,7 @@ export const PostGallery = ({ post }: { post: Post }) => {
           console.error("Failed to generate video thumbnail:", error);
         });
     }
-  }, [type, metadata?.video?.cover, metadata?.video?.item, generatedThumbnail]);
+  }, [isVideo, src, generatedThumbnail, firstAttachment?.cover]);
 
   if (!src && !isVideo) return null;
 
@@ -77,7 +74,7 @@ export const PostGallery = ({ post }: { post: Post }) => {
       className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100"
     >
       <Card className="overflow-hidden p-0">
-        {isVideo && !metadata?.video?.cover && !generatedThumbnail ? (
+        {isVideo && !firstAttachment?.cover && !generatedThumbnail ? (
           <div className="relative w-full aspect-square bg-muted flex items-center justify-center">
             <svg className="w-12 h-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

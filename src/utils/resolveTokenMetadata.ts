@@ -20,7 +20,7 @@ const erc20Abi = [
   },
 ] as const;
 
-export interface TokenMetadata {
+export interface TokenData {
   symbol: string;
   name: string;
   address: string;
@@ -28,7 +28,7 @@ export interface TokenMetadata {
 }
 
 const fetchTokenMetadata = unstable_cache(
-  async (chainId: number, address: string): Promise<TokenMetadata | null> => {
+  async (chainId: number, address: string): Promise<TokenData | null> => {
     try {
       const chain = Object.values(chains).find((c) => c.id === chainId);
       if (!chain) return null;
@@ -86,9 +86,9 @@ export function extractCAIP19URIs(content: string): string[] {
   return [...new Set(uris)]; // Remove duplicates
 }
 
-export async function resolveTokenMetadataFromContent(content: string): Promise<Record<string, TokenMetadata>> {
+export async function resolveTokenMetadataFromContent(content: string): Promise<Record<string, TokenData>> {
   const uris = extractCAIP19URIs(content);
-  const metadata: Record<string, TokenMetadata> = {};
+  const metadata: Record<string, TokenData> = {};
 
   await Promise.all(
     uris.map(async (uri) => {

@@ -47,7 +47,7 @@ export interface CommentToPostOptions {
 
 export async function processMediaContent(
   content: string,
-): Promise<{ content: string; mediaMimeTypes?: Record<string, string> }> {
+): Promise<{ content: string; mediaData?: Record<string, string> }> {
   const mediaPattern = /((?:ipfs|lens):\/\/[a-zA-Z0-9-_/.]+)/g;
   const matches = Array.from(content.matchAll(mediaPattern));
 
@@ -55,14 +55,14 @@ export async function processMediaContent(
     return { content };
   }
 
-  const mediaMimeTypes: Record<string, string> = {};
+  const mediaData: Record<string, string> = {};
 
   const detectionPromises = matches.map(async (match) => {
     const originalUrl = match[0];
     const resolvedUrl = resolveUrl(originalUrl);
     const mimeType = await detectMimeType(resolvedUrl);
     if (mimeType) {
-      mediaMimeTypes[resolvedUrl] = mimeType;
+      mediaData[resolvedUrl] = mimeType;
     }
     return { originalUrl, resolvedUrl, mimeType };
   });
@@ -76,7 +76,7 @@ export async function processMediaContent(
 
   return {
     content: processedContent,
-    mediaMimeTypes: Object.keys(mediaMimeTypes).length > 0 ? mediaMimeTypes : undefined,
+    mediaData: Object.keys(mediaData).length > 0 ? mediaData : undefined,
   };
 }
 
@@ -149,24 +149,22 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
   const isUpvoted = Boolean(comment.viewerReactions?.like);
   const isReposted = Boolean(comment.viewerReactions?.repost);
 
-  const { content: processedContent, mediaMimeTypes } = await processMediaContent(comment.content);
+  const { content: processedContent, mediaData } = await processMediaContent(comment.content);
 
-  const tokenMetadata = await resolveTokenMetadataFromContent(processedContent);
+  const tokenData = await resolveTokenMetadataFromContent(processedContent);
 
   const post: Post = {
     id: comment.id,
     author,
     metadata: {
       content: processedContent,
-      __typename: "MarkdownMetadata" as const,
-      ...(mediaMimeTypes ? { mediaMimeTypes } : {}),
-      ...(Object.keys(tokenMetadata).length > 0 ? { tokenMetadata } : {}),
+      ...(mediaData ? { mediaData } : {}),
+      ...(Object.keys(tokenData).length > 0 ? { tokenData } : {}),
       ...(channelMeta ? { channel: channelMeta } : {}),
     },
     createdAt,
     updatedAt: createdAt,
     platform: "ecp" as const,
-    __typename: "Post" as const,
     isEdited: false,
     reactions: {
       Bookmark: 0,

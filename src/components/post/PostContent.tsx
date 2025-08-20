@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 import { LinkPreview } from "../embeds/LinkPreview";
 import { Card } from "../ui/card";
 import { UserAvatar } from "../user/UserAvatar";
-import { getPostLinkPreviews, getPostMediaContent, getPostTextContent } from "./PostMetadataView";
+import { getPostLinkPreviews, getPostContent } from "./PostMetadataView";
 
 export const PostContent = forwardRef<
   HTMLDivElement,
@@ -13,12 +13,8 @@ export const PostContent = forwardRef<
 >(({ post, collapsed, setCollapsed }, ref) => {
   const router = useRouter();
 
-  const textContent = getPostTextContent(post.metadata, post.mentions, false);
-  const mediaContent = getPostMediaContent(post.metadata, post.id, post.author.username);
+  const textContent = getPostContent(post.metadata, post.mentions, false);
   const linkPreviews = getPostLinkPreviews(post.metadata);
-  // const textContent = null;
-  // const mediaContent = null;
-  // const linkPreviews: string[] = [];
 
   return (
     <div ref={ref} className="space-y-2">
@@ -55,8 +51,6 @@ export const PostContent = forwardRef<
         </div>
       )}
 
-      {mediaContent}
-
       {linkPreviews.length > 0 && (
         <div className="space-y-3">
           <LinkPreview key={`${linkPreviews[0]}-0`} url={linkPreviews[0]} />
@@ -80,15 +74,8 @@ export const PostContent = forwardRef<
             </div>
           </div>
           <p className="text-sm line-clamp-3 text-foreground/90">
-            {/* {getPostTextContent(post.quoteOn.metadata, post.quoteOn.mentions, false)} */}
+            {getPostContent(post.quoteOn.metadata, post.quoteOn.mentions, false)}
           </p>
-          {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id, post.quoteOn.author.username) && (
-            <div className="mt-2 max-w-full">
-              <div className="[&_img]:max-h-48 [&_img]:object-cover [&_video]:max-h-48 [&_.fullscreen-video_video]:!max-h-none [&_.fullscreen-video]:!max-h-none [&_.fullscreen-video]:!h-screen [&_.image-grid]:gap-1 [&_.image-grid_img]:max-h-32 [&>div:not(.fullscreen-video)]:!h-fit [&_.h-full:not(.fullscreen-video)]:!h-fit">
-                {getPostMediaContent(post.quoteOn.metadata, post.quoteOn.id, post.quoteOn.author.username)}
-              </div>
-            </div>
-          )}
         </Card>
       )}
     </div>

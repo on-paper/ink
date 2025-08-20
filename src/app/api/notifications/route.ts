@@ -90,7 +90,6 @@ export async function GET(request: NextRequest) {
 
         if (!user) {
           return {
-            __typename: "Notification" as const,
             id: `efp-${efpNotif.token_id}-${efpNotif.updated_at}`,
             type: notificationType,
             createdAt: new Date(efpNotif.updated_at),
@@ -115,7 +114,6 @@ export async function GET(request: NextRequest) {
         }
 
         const notification: Notification = {
-          __typename: "Notification",
           id: `efp-${efpNotif.token_id}-${efpNotif.updated_at}`,
           type: notificationType,
           createdAt: new Date(efpNotif.updated_at),
