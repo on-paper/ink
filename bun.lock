@@ -5,7 +5,7 @@
       "name": "paper",
       "dependencies": {
         "@base-org/account": "^1.1.1",
-        "@cartel-sh/ui": "0.6.5",
+        "@cartel-sh/ui": "0.6.6",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
@@ -142,7 +142,7 @@
 
     "@base-org/account": ["@base-org/account@1.1.1", "", { "dependencies": { "@noble/hashes": "1.4.0", "clsx": "1.2.1", "eventemitter3": "5.0.1", "idb-keyval": "6.2.1", "ox": "0.6.9", "preact": "10.24.2", "viem": "^2.31.7", "zustand": "5.0.3" } }, "sha512-IfVJPrDPhHfqXRDb89472hXkpvJuQQR7FDI9isLPHEqSYt/45whIoBxSPgZ0ssTt379VhQo4+87PWI1DoLSfAQ=="],
 
-    "@cartel-sh/ui": ["@cartel-sh/ui@0.6.5", "", { "peerDependencies": { "@lens-protocol/client": "*", "@radix-ui/react-avatar": "*", "@radix-ui/react-context-menu": "*", "@radix-ui/react-dialog": "*", "@radix-ui/react-dropdown-menu": "*", "@radix-ui/react-hover-card": "*", "@radix-ui/react-slot": "*", "@radix-ui/react-tooltip": "*", "@tanstack/react-query": "*", "class-variance-authority": "*", "clsx": "*", "lucide-react": "*", "next": "*", "react": "*", "react-dom": "*", "tailwind-merge": "*" } }, "sha512-oY7yrvfGo+O9RxMScxMUWom1wCUyepAE0d6Dck4P15FaBWOy8XoYxaTd8rikT1B+BAT2xdTy1pwqNqmgJ9OUvw=="],
+    "@cartel-sh/ui": ["@cartel-sh/ui@0.6.6", "", { "peerDependencies": { "@lens-protocol/client": "*", "@radix-ui/react-avatar": "*", "@radix-ui/react-context-menu": "*", "@radix-ui/react-dialog": "*", "@radix-ui/react-dropdown-menu": "*", "@radix-ui/react-hover-card": "*", "@radix-ui/react-slot": "*", "@radix-ui/react-tooltip": "*", "@tanstack/react-query": "*", "class-variance-authority": "*", "clsx": "*", "lucide-react": "*", "next": "*", "react": "*", "react-dom": "*", "tailwind-merge": "*" } }, "sha512-VM79wVSThuIqLEontDkvNMOU8LttZnC2vqBuWfYsHCGLB+HKZYu7vVdIekMeicWhV4ZRGIZWRpTpx4CjbWvDaQ=="],
 
     "@coinbase/wallet-sdk": ["@coinbase/wallet-sdk@4.3.6", "", { "dependencies": { "@noble/hashes": "1.4.0", "clsx": "1.2.1", "eventemitter3": "5.0.1", "idb-keyval": "6.2.1", "ox": "0.6.9", "preact": "10.24.2", "viem": "^2.27.2", "zustand": "5.0.3" } }, "sha512-4q8BNG1ViL4mSAAvPAtpwlOs1gpC+67eQtgIwNvT3xyeyFFd+guwkc8bcX5rTmQhXpqnhzC4f0obACbP9CqMSA=="],
 

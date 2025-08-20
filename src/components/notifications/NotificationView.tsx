@@ -144,12 +144,6 @@ export const NotificationView = ({ item }: { item: Notification }) => {
     if (commentMetadata) {
       if ("image" in commentMetadata && commentMetadata.image) {
         replyImage = (commentMetadata.image as any).item as string;
-      } else if (
-        "attachments" in commentMetadata &&
-        Array.isArray(commentMetadata.attachments) &&
-        commentMetadata.attachments[0]
-      ) {
-        replyImage = (commentMetadata.attachments[0] as any).item as string;
       }
     }
 
@@ -163,13 +157,8 @@ export const NotificationView = ({ item }: { item: Notification }) => {
       if (originalMetadata) {
         if ("image" in originalMetadata && originalMetadata.image) {
           originalPostImage = (originalMetadata.image as any).item as string;
-        } else if (
-          "attachments" in originalMetadata &&
-          Array.isArray(originalMetadata.attachments) &&
-          originalMetadata.attachments[0]
-        ) {
-          originalPostImage = (originalMetadata.attachments[0] as any).item as string;
         }
+        // Attachments deprecated - media is now embedded in markdown
       }
     }
   } else {
@@ -179,9 +168,8 @@ export const NotificationView = ({ item }: { item: Notification }) => {
     if (metadata) {
       if ("image" in metadata && metadata.image) {
         originalPostImage = (metadata.image as any).item as string;
-      } else if ("attachments" in metadata && Array.isArray(metadata.attachments) && metadata.attachments[0]) {
-        originalPostImage = (metadata.attachments[0] as any).item as string;
       }
+      // Attachments deprecated - media is now embedded in markdown
     }
   }
 

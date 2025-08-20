@@ -40,8 +40,6 @@ import {
 } from "~/atoms/drafts";
 import { useCommunity } from "~/hooks/useCommunity";
 import {
-  castToMediaImageType,
-  castToMediaVideoType,
   normalizeImageMimeType,
   normalizeVideoMimeType,
 } from "~/utils/mimeTypes";
@@ -396,18 +394,6 @@ function ComposerContent() {
         });
       }
 
-      if (metadata.attachments && Array.isArray(metadata.attachments)) {
-        metadata.attachments.forEach((att: any, index: number) => {
-          if (att.item) {
-            existingMedia.push({
-              type: "url",
-              url: att.item,
-              mimeType: att.type || "image/jpeg",
-              id: `existing-${Date.now()}-${index + 1}`,
-            });
-          }
-        });
-      }
 
       setMediaFiles(existingMedia);
     }
@@ -449,7 +435,7 @@ function ComposerContent() {
   const processMediaForSubmission = useCallback(
     async (toastId?: string) => {
       if (mediaFiles.length === 0) {
-        return { primaryMedia: null, attachments: undefined };
+        return { uploadedMedia: [] };
       }
 
       try {
@@ -471,33 +457,9 @@ function ComposerContent() {
         });
 
         const uploadedMedia = await Promise.all(uploadPromises);
-
-        const primaryMedia = uploadedMedia[0] || null;
-        const attachments =
-          uploadedMedia.length > 1
-            ? uploadedMedia
-                .slice(1)
-                .map((m) => {
-                  if (m.type.startsWith("image/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaImageType(m.type),
-                    };
-                  }
-                  if (m.type.startsWith("video/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaVideoType(m.type),
-                    };
-                  }
-                  return null;
-                })
-                .filter(Boolean)
-            : undefined;
-
+        
         return {
-          primaryMedia,
-          attachments: attachments && attachments.length > 0 ? attachments : undefined,
+          uploadedMedia,
         };
       } catch (error) {
         if (toastId) {
@@ -529,15 +491,12 @@ function ComposerContent() {
       const toastId = "upload-media";
       try {
         toast.loading("Uploading media...", { id: toastId });
-        const { primaryMedia, attachments } = await processMediaForSubmission(toastId);
+        const { uploadedMedia } = await processMediaForSubmission(toastId);
 
-        // Append media URLs to content
-        if (primaryMedia) {
-          finalContent += `\n\n${primaryMedia.uri}`;
-        }
-        if (attachments) {
-          attachments.forEach((att: any) => {
-            finalContent += `\n${att.item}`;
+        // Append all media URLs to content
+        if (uploadedMedia && uploadedMedia.length > 0) {
+          uploadedMedia.forEach((media) => {
+            finalContent += `\n${media.uri}`;
           });
         }
         toast.dismiss(toastId);

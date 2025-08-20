@@ -46,16 +46,9 @@ export const PostGallery = ({ post }: { post: Post }) => {
   let src: string | undefined;
   let isVideo = false;
 
-  const attachments = (metadata as any)?.attachments || [];
-  const firstAttachment = attachments[0];
-  
-  if (firstAttachment) {
-    isVideo = firstAttachment.type?.startsWith('video/') || false;
-    src = isVideo ? (firstAttachment.cover || generatedThumbnail || firstAttachment.item) : firstAttachment.item;
-  }
 
   useEffect(() => {
-    if (isVideo && src && !generatedThumbnail && !firstAttachment?.cover) {
+    if (isVideo && src && !generatedThumbnail) {
       generateVideoThumbnail(src)
         .then(({ thumbnail }) => {
           setGeneratedThumbnail(thumbnail);
@@ -64,7 +57,7 @@ export const PostGallery = ({ post }: { post: Post }) => {
           console.error("Failed to generate video thumbnail:", error);
         });
     }
-  }, [isVideo, src, generatedThumbnail, firstAttachment?.cover]);
+  }, [isVideo, src, generatedThumbnail]);
 
   if (!src && !isVideo) return null;
 
@@ -74,7 +67,7 @@ export const PostGallery = ({ post }: { post: Post }) => {
       className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100"
     >
       <Card className="overflow-hidden p-0">
-        {isVideo && !firstAttachment?.cover && !generatedThumbnail ? (
+        {isVideo && !generatedThumbnail ? (
           <div className="relative w-full aspect-square bg-muted flex items-center justify-center">
             <svg className="w-12 h-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
