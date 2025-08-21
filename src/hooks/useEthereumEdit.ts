@@ -4,7 +4,7 @@ import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@e
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useSignTypedData, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseEthereumEditOptions {
@@ -16,6 +16,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
   const queryClient = useQueryClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { signTypedDataAsync } = useSignTypedData();
   const { switchChainAsync } = useSwitchChain();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
@@ -50,10 +51,11 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
             chainIdToUse = defaultChainId;
           }
         }
-        // Step 1: Get signature from the app
+
+        // Step 1: Prepare edit with unified endpoint
         toast.loading("Preparing edit...", { id: toastId });
 
-        const response = await fetch(`/api/posts/${postId}/edit`, {
+        const response = await fetch(`/api/posts/${postId}/edit/prepare`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -61,25 +63,72 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
             author: address,
             chainId: chainIdToUse || defaultChainId,
             metadata,
+            mode: "auto",
           }),
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.error("[EDIT-COMMENT] Sign API error:", errorData);
+          console.error("[EDIT-COMMENT] Prepare API error:", errorData);
           throw new Error(errorData.error || "Failed to prepare edit");
         }
 
-        const { signature, data } = await response.json();
+        const result = await response.json();
 
-        // Step 2: Post edit to blockchain
+        // Handle different response modes
+        if (result.mode === "gasless_submitted") {
+          // Transaction was submitted gaslessly
+          setTxHash(result.txHash);
+          toast.success("Post updated!", { id: toastId });
+          return result.txHash;
+        }
+
+        if (result.mode === "gasless_pending") {
+          // Need user signature for gasless submission
+          toast.loading("Please sign to edit...", { id: toastId });
+
+          const authorSignature = await signTypedDataAsync(result.signTypedDataParams);
+
+          // Submit gasless transaction
+          toast.loading("Updating post...", { id: toastId });
+
+          const submitResponse = await fetch(`/api/posts/${postId}/edit/submit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signTypedDataParams: result.signTypedDataParams,
+              appSignature: result.appSignature,
+              authorSignature,
+              editData: result.data,
+              chainId: chainIdToUse || defaultChainId,
+            }),
+          });
+
+          if (!submitResponse.ok) {
+            const errorData = await submitResponse.json().catch(() => ({}));
+
+            if (errorData.code === "INSUFFICIENT_FUNDS") {
+              // Fall back to regular transaction
+              console.warn("Gasless funds insufficient, falling back to regular transaction");
+            } else {
+              throw new Error(errorData.error || "Failed to submit edit");
+            }
+          } else {
+            const submitResult = await submitResponse.json();
+            setTxHash(submitResult.txHash);
+            toast.success("Post updated!", { id: toastId });
+            return submitResult.txHash;
+          }
+        }
+
+        // Regular mode: submit transaction directly
         toast.loading("Updating post...", { id: toastId });
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
           address: COMMENT_MANAGER_ADDRESS,
           functionName: "editComment",
-          args: [data.commentId, data, signature],
+          args: [result.data.commentId, result.data, result.signature],
           chain: getDefaultChain(),
           account: address,
         });
@@ -87,7 +136,6 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
         setTxHash(hash);
         toast.success("Post updated!", { id: toastId });
 
-        // Transaction will be confirmed by useWaitForTransactionReceipt
         return hash;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to edit post", { id: toastId });

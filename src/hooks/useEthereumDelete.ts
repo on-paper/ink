@@ -4,7 +4,7 @@ import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@e
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useAccount, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useSignTypedData, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseEthereumDeleteOptions {
@@ -16,6 +16,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
   const queryClient = useQueryClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { signTypedDataAsync } = useSignTypedData();
   const { switchChainAsync } = useSwitchChain();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
@@ -50,34 +51,82 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
             chainIdToUse = defaultChainId;
           }
         }
-        // Step 1: Get signature from the app
+
+        // Step 1: Prepare deletion with unified endpoint
         toast.loading("Preparing deletion...", { id: toastId });
 
-        const response = await fetch(`/api/posts/${postId}/delete`, {
+        const response = await fetch(`/api/posts/${postId}/delete/prepare`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             author: address,
             chainId: chainIdToUse || defaultChainId,
+            mode: "auto",
           }),
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.error("[DELETE-COMMENT] Sign API error:", errorData);
+          console.error("[DELETE-COMMENT] Prepare API error:", errorData);
           throw new Error(errorData.error || "Failed to prepare deletion");
         }
 
-        const { data } = await response.json();
+        const result = await response.json();
 
-        // Step 2: Post deletion to blockchain
+        // Handle different response modes
+        if (result.mode === "gasless_submitted") {
+          // Transaction was submitted gaslessly
+          setTxHash(result.txHash);
+          toast.success("Post deleted!", { id: toastId });
+          return { hash: result.txHash, postId };
+        }
+
+        if (result.mode === "gasless_pending") {
+          // Need user signature for gasless submission
+          toast.loading("Please sign to delete...", { id: toastId });
+
+          const authorSignature = await signTypedDataAsync(result.signTypedDataParams);
+
+          // Submit gasless transaction
+          toast.loading("Deleting post...", { id: toastId });
+
+          const submitResponse = await fetch(`/api/posts/${postId}/delete/submit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signTypedDataParams: result.signTypedDataParams,
+              appSignature: result.appSignature,
+              authorSignature,
+              deleteData: result.data,
+              chainId: chainIdToUse || defaultChainId,
+            }),
+          });
+
+          if (!submitResponse.ok) {
+            const errorData = await submitResponse.json().catch(() => ({}));
+
+            if (errorData.code === "INSUFFICIENT_FUNDS") {
+              // Fall back to regular transaction
+              console.warn("Gasless funds insufficient, falling back to regular transaction");
+            } else {
+              throw new Error(errorData.error || "Failed to submit deletion");
+            }
+          } else {
+            const submitResult = await submitResponse.json();
+            setTxHash(submitResult.txHash);
+            toast.success("Post deleted!", { id: toastId });
+            return { hash: submitResult.txHash, postId };
+          }
+        }
+
+        // Regular mode: submit transaction directly
         toast.loading("Deleting post...", { id: toastId });
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
           address: COMMENT_MANAGER_ADDRESS,
           functionName: "deleteComment",
-          args: [data.commentId],
+          args: [result.data.commentId],
           chain: getDefaultChain(),
           account: address,
         });
@@ -85,7 +134,6 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
         setTxHash(hash);
         toast.success("Post deleted!", { id: toastId });
 
-        // Transaction will be confirmed by useWaitForTransactionReceipt
         return { hash, postId };
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to delete post", { id: toastId });
