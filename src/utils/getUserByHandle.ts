@@ -5,6 +5,6 @@ import { getServerAuth } from "./getServerAuth";
 export const getUserByUsername = async (username: string): Promise<User | null> => {
   const { address: currentUserAddress } = await getServerAuth();
 
-  const user = await fetchEnsUser(username, currentUserAddress);
+  const user = await fetchEnsUser(username, currentUserAddress ? { currentUserAddress } : undefined);
   return user;
 };

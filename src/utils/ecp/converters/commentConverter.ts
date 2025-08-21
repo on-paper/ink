@@ -88,7 +88,7 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
 
   const displayName = `${authorAddress.slice(0, 6)}...${authorAddress.slice(-4)}`;
 
-  const ensUser = await fetchEnsUser(authorAddress, currentUserAddress);
+  const ensUser = await fetchEnsUser(authorAddress, { currentUserAddress });
 
   const author = ensUser || {
     id: authorAddress,

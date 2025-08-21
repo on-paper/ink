@@ -16,7 +16,7 @@ async function fetchEnsData(address: string): Promise<EnsData | null> {
 
     const user: User = await response.json();
 
-    if (user.username !== user.address && !user.username.includes("...")) {
+    if (user.username) {
       return {
         name: user.username,
         avatar: user.profilePictureUrl,

@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: { address: st
     }
 
     const { address: currentUserAddress } = await getServerAuth();
-    const user = await fetchEnsUser(address, currentUserAddress);
+    const user = await fetchEnsUser(address, { currentUserAddress });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

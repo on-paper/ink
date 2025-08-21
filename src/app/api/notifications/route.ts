@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
             notificationType = "Action";
         }
 
-        const user = await fetchEnsUser(efpNotif.address, userAddress);
+        const user = await fetchEnsUser(efpNotif.address, { currentUserAddress: userAddress });
 
         if (!user) {
           return {

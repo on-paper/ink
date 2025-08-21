@@ -1,24 +1,19 @@
 "use client";
 
 import { User } from "@cartel-sh/ui";
-import { useResolvedUser } from "~/hooks/useEnsResolver";
 import Link from "../Link";
 import { Card } from "../ui/card";
 import { UserAvatar } from "./UserAvatar";
 
 export const UserView = ({ item }: { item: User }) => {
-  const resolvedUser = useResolvedUser(item);
-
-  const displayUsername =
-    resolvedUser.username === resolvedUser.address
-      ? `${resolvedUser.address.slice(0, 6)}...${resolvedUser.address.slice(-4)}`
-      : resolvedUser.username;
+  const displayUsername = item.username || `${item.address.slice(0, 6)}...${item.address.slice(-4)}`;
+  const href = `/u/${item.username || item.address}`;
 
   return (
-    <Link href={`/u/${resolvedUser.username}`}>
+    <Link href={href}>
       <Card className="flex flex-row gap-3 p-3 transition-colors cursor-pointer">
         <div className="w-12 h-12">
-          <UserAvatar user={resolvedUser} />
+          <UserAvatar user={item} />
         </div>
         <div className="flex flex-col justify-center">
           <b className="text-base truncate">{displayUsername}</b>

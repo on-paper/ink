@@ -6,7 +6,7 @@ export class MentionOption extends MenuOption {
   user: User;
 
   constructor(user: User) {
-    super(user.username);
+    super(user?.username || "");
     this.user = user;
   }
 }

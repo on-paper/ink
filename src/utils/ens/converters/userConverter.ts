@@ -20,9 +20,18 @@ interface EnsData {
   updated_at?: string;
 }
 
-interface EthFollowAccount {
-  address: string;
-  ens?: EnsData;
+export interface EthFollowAccount {
+  address: string; // same as data
+  ens?: {
+    name: string;
+    avatar?: string;
+    records?: Record<string, string>;
+  };
+  version?: number;
+  record_type?: string;
+  data?: string; // address
+  tags?: string[]; // []
+
 }
 
 export function ensAccountToUser(account: EthFollowAccount): User {
@@ -88,8 +97,7 @@ export function ensAccountToUser(account: EthFollowAccount): User {
   return user;
 }
 
-// Helper function to fetch user stats from EthFollow
-async function fetchUserStats(addressOrEns: string): Promise<{ following: number; followers: number } | null> {
+export async function fetchUserStats(addressOrEns: string): Promise<{ following: number; followers: number } | null> {
   try {
     const response = await fetch(
       `${API_URLS.EFP}/users/${addressOrEns}/stats`,
@@ -111,7 +119,14 @@ async function fetchUserStats(addressOrEns: string): Promise<{ following: number
   }
 }
 
-export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: string): Promise<User | null> {
+export async function fetchEnsUser(
+  addressOrEns: string, 
+  options?: {
+    currentUserAddress?: string;
+    skipStats?: boolean;
+    skipFollowRelationships?: boolean;
+  }
+): Promise<User | null> {
   try {
     const ensResponse = await fetch(
       `${API_URLS.EFP}/users/${addressOrEns}/account`,
@@ -125,17 +140,19 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
     const ensData: EthFollowAccount = await ensResponse.json();
     const user = ensAccountToUser(ensData);
 
-    const stats = await fetchUserStats(addressOrEns);
-    if (stats) {
-      user.stats = {
-        following: stats.following,
-        followers: stats.followers,
-      };
+    if (!options?.skipStats) {
+      const stats = await fetchUserStats(addressOrEns);
+      if (stats) {
+        user.stats = {
+          following: stats.following,
+          followers: stats.followers,
+        };
+      }
     }
 
-    if (currentUserAddress) {
+    if (options?.currentUserAddress && !options?.skipFollowRelationships) {
       try {
-        const followingResponse = await fetch(`${API_URLS.EFP}/users/${currentUserAddress}/following`, {
+        const followingResponse = await fetch(`${API_URLS.EFP}/users/${options.currentUserAddress}/following`, {
           next: { revalidate: 300 },
         });
 
@@ -149,7 +166,6 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
           }
         }
 
-        // Check if this user follows current user
         const followerResponse = await fetch(`${API_URLS.EFP}/users/${addressOrEns}/following`, {
           next: { revalidate: 300 },
         });
@@ -157,7 +173,7 @@ export async function fetchEnsUser(addressOrEns: string, currentUserAddress?: st
         if (followerResponse.ok) {
           const followerData = await followerResponse.json();
           const followsMe = followerData.following?.some(
-            (account: any) => account.address?.toLowerCase() === currentUserAddress.toLowerCase(),
+            (account: any) => account.address?.toLowerCase() === options.currentUserAddress?.toLowerCase(),
           );
           if (user.actions) {
             user.actions.following = followsMe || false;

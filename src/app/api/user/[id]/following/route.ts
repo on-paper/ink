@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_URLS } from "~/config/api";
-import { ensAccountToUser } from "~/utils/ens/converters/userConverter";
+import { fetchEnsUser } from "~/utils/ens/converters/userConverter";
 
 export const dynamic = "force-dynamic";
 
-interface EthFollowAccount {
+interface EfpFollowingResponse {
   address: string;
   ens?: {
     name: string;
@@ -19,16 +19,14 @@ interface EthFollowAccount {
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const id = params.id;
-  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "50", 10);
+  const limit = Number.parseInt(req.nextUrl.searchParams.get("limit") ?? "5", 10);
 
-  // Support both cursor (for Feed component) and offset parameters
   const cursor = req.nextUrl.searchParams.get("cursor");
   const offset = cursor
     ? Number.parseInt(cursor, 10)
     : Number.parseInt(req.nextUrl.searchParams.get("offset") ?? "0", 10);
 
   try {
-    // Fetch following from EthFollow API
     const response = await fetch(
       `${API_URLS.EFP}/users/${id}/following?limit=${limit}&offset=${offset}`,
       { next: { revalidate: 300 } }, // Cache for 5 minutes
@@ -39,25 +37,25 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const data = await response.json();
-    const following: EthFollowAccount[] = data.following || [];
+    const following: EfpFollowingResponse[] = data.following || [];
 
-    // Convert following to User format (ENS will be resolved client-side)
-    const users = following.map((account) => {
-      const followingAccount = {
-        address: account.address || account.data || "",
-        ens: account.ens,
-      };
-      return ensAccountToUser(followingAccount);
-    });
+    const users = await Promise.all(
+      following.map((account) => {
+        const address = account.address || account.data || "";
+        return fetchEnsUser(address, {
+          skipStats: true,
+          skipFollowRelationships: true
+        });
+      })
+    );
 
-    // Since EthFollow doesn't provide cursor-based pagination info,
-    // we'll use offset-based pagination
+    const validUsers = users.filter(Boolean);
     const hasMore = following.length === limit;
     const nextOffset = hasMore ? offset + limit : null;
 
     return NextResponse.json(
       {
-        data: users,
+        data: validUsers,
         nextCursor: nextOffset?.toString() || null,
         pagination: {
           limit,

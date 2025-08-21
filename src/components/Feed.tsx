@@ -61,22 +61,25 @@ export const Feed = <T extends { id: string } = any>({
   useEffect(() => {
     const handleScroll = (event: Event) => {
       const viewport = event.target as HTMLElement;
-      const threshold = 1000;
+      const threshold = 200; // Reduced threshold for faster loading
 
-      if (viewport.scrollTop + viewport.clientHeight + threshold >= viewport.scrollHeight && !isFetchingNextPage) {
+      if (viewport.scrollTop + viewport.clientHeight + threshold >= viewport.scrollHeight && !isFetchingNextPage && hasNextPage) {
         loadNextBatch();
       }
     };
 
     if (!manualNextPage) {
-      const viewport = document.querySelector("[data-overlayscrollbars-viewport]");
+      // Try multiple selectors for scroll containers
+      const viewport = document.querySelector("[data-overlayscrollbars-viewport]") || 
+                      document.querySelector("[data-radix-scroll-area-viewport]") ||
+                      document.querySelector(".overflow-y-auto");
 
       if (viewport) {
         viewport.addEventListener("scroll", handleScroll);
         return () => viewport.removeEventListener("scroll", handleScroll);
       }
     }
-  }, [loadNextBatch, manualNextPage, isFetchingNextPage]);
+  }, [loadNextBatch, manualNextPage, isFetchingNextPage, hasNextPage]);
 
   if (error) throw error;
   if (isLoading) return LoadingView ? <LoadingView /> : <FeedSuspense />;
