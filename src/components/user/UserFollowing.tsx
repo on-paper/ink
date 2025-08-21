@@ -23,7 +23,9 @@ interface FeedResponse<T> {
 const UserList = ({ endpoint }: { endpoint: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<User>>({
+  const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<
+    FeedResponse<User>
+  >({
     queryKey: ["user-list", endpoint],
     queryFn: async ({ pageParam }) => {
       const hasParams = endpoint.includes("?");
@@ -49,7 +51,7 @@ const UserList = ({ endpoint }: { endpoint: string }) => {
   useEffect(() => {
     const checkAndLoadMore = () => {
       if (containerRef.current) {
-        const scrollViewport = containerRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        const scrollViewport = containerRef.current.querySelector("[data-radix-scroll-area-viewport]");
         if (scrollViewport) {
           const hasScroll = scrollViewport.scrollHeight > scrollViewport.clientHeight;
           if (!hasScroll && hasNextPage && !isFetchingNextPage) {
@@ -69,13 +71,17 @@ const UserList = ({ endpoint }: { endpoint: string }) => {
       const target = event.target as HTMLElement;
       const threshold = 100;
 
-      if (target.scrollTop + target.clientHeight + threshold >= target.scrollHeight && !isFetchingNextPage && hasNextPage) {
+      if (
+        target.scrollTop + target.clientHeight + threshold >= target.scrollHeight &&
+        !isFetchingNextPage &&
+        hasNextPage
+      ) {
         loadNextBatch();
       }
     };
 
     if (containerRef.current) {
-      const scrollViewport = containerRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      const scrollViewport = containerRef.current.querySelector("[data-radix-scroll-area-viewport]");
       if (scrollViewport) {
         scrollViewport.addEventListener("scroll", handleScroll);
         return () => scrollViewport.removeEventListener("scroll", handleScroll);

@@ -1,9 +1,10 @@
 "use client";
 
+import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
+import { StickyNote } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { GallerySuspense } from "./GallerySuspense";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 
 export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: string }) => {
   const [data, setData] = useState<any[] | null>(null);
@@ -106,9 +107,12 @@ export const GalleryFeed = ({ ItemView, endpoint }: { ItemView: any; endpoint: s
         </div>
       )}
       {!loading && data && data.length === 0 && (
-        <div className="col-span-3 flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
-          <h3 className="text-lg font-semibold mb-2">No media found</h3>
-          <p className="text-sm text-muted-foreground">This user hasn't shared any images or videos yet.</p>
+        <div className="col-span-3 flex flex-col items-center justify-center min-h-[50vh] text-center p-4 relative">
+          <StickyNote className="absolute w-32 h-32 text-muted-foreground opacity-10" />
+          <div className="relative z-10">
+            <h3 className="text-lg font-bold mb-2">Crisp. Clean. Waiting for ink.</h3>
+            <p className="text-sm text-muted-foreground">This user hasn't shared any images or videos yet.</p>
+          </div>
         </div>
       )}
     </div>

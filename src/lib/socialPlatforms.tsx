@@ -10,13 +10,12 @@ import {
   FaReddit,
   FaSnapchat,
   FaSpotify,
-  FaTelegram,
   FaTiktok,
   FaTwitch,
   FaXTwitter,
   FaYoutube,
 } from "react-icons/fa6";
-import { RiTelegram2Line, RiTelegramLine } from "react-icons/ri";
+import { RiTelegram2Line } from "react-icons/ri";
 import { SiBluesky, SiFarcaster } from "react-icons/si";
 
 function cleanUsername(

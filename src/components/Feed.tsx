@@ -102,7 +102,7 @@ export const Feed = <T extends { id: string } = any>({
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4 relative">
           <StickyNote className="absolute w-32 h-32 text-muted-foreground opacity-10" />
           <div className="relative z-10">
-            <h3 className="text-lg font-semibold mb-2">Crisp. Clean. Waiting for ink.</h3>
+            <h3 className="text-lg font-bold mb-2">Crisp. Clean. Waiting for ink.</h3>
             <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
           </div>
         </div>

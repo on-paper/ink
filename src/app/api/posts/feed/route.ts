@@ -58,6 +58,9 @@ export async function GET(req: NextRequest) {
     );
   } catch (error) {
     console.error("Failed to fetch feed: ", error);
-    return NextResponse.json({ error: `Failed to fetch feed: ${error instanceof Error ? error.message : "Unknown error"}` }, { status: 500 });
+    return NextResponse.json(
+      { error: `Failed to fetch feed: ${error instanceof Error ? error.message : "Unknown error"}` },
+      { status: 500 },
+    );
   }
 }

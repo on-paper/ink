@@ -1,10 +1,10 @@
+import { isImageMetadata } from "@cartel-sh/ui";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PostComments } from "~/components/post/PostComments";
 import { PostView } from "~/components/post/PostView";
 import { generatePostOGUrl } from "~/utils/generateOGUrl";
 import { getBaseUrl } from "~/utils/getBaseUrl";
-import { isImageMetadata } from "@cartel-sh/ui";
 
 export async function generateMetadata({ params }: { params: { post: string } }): Promise<Metadata> {
   try {

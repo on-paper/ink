@@ -44,9 +44,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const address = account.address || account.data || "";
         return fetchEnsUser(address, {
           skipStats: true,
-          skipFollowRelationships: true
+          skipFollowRelationships: true,
         });
-      })
+      }),
     );
 
     const validUsers = users.filter(Boolean);

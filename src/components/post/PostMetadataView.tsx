@@ -1,14 +1,14 @@
 import type {
-  PostMention,
   AudioMetadata,
   EmbedMetadata,
   EventMetadata,
   ImageMetadata,
   LinkMetadata,
   MarkdownMetadata,
-  VideoMetadata,
   MediaData,
+  PostMention,
   TokenData,
+  VideoMetadata,
 } from "@cartel-sh/ui";
 import { AudioPlayer } from "../AudioPlayer";
 import { LinkPreview } from "../embeds/LinkPreview";
@@ -32,7 +32,6 @@ export const getPostContent = (
     />
   );
 };
-
 
 export const getPostLinkPreviews = (metadata: MarkdownMetadata): string[] => {
   return extractUrlsFromText(metadata?.content);
@@ -72,11 +71,7 @@ export const ImageView = ({ metadata, mentions }: { metadata: ImageMetadata; men
     <div>
       {metadata.content && <ContentView content={metadata.content} mentions={mentions} />}
       <div className="relative mt-2">
-        <ImageViewer
-          src={url}
-          alt={alt}
-          className="object-contain border rounded-xl max-h-[300px] w-auto"
-        />
+        <ImageViewer src={url} alt={alt} className="object-contain border rounded-xl max-h-[300px] w-auto" />
       </div>
     </div>
   );
@@ -129,7 +124,6 @@ export const LinkView = ({ metadata, mentions }: { metadata: LinkMetadata; menti
   );
 };
 
-
 export const EmbedView = ({ metadata, mentions }: { metadata: EmbedMetadata; mentions?: PostMention[] }) => {
   return (
     <div>
@@ -163,5 +157,3 @@ export const EventView = ({ metadata, mentions }: { metadata: EventMetadata; men
     </div>
   );
 };
-
-

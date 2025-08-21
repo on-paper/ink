@@ -31,7 +31,6 @@ export interface EthFollowAccount {
   record_type?: string;
   data?: string; // address
   tags?: string[]; // []
-
 }
 
 export function ensAccountToUser(account: EthFollowAccount): User {
@@ -79,8 +78,8 @@ export function ensAccountToUser(account: EthFollowAccount): User {
     metadata:
       attributes.length > 0
         ? {
-          attributes,
-        }
+            attributes,
+          }
         : undefined,
     actions: {
       followed: false,
@@ -120,12 +119,12 @@ export async function fetchUserStats(addressOrEns: string): Promise<{ following:
 }
 
 export async function fetchEnsUser(
-  addressOrEns: string, 
+  addressOrEns: string,
   options?: {
     currentUserAddress?: string;
     skipStats?: boolean;
     skipFollowRelationships?: boolean;
-  }
+  },
 ): Promise<User | null> {
   try {
     const ensResponse = await fetch(

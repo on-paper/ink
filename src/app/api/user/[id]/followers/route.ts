@@ -36,12 +36,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const data = await response.json();
     const followers: EfpFollowersResponse[] = data.followers || [];
     const users = await Promise.all(
-      followers.map((follower) => 
+      followers.map((follower) =>
         fetchEnsUser(follower.address, {
           skipStats: true,
-          skipFollowRelationships: true
-        })
-      )
+          skipFollowRelationships: true,
+        }),
+      ),
     );
 
     const validUsers = users.filter(Boolean);

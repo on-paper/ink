@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 import { LinkPreview } from "../embeds/LinkPreview";
 import { Card } from "../ui/card";
 import { UserAvatar } from "../user/UserAvatar";
-import { getPostLinkPreviews, getPostContent } from "./PostMetadataView";
+import { getPostContent, getPostLinkPreviews } from "./PostMetadataView";
 
 export const PostContent = forwardRef<
   HTMLDivElement,
