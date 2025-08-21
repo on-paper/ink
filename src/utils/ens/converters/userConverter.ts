@@ -63,15 +63,15 @@ export function ensAccountToUser(account: EthFollowAccount): User {
   const user: User = {
     id: address,
     address: address,
-    username: ensName || address,
+    username: ensName,
     profilePictureUrl: avatar || `https://api.dicebear.com/9.x/lorelei-neutral/svg?seed=${address}`,
     description: description || undefined,
     namespace: "ens",
     metadata:
       attributes.length > 0
         ? {
-            attributes,
-          }
+          attributes,
+        }
         : undefined,
     actions: {
       followed: false,
