@@ -16,6 +16,7 @@ import {
   FaXTwitter,
   FaYoutube,
 } from "react-icons/fa6";
+import { RiTelegram2Line, RiTelegramLine } from "react-icons/ri";
 import { SiBluesky, SiFarcaster } from "react-icons/si";
 
 function cleanUsername(
@@ -78,7 +79,7 @@ export const socialPlatforms: SocialPlatform[] = [
     label: "Telegram",
     placeholder: "username",
     prefix: "@",
-    icon: FaTelegram,
+    icon: RiTelegram2Line,
     domains: ["t.me", "telegram.me"],
     getUrl: (value: string) => {
       const username = cleanUsername(value, true, ["t.me", "telegram.me"]);

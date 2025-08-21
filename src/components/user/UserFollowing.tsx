@@ -107,7 +107,7 @@ const UserList = ({ endpoint }: { endpoint: string }) => {
   return (
     <div ref={containerRef}>
       <ScrollArea className="h-[500px] w-full">
-        <div className="flex flex-col gap-2 pr-4">
+        <div className="flex flex-col gap-2 p-2 pr-4">
           {items.filter(Boolean).map((item) => (
             <UserView key={item.id} item={item} />
           ))}
