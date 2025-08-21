@@ -30,6 +30,12 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router]);
 
+  useEffect(() => {
+    if (isConnected && !isAuthenticated && !isLoading) {
+      signIn();
+    }
+  }, [isConnected]);
+
   const getConnectorButton = (connectorId: string) => {
     const connector = connectors.find((c) => c.id === connectorId);
     if (!connector) return null;
