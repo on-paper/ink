@@ -31,7 +31,13 @@ const user = async ({ params }: { params: { user: string } }) => {
     return <div>User not found</div>;
   }
 
-  return <Feed ItemView={PostView} endpoint={`/api/posts?address=${user.address}&type=comment`} />;
+  return (
+    <Feed
+      ItemView={PostView}
+      endpoint={`/api/posts?address=${user.address}&type=comment`}
+      emptyStateDescription="This user hasn't made any comments yet."
+    />
+  );
 };
 
 export default user;

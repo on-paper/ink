@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { StickyNote } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { FeedSuspense } from "./FeedSuspense";
 import { LoadingSpinner } from "./LoadingSpinner";
@@ -14,6 +15,7 @@ interface FeedProps<T = any> {
   refetchInterval?: number;
   LoadingView?: React.ComponentType;
   headers?: Record<string, string>;
+  emptyStateDescription?: string;
 }
 
 interface FeedResponse<T> {
@@ -29,6 +31,7 @@ export const Feed = <T extends { id: string } = any>({
   refetchInterval,
   LoadingView,
   headers,
+  emptyStateDescription = "This user hasn't created any posts yet.",
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -63,16 +66,21 @@ export const Feed = <T extends { id: string } = any>({
       const viewport = event.target as HTMLElement;
       const threshold = 200; // Reduced threshold for faster loading
 
-      if (viewport.scrollTop + viewport.clientHeight + threshold >= viewport.scrollHeight && !isFetchingNextPage && hasNextPage) {
+      if (
+        viewport.scrollTop + viewport.clientHeight + threshold >= viewport.scrollHeight &&
+        !isFetchingNextPage &&
+        hasNextPage
+      ) {
         loadNextBatch();
       }
     };
 
     if (!manualNextPage) {
       // Try multiple selectors for scroll containers
-      const viewport = document.querySelector("[data-overlayscrollbars-viewport]") || 
-                      document.querySelector("[data-radix-scroll-area-viewport]") ||
-                      document.querySelector(".overflow-y-auto");
+      const viewport =
+        document.querySelector("[data-overlayscrollbars-viewport]") ||
+        document.querySelector("[data-radix-scroll-area-viewport]") ||
+        document.querySelector(".overflow-y-auto");
 
       if (viewport) {
         viewport.addEventListener("scroll", handleScroll);
@@ -90,6 +98,15 @@ export const Feed = <T extends { id: string } = any>({
   return (
     <div className="flex flex-col gap-2">
       {list}
+      {items.length === 0 && !hasNextPage && (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4 relative">
+          <StickyNote className="absolute w-32 h-32 text-muted-foreground opacity-10" />
+          <div className="relative z-10">
+            <h3 className="text-lg font-semibold mb-2">Crisp. Clean. Waiting for ink.</h3>
+            <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
+          </div>
+        </div>
+      )}
       {manualNextPage && hasNextPage && (
         <Button
           variant="ghost"
