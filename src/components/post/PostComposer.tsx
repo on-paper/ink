@@ -1,6 +1,7 @@
 "use client";
 
 import type { Post, User } from "@cartel-sh/ui";
+import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 import {
   closestCenter,
   DndContext,
@@ -26,7 +27,6 @@ import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { storageClient } from "~/utils/lens/storage";
-import { isImageMetadata, isVideoMetadata } from "@cartel-sh/ui";
 
 export const MAX_CONTENT_LENGTH = 1000;
 
@@ -39,10 +39,7 @@ import {
   upsertDraftAtomFamily,
 } from "~/atoms/drafts";
 import { useCommunity } from "~/hooks/useCommunity";
-import {
-  normalizeImageMimeType,
-  normalizeVideoMimeType,
-} from "~/utils/mimeTypes";
+import { normalizeImageMimeType, normalizeVideoMimeType } from "~/utils/mimeTypes";
 import { LexicalEditorWrapper } from "../composer/LexicalEditor";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
@@ -394,7 +391,6 @@ function ComposerContent() {
         });
       }
 
-
       setMediaFiles(existingMedia);
     }
   }, [editingPost]);
@@ -452,12 +448,14 @@ function ComposerContent() {
             return { uri: item.url, type: item.mimeType, originalId: item.id };
           } catch (error) {
             console.error(`Failed to upload file ${index + 1}:`, error);
-            throw new Error(`Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error instanceof Error ? error.message : "Unknown error"}`);
+            throw new Error(
+              `Failed to upload ${item.type === "file" ? item.file.name : "file"}: ${error instanceof Error ? error.message : "Unknown error"}`,
+            );
           }
         });
 
         const uploadedMedia = await Promise.all(uploadPromises);
-        
+
         return {
           uploadedMedia,
         };

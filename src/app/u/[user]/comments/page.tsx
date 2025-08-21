@@ -35,7 +35,7 @@ const user = async ({ params }: { params: { user: string } }) => {
     <Feed
       ItemView={PostView}
       endpoint={`/api/posts?address=${user.address}&type=comment`}
-      emptyStateDescription="This user hasn't made any comments yet."
+      emptyStateDescription="No comments."
     />
   );
 };

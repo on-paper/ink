@@ -44,8 +44,7 @@ export const PostGallery = ({ post }: { post: Post }) => {
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
 
   let src: string | undefined;
-  let isVideo = false;
-
+  const isVideo = false;
 
   useEffect(() => {
     if (isVideo && src && !generatedThumbnail) {

@@ -117,3 +117,63 @@ export const GaslessDeleteCommentRequestBodySchema = z
 export const GaslessDeleteCommentResponseSchema = z.object({
   txHash: HexSchema,
 });
+
+export const PrepareGaslessCommentRequestSchema = z
+  .object({
+    content: z.string().trim().min(1),
+    author: HexSchema,
+    targetUri: z.string().optional(),
+    parentId: HexSchema.optional(),
+    channelId: z.union([z.string(), z.number()]).optional(),
+    metadata: MetadataArraySchema.optional().default([]),
+    submitIfApproved: z.boolean().optional().default(true),
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
+  })
+  .transform((val) => {
+    return {
+      ...val,
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
+    };
+  });
+
+export const PreparedGaslessCommentNotApprovedResponseSchema = z.object({
+  signTypedDataParams: z.any(),
+  appSignature: HexSchema,
+  chainId: z.number(),
+  commentData: z.any(),
+  submitted: z.boolean(),
+});
+
+export const PreparedGaslessCommentApprovedResponseSchema = z.object({
+  txHash: HexSchema,
+  appSignature: HexSchema,
+  chainId: z.number(),
+  commentData: z.any(),
+  submitted: z.boolean(),
+});
+
+export const GaslessCommentRequestBodySchema = z
+  .object({
+    signTypedDataParams: z.any(),
+    appSignature: HexSchema,
+    authorSignature: HexSchema,
+    commentData: z.any(),
+    chainId: z
+      .number()
+      .optional()
+      .default(() => getDefaultChainId()),
+  })
+  .transform((val) => {
+    return {
+      ...val,
+      chainConfig: SUPPORTED_CHAINS[val.chainId as keyof typeof SUPPORTED_CHAINS],
+    };
+  });
+
+export const GaslessCommentResponseSchema = z.object({
+  txHash: HexSchema,
+  success: z.boolean(),
+});

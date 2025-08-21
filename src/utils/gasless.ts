@@ -22,7 +22,6 @@ export function getGaslessSubmitter() {
   const submitterPrivateKey = process.env.GASLESS_SUBMITTER_PRIVATE_KEY;
 
   if (!submitterPrivateKey) {
-    // Fall back to app signer if no separate submitter is configured
     return getGaslessSigner();
   }
 

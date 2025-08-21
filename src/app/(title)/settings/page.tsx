@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LatestCommit } from "~/components/LatestCommit";
+import { AppApprovalSettings } from "~/components/settings/AppApprovalSettings";
 import { ThemeSettings } from "~/components/ThemeSettings";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -46,6 +47,8 @@ const settings = async () => {
           </div>
         </CardContent>
       </Card>
+
+      <AppApprovalSettings />
 
       <Card>
         <CardHeader>
