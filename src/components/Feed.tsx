@@ -4,7 +4,6 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { StickyNote } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { FeedSuspense } from "./FeedSuspense";
-import { LoadingSpinner } from "./LoadingSpinner";
 import { Button } from "./ui/button";
 
 interface FeedProps<T = any> {
@@ -31,7 +30,7 @@ export const Feed = <T extends { id: string } = any>({
   refetchInterval,
   LoadingView,
   headers,
-  emptyStateDescription = "This user hasn't created any posts yet.",
+  emptyStateDescription = "Nothing here but us chickens...",
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -118,9 +117,7 @@ export const Feed = <T extends { id: string } = any>({
         </Button>
       )}
       {!manualNextPage && isFetchingNextPage && (
-        <div className="w-full h-12 flex justify-center items-center">
-          <LoadingSpinner />
-        </div>
+        LoadingView ? <LoadingView /> : <FeedSuspense />
       )}
     </div>
   );
