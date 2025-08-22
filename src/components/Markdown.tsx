@@ -92,7 +92,7 @@ const Markdown: React.FC<{
 
   // Process text to detect and render CAIP-19 URIs
   const processTextForCAIP19 = (text: string): (string | React.ReactElement)[] => {
-    const caipRegex = /\b(eip155:\d+\/erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}(?:\/\d{1,78})?)\b/gi;
+    const caipRegex = /\b(eip155:\d+\/(?:erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}|slip44:\d+)(?:\/\d{1,78})?)\b/gi;
     const parts: (string | React.ReactElement)[] = [];
     let lastIndex = 0;
     let match;
@@ -110,14 +110,16 @@ const Markdown: React.FC<{
         const { assetNamespace, assetReference, chainId, tokenId } = components;
         const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
 
-        let scanUrl: string;
-        if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
+        let scanUrl: string | null;
+        if (assetNamespace === "slip44") {
+          scanUrl = null;
+        } else if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
           scanUrl = `${getScanUrl(chainIdNum, "token", assetReference)}?a=${tokenId}`;
         } else {
           scanUrl = getScanUrl(chainIdNum, "token", assetReference);
         }
 
-        if (assetNamespace === "erc20") {
+        if (assetNamespace === "erc20" || assetNamespace === "slip44") {
           const metadata = tokenData?.[caipUri];
           parts.push(
             <TokenLink
@@ -141,18 +143,21 @@ const Markdown: React.FC<{
             />,
           );
         } else {
-          // For other token standards, link to block explorer
-          parts.push(
-            <a
-              key={`caip19-${match.index}`}
-              href={scanUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`lexical-link ${colorClasses}`}
-            >
-              {caipUri}
-            </a>,
-          );
+          if (scanUrl) {
+            parts.push(
+              <a
+                key={`caip19-${match.index}`}
+                href={scanUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`lexical-link ${colorClasses}`}
+              >
+                {caipUri}
+              </a>,
+            );
+          } else {
+            parts.push(caipUri);
+          }
         }
       } else {
         // If parsing failed, just add the text as is

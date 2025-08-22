@@ -19,11 +19,15 @@ export function formatCAIP19URI(components: CAIP19Components): CAIP19URI {
     return `${namespace}:${chainId}` as CAIP19URI;
   }
 
-  if (!/^erc[a-z0-9]{2,5}$/.test(assetNamespace)) {
+  if (!/^(erc[a-z0-9]{2,5}|slip44)$/.test(assetNamespace)) {
     throw new Error(`Invalid asset namespace: ${assetNamespace}`);
   }
 
-  if (!/^0x[a-fA-F0-9]{40}$/.test(assetReference)) {
+  if (assetNamespace === "slip44") {
+    if (!/^\d+$/.test(assetReference)) {
+      throw new Error(`Invalid SLIP-44 coin type: ${assetReference}`);
+    }
+  } else if (!/^0x[a-fA-F0-9]{40}$/.test(assetReference)) {
     throw new Error(`Invalid asset reference: ${assetReference}`);
   }
 
@@ -40,7 +44,7 @@ export function formatCAIP19URI(components: CAIP19Components): CAIP19URI {
 }
 
 export function parseCAIP19URI(uri: string): CAIP19Components | null {
-  const caip19Pattern = /^eip155:(\d+)(?:\/(erc[a-z0-9]{2,5}):(0x[a-fA-F0-9]{40})(?:\/(\d{1,78}))?)?$/;
+  const caip19Pattern = /^eip155:(\d+)(?:\/([a-z0-9]+):(0x[a-fA-F0-9]{40}|\d+)(?:\/(\d{1,78}))?)?$/;
   const match = uri.match(caip19Pattern);
 
   if (!match) {
@@ -56,7 +60,7 @@ export function parseCAIP19URI(uri: string): CAIP19Components | null {
 
   if (assetNamespace && assetReference) {
     components.assetNamespace = assetNamespace;
-    components.assetReference = assetReference.toLowerCase();
+    components.assetReference = assetNamespace === "slip44" ? assetReference : assetReference.toLowerCase();
   }
 
   if (tokenId) {

@@ -1,6 +1,6 @@
 interface TokenLinkProps {
   tokenAddress: string;
-  scanUrl: string;
+  scanUrl?: string | null;
   colorClasses?: string;
   tokenData?: {
     symbol: string;
@@ -12,6 +12,17 @@ export function TokenLink({ tokenAddress, scanUrl, colorClasses = "", tokenData 
   const displayText = tokenData?.symbol
     ? `$${tokenData.symbol}`
     : `${tokenAddress.slice(0, 6)}...${tokenAddress.slice(-4)}`;
+
+  if (!scanUrl) {
+    return (
+      <span
+        className={`lexical-link ${colorClasses}`}
+        title={tokenData?.name || tokenAddress}
+      >
+        {displayText}
+      </span>
+    );
+  }
 
   return (
     <a

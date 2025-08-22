@@ -111,6 +111,18 @@ describe("parseContent", () => {
       expect(result).toBe(input); // CAIP-19 URIs should not be modified by handle parsing
     });
 
+    it("should handle content with SLIP-44 CAIP URIs", () => {
+      const input = "native token on eip155:8453/slip44:60";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe(input); // SLIP-44 CAIP URIs should not be modified by handle parsing
+    });
+
+    it("should handle multiple CAIP URI formats", () => {
+      const input = "tokens: eip155:1/erc20:0x1234567890123456789012345678901234567890 and eip155:8453/slip44:60";
+      const result = parseContent(input).replaceHandles().toString();
+      expect(result).toBe(input); // Mixed CAIP URIs should not be modified
+    });
+
     it("should not replace @handles inside URLs", () => {
       const input = "check https://zora.co/@yanayatsuk for more info";
       const result = parseContent(input).replaceHandles().toString();

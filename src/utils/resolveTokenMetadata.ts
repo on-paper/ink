@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient, http } from "viem";
 import * as chains from "viem/chains";
 import { parseCAIP19URI } from "./caip19";
+import { getSlip44Token } from "./slip44";
 
 const erc20Abi = [
   {
@@ -75,7 +76,7 @@ const fetchTokenMetadata = unstable_cache(
 );
 
 export function extractCAIP19URIs(content: string): string[] {
-  const caipRegex = /\b(eip155:\d+\/erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}(?:\/\d{1,78})?)\b/gi;
+  const caipRegex = /\b(eip155:\d+\/(?:erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}|slip44:\d+)(?:\/\d{1,78})?)\b/gi;
   const uris: string[] = [];
   let match;
 
@@ -94,14 +95,26 @@ export async function resolveTokenMetadataFromContent(content: string): Promise<
     uris.map(async (uri) => {
       const components = parseCAIP19URI(uri);
 
-      if (components?.assetNamespace === "erc20" && components.assetReference && components.chainId) {
+      if (components?.assetNamespace && components.chainId) {
         const chainId =
           typeof components.chainId === "string" ? Number.parseInt(components.chainId, 10) : components.chainId;
 
-        const tokenMetadata = await fetchTokenMetadata(chainId, components.assetReference);
+        if (components.assetNamespace === "erc20" && components.assetReference) {
+          const tokenMetadata = await fetchTokenMetadata(chainId, components.assetReference);
 
-        if (tokenMetadata) {
-          metadata[uri] = tokenMetadata;
+          if (tokenMetadata) {
+            metadata[uri] = tokenMetadata;
+          }
+        } else if (components.assetNamespace === "slip44" && components.assetReference) {
+          const slip44Token = getSlip44Token(components.assetReference);
+          if (slip44Token) {
+            metadata[uri] = {
+              symbol: slip44Token.symbol,
+              name: slip44Token.name,
+              address: "native",
+              chainId,
+            };
+          }
         }
       }
     }),
