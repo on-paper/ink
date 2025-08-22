@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react";
-import { ServerSignedIn } from "~/components/auth/ServerSignedIn";
 import PostComposer from "~/components/post/PostComposer";
 import { Card } from "~/components/ui/card";
 import { getServerAuth } from "~/utils/getServerAuth";
@@ -13,13 +12,11 @@ export default async function layout({ children }: PropsWithChildren) {
 
   return (
     <div className="z-[30] p-4 max-w-3xl mx-auto py-0">
-      <ServerSignedIn>
-        <div className="pt-4">
-          <Card className="p-4">
-            <PostComposer user={user ?? undefined} />
-          </Card>
-        </div>
-      </ServerSignedIn>
+      <div className="pt-4">
+        <Card className="p-4">
+          <PostComposer user={user ?? undefined} />
+        </Card>
+      </div>
       {children}
     </div>
   );

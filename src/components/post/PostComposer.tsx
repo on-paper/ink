@@ -14,7 +14,8 @@ import {
 import { rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronRight, SendHorizontalIcon, VideoIcon, X } from "lucide-react";
+import { ChevronRight, LogInIcon, SendHorizontalIcon, VideoIcon, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -365,7 +366,6 @@ function ComposerContent() {
     upsertDraftAtom,
   ]);
 
-  // When posting succeeds, clear draft if any
   useEffect(() => {
     if (!isPosting) return;
   }, [isPosting]);
@@ -613,6 +613,43 @@ function ComposerContent() {
 
   const isSmallAvatar = replyingTo && isReplyingToComment;
 
+  if (!currentUser) {
+    return (
+      <div className="w-full">
+        <div className="flex flex-row gap-4 w-full items-center">
+          <div className={`shrink-0 z-20 grow-0 rounded-full ${isSmallAvatar ? "w-6 h-6" : "w-10 h-10"}`}>
+            <div
+              className={`rounded-full bg-muted flex items-center justify-center ${isSmallAvatar ? "w-6 h-6" : "w-10 h-10"}`}
+            >
+              <LogInIcon className={`text-muted-foreground opacity-60 ${isSmallAvatar ? "w-3 h-3" : "w-4 h-4"}`} />
+            </div>
+          </div>
+          <div className="grow flex-1">
+            <div className="text-muted-foreground/80">
+              {replyingTo ? (
+                <>
+                  {"Please "}
+                  <Link href="/login" className="underline hover:text-foreground">
+                    login
+                  </Link>
+                  {" to comment"}
+                </>
+              ) : (
+                <>
+                  {"Please "}
+                  <Link href="/login" className="underline hover:text-foreground">
+                    login
+                  </Link>
+                  {" to post"}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full"
@@ -631,13 +668,13 @@ function ComposerContent() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2 w-full">
           <div className="flex flex-row gap-4 w-full">
             <div className={`shrink-0 z-20 grow-0 rounded-full ${isSmallAvatar ? "w-6 h-6" : "w-10 h-10"}`}>
-              {currentUser && <UserAvatar user={currentUser} />}
+              <UserAvatar user={currentUser} />
             </div>
             <div className="grow flex-1">
               <div className="flex h-5 gap-1.5 items-center">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs sm:text-sm">
-                    {currentUser?.username || truncateEthAddress(currentUser?.address)}
+                    {currentUser.username || truncateEthAddress(currentUser.address)}
                   </span>
                   {editingPost && <span className="text-muted-foreground text-xs sm:text-sm">editing</span>}
                 </div>

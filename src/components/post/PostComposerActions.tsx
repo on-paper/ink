@@ -8,9 +8,10 @@ interface PostComposerActionsProps {
   onImageClick: () => void;
   onEmojiClick: (emoji: any) => void;
   onDraftsClick?: () => void;
+  disabled?: boolean;
 }
 
-export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick }: PostComposerActionsProps) {
+export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick, disabled }: PostComposerActionsProps) {
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const handleEmojiClick = (emoji: any) => {
@@ -27,6 +28,7 @@ export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick 
         size="icon"
         className="rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal"
         onClick={onImageClick}
+        disabled={disabled}
       >
         <ImageIcon className="h-5 w-5 text-muted-foreground" />
       </Button>
@@ -36,6 +38,7 @@ export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick 
             variant="ghost"
             size="icon"
             className="rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal"
+            disabled={disabled}
           >
             <SmileIcon className="h-5 w-5 text-muted-foreground" />
           </Button>
@@ -65,6 +68,7 @@ export function PostComposerActions({ onImageClick, onEmojiClick, onDraftsClick 
           onClick={onDraftsClick}
           aria-label="Open drafts"
           title="Drafts"
+          disabled={disabled}
         >
           <BookDashed className="h-5 w-5 text-muted-foreground" />
         </Button>
