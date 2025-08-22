@@ -1,5 +1,6 @@
 "use client";
 
+import { Palette } from "lucide-react";
 // import { CheckIcon, ImageIcon, RefreshCwIcon } from "lucide-react";
 // import { useRef } from "react";
 import { ThemeToggle } from "~/components/ThemeToggle";
@@ -80,16 +81,19 @@ export function ThemeSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Theme</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Palette className="h-5 w-5" strokeWidth={2.5} />
+          Theme
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start gap-4">
+            <ThemeToggle />
             <div>
               <h3 className="text-sm font-medium">Dark Mode</h3>
               <p className="text-xs text-muted-foreground">Toggle between light and dark mode</p>
             </div>
-            <ThemeToggle />
           </div>
         </div>
 

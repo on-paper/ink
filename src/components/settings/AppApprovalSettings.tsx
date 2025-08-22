@@ -126,10 +126,10 @@ export function AppApprovalSettings() {
     onMutate: async (durationDays: number) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["approval-status", address] });
-      
+
       // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(["approval-status", address]);
-      
+
       // Optimistically update to approved
       const expiryTimestamp = Math.floor((Date.now() + durationDays * 24 * 60 * 60 * 1000) / 1000);
       queryClient.setQueryData(["approval-status", address], (old: any) => ({
@@ -137,7 +137,7 @@ export function AppApprovalSettings() {
         isApproved: true,
         expiry: expiryTimestamp,
       }));
-      
+
       // Return a context object with the snapshotted value
       return { previousStatus };
     },
@@ -199,17 +199,17 @@ export function AppApprovalSettings() {
     onMutate: async () => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["approval-status", address] });
-      
+
       // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(["approval-status", address]);
-      
+
       // Optimistically update to not approved
       queryClient.setQueryData(["approval-status", address], (old: any) => ({
         ...old,
         isApproved: false,
         expiry: null,
       }));
-      
+
       // Return a context object with the snapshotted value
       return { previousStatus };
     },
@@ -250,7 +250,7 @@ export function AppApprovalSettings() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <Shield className="h-5 w-5" strokeWidth={2.5} />
             Gasless Posting
           </CardTitle>
           <CardDescription>
@@ -323,7 +323,7 @@ export function AppApprovalSettings() {
                     )}
                   </div>
                 </div>
-                
+
                 {(!isApproved || isExpired) && (
                   <div className="space-y-2">
                     <div className="text-sm text-muted-foreground">Approve for...</div>
@@ -359,7 +359,18 @@ export function AppApprovalSettings() {
                     </div>
                   </div>
                 )}
-                
+
+                {!address && (
+                  <div className="rounded-lg border border-muted-foreground/20 bg-muted-foreground/5 dark:border-muted-foreground/20 dark:bg-muted-foreground/5 p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div className="text-sm text-muted-foreground">
+                        Please connect your wallet to manage approvals.
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {isApproved && !isExpired && (
                   <Button
                     onClick={() => revokeApprovalMutation.mutate()}
@@ -377,16 +388,6 @@ export function AppApprovalSettings() {
                 )}
               </div>
 
-              {!address && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950 p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
-                    <div className="text-sm text-amber-700 dark:text-amber-400">
-                      Please connect your wallet to manage approvals.
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </CardContent>

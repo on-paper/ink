@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Info, Wallet } from "lucide-react";
 import { LatestCommit } from "~/components/LatestCommit";
 import { AppApprovalSettings } from "~/components/settings/AppApprovalSettings";
 import { ThemeSettings } from "~/components/ThemeSettings";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { LogoutButton } from "~/components/web3/WalletButtons";
+import { DisconnectButton } from "~/components/web3/DisconnectButton";
 import { WalletInfo } from "~/components/web3/WalletInfo";
 import { getServerAuth } from "~/utils/getServerAuth";
 
@@ -26,24 +27,22 @@ export const metadata: Metadata = {
 };
 
 const settings = async () => {
-  const { isAuthenticated, address } = await getServerAuth();
-  if (!isAuthenticated) {
-    redirect("/");
-  }
-
   return (
     <div className="space-y-4">
       <ThemeSettings />
 
       <Card>
         <CardHeader>
-          <CardTitle>Wallet</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="h-5 w-5" strokeWidth={2.5} />
+            Wallet
+          </CardTitle>
           <p className="text-sm text-muted-foreground">Your connected wallet information</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <WalletInfo />
           <div className="pt-2">
-            <LogoutButton />
+            <DisconnectButton />
           </div>
         </CardContent>
       </Card>
@@ -52,7 +51,10 @@ const settings = async () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>About</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="h-5 w-5" strokeWidth={2.5} />
+            About
+          </CardTitle>
           <p className="text-sm text-muted-foreground">Application information</p>
         </CardHeader>
         <CardContent>

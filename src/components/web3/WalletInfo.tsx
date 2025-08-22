@@ -85,7 +85,7 @@ export const WalletInfo = () => {
       </div>
 
       {/* Connection Details */}
-      <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-3 gap-4 text-sm">
         <div>
           <div className="text-muted-foreground mb-1">Wallet</div>
           <div className="font-medium">{connector?.name || "Unknown"}</div>
@@ -95,12 +95,6 @@ export const WalletInfo = () => {
           <div className="text-muted-foreground mb-1">Network</div>
           <div className="font-medium flex items-center gap-1">
             {chain?.name || "Unknown"}
-            {chain && (
-              <span
-                className={`inline-block w-2 h-2 rounded-full ${chain.id === 1 ? "bg-green-500" : "bg-yellow-500"}`}
-                title={chain.id === 1 ? "Mainnet" : "Testnet"}
-              />
-            )}
           </div>
         </div>
 
@@ -112,14 +106,6 @@ export const WalletInfo = () => {
             </div>
           </div>
         )}
-
-        <div>
-          <div className="text-muted-foreground mb-1">Status</div>
-          <div className="font-medium flex items-center gap-1">
-            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-            Connected
-          </div>
-        </div>
       </div>
     </div>
   );
