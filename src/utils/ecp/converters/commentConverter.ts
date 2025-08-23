@@ -38,6 +38,8 @@ export interface ECPComment {
     repost?: boolean;
     [key: string]: boolean | undefined;
   };
+  txHash?: string;
+  chainId?: number;
 }
 
 export interface CommentToPostOptions {
@@ -161,6 +163,8 @@ export async function ecpCommentToPost(comment: ECPComment, options: CommentToPo
       ...(mediaData ? { mediaData } : {}),
       ...(Object.keys(tokenData).length > 0 ? { tokenData } : {}),
       ...(channelMeta ? { channel: channelMeta } : {}),
+      ...(comment.txHash ? { txHash: comment.txHash } : {}),
+      ...(comment.chainId ? { chainId: comment.chainId } : {}),
     },
     createdAt,
     updatedAt: createdAt,

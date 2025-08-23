@@ -139,6 +139,11 @@ export const PostView = ({
       return;
     }
 
+    if (e.metaKey || e.ctrlKey) {
+      window.open(`/p/${item.id}`, '_blank');
+      return;
+    }
+
     router.push(`/p/${item.id}`);
   };
 

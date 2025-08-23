@@ -43,6 +43,8 @@ export type MenuContext = {
   unblockUser: () => void;
   postLink: string;
   savePost: () => void;
+  txHash?: string;
+  chainId?: number;
 };
 
 export const menuItems: MenuItem[] = [
@@ -62,11 +64,14 @@ export const menuItems: MenuItem[] = [
     condition: "always",
   },
   {
-    id: "open-new-tab",
-    label: "Open in new tab",
+    id: "view-transaction",
+    label: "View transaction",
     icon: ExternalLinkIcon,
     iconSize: 18,
     condition: "always",
+    getDynamicProps: (context) => ({
+      disabled: !context.txHash || !context.chainId,
+    }),
   },
   {
     id: "mute-user",

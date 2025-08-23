@@ -3,12 +3,13 @@
 import type { Post } from "@cartel-sh/ui";
 import type { PropsWithChildren } from "react";
 import Link from "~/components/Link";
+import { getScanUrl } from "~/utils/getScanUrl";
 import { ContextMenu as Context, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "../ui/context-menu";
 import { menuItems } from "./PostMenuConfig";
 import { usePostStateContext } from "./PostStateContext";
 
 export const PostContextMenu = (props: PropsWithChildren & { post: Post; onReply?: () => void }) => {
-  const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
+  const { shouldShowItem, getItemProps, postLink, isSaved, txHash, chainId } = usePostStateContext();
 
   return (
     <Context>
@@ -24,10 +25,12 @@ export const PostContextMenu = (props: PropsWithChildren & { post: Post; onReply
           const itemProps = getItemProps(item);
           const Icon = itemProps.icon;
 
-          if (item.id === "open-new-tab") {
+          if (item.id === "view-transaction") {
+            if (!txHash || !chainId) return null;
+            const txUrl = getScanUrl(chainId, "tx", txHash);
             return (
               <ContextMenuItem key={item.id} asChild>
-                <Link href={postLink} referrerPolicy="no-referrer" target="_blank" className="flex items-center gap-3">
+                <Link href={txUrl} referrerPolicy="no-referrer" target="_blank" className="flex items-center gap-3">
                   <Icon size={12} className="h-4 w-4" />
                   {itemProps.label}
                 </Link>

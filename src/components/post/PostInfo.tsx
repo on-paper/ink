@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Link from "~/components/Link";
 import { useUser } from "~/components/user/UserContext";
 import { formatChannelIdForUrl } from "~/utils";
+import { getScanUrl } from "~/utils/getScanUrl";
 import { TimeElapsedSince } from "../TimeLabel";
 import { Button } from "../ui/button";
 import {
@@ -27,7 +28,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { requireAuth } = useUser();
-  const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
+  const { shouldShowItem, getItemProps, postLink, isSaved, txHash, chainId } = usePostStateContext();
   const author = post.author;
   const handle = author.username;
   const displayName = handle || truncateEthAddress(author.address, "....");
@@ -151,11 +152,13 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
               const itemProps = getItemProps(item);
               const Icon = itemProps.icon;
 
-              if (item.id === "open-new-tab") {
+              if (item.id === "view-transaction") {
+                if (!txHash || !chainId) return null;
+                const txUrl = getScanUrl(chainId, "tx", txHash);
                 return (
                   <DropdownMenuItem key={item.id} asChild>
                     <Link
-                      href={postLink}
+                      href={txUrl}
                       referrerPolicy="no-referrer"
                       target="_blank"
                       className="flex items-center gap-3"

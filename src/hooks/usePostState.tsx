@@ -23,7 +23,7 @@ export const usePostState = (
   const router = useRouter();
   const author = post.author;
   const { user } = useUser();
-  const { addDeletedPost, removeDeletedPost } = useDeletedPosts();
+  const { addDeletedPost } = useDeletedPosts();
   const {
     muteUser: muteUserAction,
     unmuteUser: unmuteUserAction,
@@ -47,7 +47,6 @@ export const usePostState = (
 
   const baseUrl = getBaseUrl();
   const postLink = `${baseUrl}/p/${post.id}`;
-  const shareLink = postLink;
 
   const setEditingQuery = () => {
     if (!post.reactions?.canEdit) {
@@ -139,6 +138,8 @@ export const usePostState = (
     unblockUser,
     postLink,
     savePost,
+    txHash: (post.metadata as any)?.txHash as string | undefined,
+    chainId: (post.metadata as any)?.chainId as number | undefined,
   };
 
   const shouldShowItem = (item: MenuItem) => {
@@ -178,9 +179,6 @@ export const usePostState = (
         break;
       case "expand":
         itemProps = { ...baseProps, onClick: handleExpand };
-        break;
-      case "open-new-tab":
-        itemProps = { ...baseProps, href: postLink };
         break;
       case "edit-post":
         itemProps = { ...baseProps, onClick: setEditingQuery };
@@ -245,5 +243,7 @@ export const usePostState = (
     isEditing,
     setIsEditing,
     DeleteDialog,
+    txHash: context.txHash,
+    chainId: context.chainId,
   };
 };
