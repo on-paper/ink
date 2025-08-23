@@ -33,23 +33,22 @@ export const PostContent = forwardRef<
       >
         <div className="whitespace-wrap break-words text-sm/tight sm:text-base/tight">{textContent}</div>
         {collapsed && (
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
         )}
       </motion.div>
-      {collapsed && (
-        <div className="flex gap-2 items-center h-4 justify-center">
+      {/* {collapsed && (
+        <div className="flex gap-2 items-center h-4 justify-start">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setCollapsed(false);
             }}
-            className="text-sm text-extrabold text-muted-foreground flex gap-2 items-center justify-center text-center w-fit focus:outline-none"
+            className="text-sm text-extrabold text-muted-foreground flex gap-2 px-2 w-fit focus:outline-none"
           >
             Click to Expand
-            {/* <ChevronDownIcon size={16} /> */}
           </button>
         </div>
-      )}
+      )} */}
 
       {linkPreviews.length > 0 && (
         <div className="space-y-3">
