@@ -11,12 +11,10 @@ export default async function layout({ children }: PropsWithChildren) {
   const { user } = await getServerAuth();
 
   return (
-    <div className="z-[30] p-4 max-w-3xl mx-auto py-0">
-      <div className="pt-4">
-        <Card className="p-4">
-          <PostComposer user={user ?? undefined} />
-        </Card>
-      </div>
+    <div className="z-[30] sm:p-4 max-w-3xl mx-auto py-0">
+      <Card className="p-4">
+        <PostComposer user={user ?? undefined} />
+      </Card>
       {children}
     </div>
   );
