@@ -13,7 +13,6 @@ import { HistoryIndicator } from "~/components/HistoryIndicator";
 import { Menu } from "~/components/menu/Menu";
 import { NavigationShortcuts } from "~/components/NavigationShortcuts";
 import { RouteTracker } from "~/components/RouteTracker";
-import { Toaster } from "~/components/ui/sonner";
 import { UpdateNotification } from "~/components/updates/UpdateNotification";
 
 export const metadata: Metadata = {
@@ -55,7 +54,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </DeletedPostsProvider>
             </FilteredUsersProvider>
           </UserProvider>
-          <Toaster position="top-center" offset={16} />
         </Providers>
       </body>
     </html>

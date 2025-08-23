@@ -20,7 +20,7 @@ export function CommunityView({ community, isVertical = false }: CommunityViewPr
         <CardContent className="p-4 ">
           <div className={isVertical ? "flex flex-col items-center text-center" : "flex items-center gap-3"}>
             <div className="flex-shrink-0">
-              <CommunityIcon community={community} size={isVertical ? "lg" : "sm"} />
+              <CommunityIcon community={community} size={"md"} />
             </div>
 
             <div className={isVertical ? "mt-3" : "flex-1 min-w-0"}>

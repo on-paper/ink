@@ -2,9 +2,12 @@
 
 import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CircleCheckBig } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useAccount, useSignTypedData, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { decodeEventLog } from "viem";
+import { useAccount, usePublicClient, useSignTypedData, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseSimplePostCommentOptions {
@@ -14,6 +17,8 @@ interface UseSimplePostCommentOptions {
 
 export function useEthereumPost(options?: UseSimplePostCommentOptions) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const publicClient = usePublicClient();
   const { address, chainId } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { signTypedDataAsync } = useSignTypedData();
@@ -23,6 +28,48 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
   });
+
+  // Helper function to get comment ID from transaction and update toast
+  const getCommentIdAndUpdateToast = async (hash: `0x${string}`, toastId: string | number) => {
+    if (!publicClient) return;
+    
+    try {
+      // Wait for transaction receipt
+      const receipt = await publicClient.waitForTransactionReceipt({ 
+        hash,
+        confirmations: 1,
+      });
+
+      // Parse the CommentAdded event from logs
+      for (const log of receipt.logs) {
+        try {
+          const decodedLog = decodeEventLog({
+            abi: CommentManagerABI,
+            data: log.data,
+            topics: log.topics,
+          });
+
+          if (decodedLog.eventName === "CommentAdded") {
+            const commentId = decodedLog.args.commentId as string;
+            
+            // Update the existing toast with the action button
+            toast.success("Posted successfully!", {
+              id: toastId,
+              action: {
+                label: "Show me",
+                onClick: () => router.push(`/p/${commentId}`),
+              },
+            });
+            return commentId;
+          }
+        } catch {
+          // Not a CommentAdded event, continue
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get comment ID from transaction:", error);
+    }
+  };
 
   const postComment = useMutation({
     mutationFn: async ({
@@ -61,7 +108,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
         }
 
         // Step 1: Prepare the comment using unified endpoint
-        toast.loading("Preparing comment...", { id: toastId });
+        toast.loading("Posting...", { id: toastId });
 
         const requestBody: any = {
           content,
@@ -117,7 +164,9 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
             });
 
             setTxHash(hash);
-            toast.success("Comment posted!", { id: toastId });
+            toast.success("Posted successfully!", { id: toastId });
+            // Get comment ID in background and update toast with Show me button
+            getCommentIdAndUpdateToast(hash, toastId);
             return hash;
           }
 
@@ -129,9 +178,10 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
         // Handle response based on mode
         if (preparedData.mode === "gasless_submitted") {
-          // Transaction already submitted via gasless
           setTxHash(preparedData.txHash);
-          toast.success("Comment posted via gasless transaction!", { id: toastId });
+          toast.success("Posted successfully!", { id: toastId });
+          // Get comment ID in background and update toast with Show me button
+          getCommentIdAndUpdateToast(preparedData.txHash, toastId);
           return preparedData.txHash;
         } else if (preparedData.mode === "gasless_pending") {
           // Need user signature for gasless
@@ -160,7 +210,9 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
           const submitData = await submitResponse.json();
           setTxHash(submitData.txHash);
-          toast.success("Comment posted!", { id: toastId });
+          toast.success("Posted successfully!", { id: toastId });
+          // Get comment ID in background and update toast with Show me button
+          getCommentIdAndUpdateToast(submitData.txHash, toastId);
           return submitData.txHash;
         } else {
           // Regular mode - user submits transaction
@@ -175,7 +227,9 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           });
 
           setTxHash(hash);
-          toast.success("Comment posted!", { id: toastId });
+          toast.success("Posted successfully!", { id: toastId });
+          // Get comment ID in background and update toast with Show me button
+          getCommentIdAndUpdateToast(hash, toastId);
           return hash;
         }
       } catch (error) {
