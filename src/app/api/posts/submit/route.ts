@@ -1,8 +1,8 @@
 import { postCommentWithSig } from "@ecp.eth/sdk/comments";
 import { type NextRequest, NextResponse } from "next/server";
 import { createWalletClient, http, publicActions } from "viem";
-import { getGaslessSubmitter } from "~/utils/gasless";
 import { validateAndNormalizeChain } from "~/utils/ecp/postingUtils";
+import { getGaslessSubmitter } from "~/utils/gasless";
 
 export const dynamic = "force-dynamic";
 
@@ -68,13 +68,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[SUBMIT] Error:", error);
-    
+
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    const isInsufficientFunds = 
-      errorMessage.includes("insufficient funds") || 
+    const isInsufficientFunds =
+      errorMessage.includes("insufficient funds") ||
       errorMessage.includes("exceeds the balance") ||
       errorMessage.includes("not enough funds");
-    
+
     if (isInsufficientFunds) {
       return NextResponse.json(
         {
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         { status: 503 },
       );
     }
-    
+
     return NextResponse.json(
       {
         error: "Failed to submit comment",

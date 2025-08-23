@@ -15,10 +15,7 @@ export function TokenLink({ tokenAddress, scanUrl, colorClasses = "", tokenData 
 
   if (!scanUrl) {
     return (
-      <span
-        className={`lexical-link ${colorClasses}`}
-        title={tokenData?.name || tokenAddress}
-      >
+      <span className={`lexical-link ${colorClasses}`} title={tokenData?.name || tokenAddress}>
         {displayText}
       </span>
     );

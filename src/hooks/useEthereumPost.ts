@@ -2,12 +2,18 @@
 
 import { COMMENT_MANAGER_ADDRESS, CommentManagerABI, SUPPORTED_CHAINS } from "@ecp.eth/sdk";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CircleCheckBig } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { decodeEventLog } from "viem";
-import { useAccount, usePublicClient, useSignTypedData, useSwitchChain, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  usePublicClient,
+  useSignTypedData,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from "wagmi";
 import { getDefaultChain, getDefaultChainId } from "~/config/chains";
 
 interface UseSimplePostCommentOptions {
@@ -32,10 +38,10 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
   // Helper function to get comment ID from transaction and update toast
   const getCommentIdAndUpdateToast = async (hash: `0x${string}`, toastId: string | number) => {
     if (!publicClient) return;
-    
+
     try {
       // Wait for transaction receipt
-      const receipt = await publicClient.waitForTransactionReceipt({ 
+      const receipt = await publicClient.waitForTransactionReceipt({
         hash,
         confirmations: 1,
       });
@@ -51,7 +57,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
           if (decodedLog.eventName === "CommentAdded") {
             const commentId = decodedLog.args.commentId as string;
-            
+
             // Update the existing toast with the action button
             toast.success("Posted successfully!", {
               id: toastId,
@@ -133,11 +139,11 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
         if (!prepareResponse.ok) {
           const errorData = await prepareResponse.json().catch(() => ({}));
-          
+
           // Handle insufficient funds error
           if (errorData.code === "INSUFFICIENT_FUNDS") {
             toast.error("Paper is out of funds. Using regular posting.", { id: toastId });
-            
+
             // Retry with regular mode
             const regularResponse = await fetch("/api/posts/prepare", {
               method: "POST",
@@ -151,7 +157,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
             }
 
             const regularData = await regularResponse.json();
-            
+
             // Execute regular transaction
             toast.loading("Posting...", { id: toastId });
             const hash = await writeContractAsync({
@@ -183,7 +189,8 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           // Get comment ID in background and update toast with Show me button
           getCommentIdAndUpdateToast(preparedData.txHash, toastId);
           return preparedData.txHash;
-        } else if (preparedData.mode === "gasless_pending") {
+        }
+        if (preparedData.mode === "gasless_pending") {
           // Need user signature for gasless
           toast.loading("Please sign the message...", { id: toastId });
           const authorSignature = await signTypedDataAsync(preparedData.signTypedDataParams);
@@ -200,11 +207,11 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
 
           if (!submitResponse.ok) {
             const errorData = await submitResponse.json().catch(() => ({}));
-            
+
             if (errorData.code === "INSUFFICIENT_FUNDS") {
               toast.error("Paper is out of funds. Please try regular posting.", { id: toastId });
             }
-            
+
             throw new Error(errorData.error || "Failed to submit comment");
           }
 
@@ -214,24 +221,23 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
           // Get comment ID in background and update toast with Show me button
           getCommentIdAndUpdateToast(submitData.txHash, toastId);
           return submitData.txHash;
-        } else {
-          // Regular mode - user submits transaction
-          toast.loading("Posting...", { id: toastId });
-          const hash = await writeContractAsync({
-            abi: CommentManagerABI,
-            address: COMMENT_MANAGER_ADDRESS,
-            functionName: "postComment",
-            args: [preparedData.commentData, preparedData.appSignature],
-            chain: getDefaultChain(),
-            account: address,
-          });
-
-          setTxHash(hash);
-          toast.success("Posted successfully!", { id: toastId });
-          // Get comment ID in background and update toast with Show me button
-          getCommentIdAndUpdateToast(hash, toastId);
-          return hash;
         }
+        // Regular mode - user submits transaction
+        toast.loading("Posting...", { id: toastId });
+        const hash = await writeContractAsync({
+          abi: CommentManagerABI,
+          address: COMMENT_MANAGER_ADDRESS,
+          functionName: "postComment",
+          args: [preparedData.commentData, preparedData.appSignature],
+          chain: getDefaultChain(),
+          account: address,
+        });
+
+        setTxHash(hash);
+        toast.success("Posted successfully!", { id: toastId });
+        // Get comment ID in background and update toast with Show me button
+        getCommentIdAndUpdateToast(hash, toastId);
+        return hash;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to post comment", { id: toastId });
         throw error;

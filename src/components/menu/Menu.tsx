@@ -1,22 +1,19 @@
 "use client";
 
 import type { User } from "@cartel-sh/ui";
-import {
-  Bookmark,
-  Heart,
-  LogInIcon,
-  LogOutIcon,
-  MoonIcon,
-  PlusIcon,
-  SettingsIcon,
-  SunIcon,
-  User2Icon,
-  Users,
-} from "lucide-react";
+import { Bookmark, Heart, LogInIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { AnimatedPaperLogo, type AnimatedPaperLogoHandle } from "~/components/icons/AnimatedPaperLogo";
+import { LogoutIcon, type LogoutIconHandle } from "~/components/icons/LogoutIcon";
+import { MoonIcon, type MoonIconHandle } from "~/components/icons/MoonIcon";
 import PaperLogo from "~/components/icons/PaperLogo";
+import { PlusIcon } from "~/components/icons/PlusIcon";
+import { SettingsIcon, type SettingsIconHandle } from "~/components/icons/SettingsIcon";
+import { SunIcon, type SunIconHandle } from "~/components/icons/SunIcon";
+import { User2Icon, type User2IconHandle } from "~/components/icons/User2Icon";
+import { UsersIcon, type UsersIconHandle } from "~/components/icons/UsersIcon";
 import { Dock } from "~/components/ui/dock";
 import { useAuth } from "~/hooks/useSiweAuth";
 import { cn } from "~/utils";
@@ -38,6 +35,13 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const { theme, setTheme } = useTheme();
   const { signOut } = useAuth();
   const composerRef = useRef<PostComposerHandle | null>(null);
+  const usersIconRef = useRef<UsersIconHandle>(null);
+  const user2IconRef = useRef<User2IconHandle>(null);
+  const settingsIconRef = useRef<SettingsIconHandle>(null);
+  const sunIconRef = useRef<SunIconHandle>(null);
+  const moonIconRef = useRef<MoonIconHandle>(null);
+  const logoutIconRef = useRef<LogoutIconHandle>(null);
+  const paperLogoRef = useRef<AnimatedPaperLogoHandle>(null);
 
   useEffect(() => {
     router.prefetch("/home");
@@ -60,7 +64,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   if (isHome) {
     homeInnerIcon = <PaperLogo className="w-5 h-5 md:w-6 md:h-6" stroke="currentColor" strokeWidth={2.25} />;
   } else if (isCommunities) {
-    homeInnerIcon = <Users className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />;
+    homeInnerIcon = <UsersIcon ref={usersIconRef} size={20} />;
   } else {
     homeInnerIcon = <PaperLogo className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.25} />;
   }
@@ -91,9 +95,11 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
           isHome && "bg-accent/50 text-accent-foreground",
         )}
+        onMouseEnter={() => paperLogoRef.current?.startAnimation()}
+        onMouseLeave={() => paperLogoRef.current?.stopAnimation()}
         onClick={() => router.push("/home")}
       >
-        <PaperLogo className="w-4 h-4" strokeWidth={2} size={14} />
+        <AnimatedPaperLogo ref={paperLogoRef} className="w-4 h-4" strokeWidth={2.5} size={14} />
         <span className="ml-3">Home</span>
       </button>
       <button
@@ -103,9 +109,11 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
           isCommunities && "bg-accent/50 text-accent-foreground",
         )}
+        onMouseEnter={() => usersIconRef.current?.startAnimation()}
+        onMouseLeave={() => usersIconRef.current?.stopAnimation()}
         onClick={() => router.push("/communities")}
       >
-        <Users size={16} />
+        <UsersIcon ref={usersIconRef} size={16} />
         <span className="ml-3">Communities</span>
       </button>
     </div>
@@ -136,7 +144,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   } as const;
 
   const postDockItem = {
-    icon: PlusIcon,
+    customIcon: <PlusIcon size={20} />,
     label: "Post",
     onClick: () => setIsPostDialogOpen(true),
     variant: "secondary" as const,
@@ -164,9 +172,11 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
             "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
             isProfile && "bg-accent/50 text-accent-foreground",
           )}
+          onMouseEnter={() => user2IconRef.current?.startAnimation()}
+          onMouseLeave={() => user2IconRef.current?.stopAnimation()}
           onClick={goProfile}
         >
-          <User2Icon size={16} strokeWidth={2} />
+          <User2Icon ref={user2IconRef} size={16} />
           <span className="ml-3">{displayName}</span>
         </button>
         <button
@@ -176,27 +186,45 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
             "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
             isSettings && "bg-accent/50 text-accent-foreground",
           )}
+          onMouseEnter={() => settingsIconRef.current?.startAnimation()}
+          onMouseLeave={() => settingsIconRef.current?.stopAnimation()}
           onClick={() => router.push("/settings")}
         >
-          <SettingsIcon size={16} />
+          <SettingsIcon ref={settingsIconRef} size={16} />
           <span className="ml-3">Settings</span>
         </button>
         <button
           type="button"
           className="relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
+          onMouseEnter={() => {
+            if (theme === "light") {
+              sunIconRef.current?.startAnimation();
+            } else {
+              moonIconRef.current?.startAnimation();
+            }
+          }}
+          onMouseLeave={() => {
+            if (theme === "light") {
+              sunIconRef.current?.stopAnimation();
+            } else {
+              moonIconRef.current?.stopAnimation();
+            }
+          }}
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
-          {theme === "light" ? <SunIcon size={16} strokeWidth={2.25} /> : <MoonIcon size={16} strokeWidth={2.25} />}
+          {theme === "light" ? <SunIcon ref={sunIconRef} size={16} /> : <MoonIcon ref={moonIconRef} size={16} />}
           <span className="ml-3">Theme</span>
         </button>
         <button
           type="button"
           className="relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
+          onMouseEnter={() => logoutIconRef.current?.startAnimation()}
+          onMouseLeave={() => logoutIconRef.current?.stopAnimation()}
           onClick={async () => {
             await signOut();
           }}
         >
-          <LogOutIcon size={16} strokeWidth={2} />
+          <LogoutIcon ref={logoutIconRef} size={16} />
           <span className="ml-3">Log out</span>
         </button>
       </div>

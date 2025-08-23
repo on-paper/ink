@@ -140,7 +140,7 @@ export const PostView = ({
     }
 
     if (e.metaKey || e.ctrlKey) {
-      window.open(`/p/${item.id}`, '_blank');
+      window.open(`/p/${item.id}`, "_blank");
       return;
     }
 

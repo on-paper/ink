@@ -1,9 +1,7 @@
 import { isApproved, postCommentWithSig } from "@ecp.eth/sdk/comments";
 import { type NextRequest, NextResponse } from "next/server";
 import { createWalletClient, http, publicActions } from "viem";
-import { getDefaultChain } from "~/config/chains";
 import { getPublicClient } from "~/lib/viem";
-import { getGaslessSubmitter } from "~/utils/gasless";
 import {
   createCommentDataWithValidation,
   createTypedCommentData,
@@ -11,6 +9,7 @@ import {
   serializeBigInt,
   validateAndNormalizeChain,
 } from "~/utils/ecp/postingUtils";
+import { getGaslessSubmitter } from "~/utils/gasless";
 
 export const dynamic = "force-dynamic";
 
@@ -42,16 +41,7 @@ interface PrepareResponse {
 export async function POST(req: NextRequest) {
   try {
     const body: PrepareRequest = await req.json();
-    const {
-      content,
-      author,
-      parentId,
-      channelId,
-      targetUri,
-      chainId,
-      mode = "auto",
-      submitIfApproved = true,
-    } = body;
+    const { content, author, parentId, channelId, targetUri, chainId, mode = "auto", submitIfApproved = true } = body;
 
     // Validate chain
     const { chainIdToUse, chain } = validateAndNormalizeChain(chainId);
@@ -145,14 +135,14 @@ export async function POST(req: NextRequest) {
           }
         } catch (error) {
           console.error("[PREPARE] Failed to auto-submit gasless:", error);
-          
+
           // Check for insufficient funds
           const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          const isInsufficientFunds = 
-            errorMessage.includes("insufficient funds") || 
+          const isInsufficientFunds =
+            errorMessage.includes("insufficient funds") ||
             errorMessage.includes("exceeds the balance") ||
             errorMessage.includes("not enough funds");
-          
+
           if (isInsufficientFunds) {
             return NextResponse.json(
               {

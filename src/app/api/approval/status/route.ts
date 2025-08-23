@@ -30,7 +30,7 @@ async function retryOperation<T>(
       console.warn(`[APPROVAL-STATUS] Attempt ${attempt + 1} failed:`, error);
 
       if (attempt < maxRetries - 1) {
-        await sleep(delay * Math.pow(2, attempt));
+        await sleep(delay * 2 ** attempt);
       }
     }
   }

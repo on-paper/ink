@@ -19,4 +19,3 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: "Failed to get app address" }, { status: 500 });
   }
 }
-

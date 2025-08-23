@@ -291,104 +291,93 @@ export function AppApprovalSettings() {
               </div>
             </div>
           ) : (
-            <>
-              <div className="rounded-lg border p-4 space-y-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    {isApproved && !isExpired ? (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        <span className="font-medium">Active</span>
-                        {expiryDate && (
-                          <span className="text-sm text-muted-foreground">
-                            · Expires {format(expiryDate, "PPP 'at' p")}
-                          </span>
-                        )}
-                        {!expiryDate && (
-                          <span className="text-sm text-muted-foreground">
-                            · Active until manually revoked
-                          </span>
-                        )}
-                      </>
-                    ) : isExpired ? (
-                      <>
-                        <XCircle className="h-4 w-4 text-orange-500" />
-                        <span className="font-medium text-orange-600 dark:text-orange-400">Expired</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-muted-foreground">Not Approved</span>
-                      </>
-                    )}
-                  </div>
+            <div className="rounded-lg border p-4 space-y-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  {isApproved && !isExpired ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span className="font-medium">Active</span>
+                      {expiryDate && (
+                        <span className="text-sm text-muted-foreground">
+                          · Expires {format(expiryDate, "PPP 'at' p")}
+                        </span>
+                      )}
+                      {!expiryDate && (
+                        <span className="text-sm text-muted-foreground">· Active until manually revoked</span>
+                      )}
+                    </>
+                  ) : isExpired ? (
+                    <>
+                      <XCircle className="h-4 w-4 text-orange-500" />
+                      <span className="font-medium text-orange-600 dark:text-orange-400">Expired</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium text-muted-foreground">Not Approved</span>
+                    </>
+                  )}
                 </div>
+              </div>
 
-                {(!isApproved || isExpired) && (
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">Approve for...</div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {PRESET_DURATIONS.map((duration) => (
-                        <Button
-                          key={duration.value}
-                          variant={selectedDuration === duration.value ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => {
-                            setSelectedDuration(duration.value);
-                            addApprovalMutation.mutate(duration.value);
-                          }}
-                          disabled={isProcessing || !address}
-                          className="w-full"
-                        >
-                          {isProcessing && selectedDuration === duration.value ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            duration.label
-                          )}
-                        </Button>
-                      ))}
+              {(!isApproved || isExpired) && (
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Approve for...</div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {PRESET_DURATIONS.map((duration) => (
                       <Button
-                        variant="outline"
+                        key={duration.value}
+                        variant={selectedDuration === duration.value ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setIsCustomDialogOpen(true)}
+                        onClick={() => {
+                          setSelectedDuration(duration.value);
+                          addApprovalMutation.mutate(duration.value);
+                        }}
                         disabled={isProcessing || !address}
                         className="w-full"
                       >
-                        Custom
+                        {isProcessing && selectedDuration === duration.value ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          duration.label
+                        )}
                       </Button>
-                    </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsCustomDialogOpen(true)}
+                      disabled={isProcessing || !address}
+                      className="w-full"
+                    >
+                      Custom
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
 
-                {!address && (
-                  <div className="rounded-lg border border-muted-foreground/20 bg-muted-foreground/5 dark:border-muted-foreground/20 dark:bg-muted-foreground/5 p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      <div className="text-sm text-muted-foreground">
-                        Please connect your wallet to manage approvals.
-                      </div>
-                    </div>
+              {!address && (
+                <div className="rounded-lg border border-muted-foreground/20 bg-muted-foreground/5 dark:border-muted-foreground/20 dark:bg-muted-foreground/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="text-sm text-muted-foreground">Please connect your wallet to manage approvals.</div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {isApproved && !isExpired && (
-                  <Button
-                    onClick={() => revokeApprovalMutation.mutate()}
-                    disabled={isProcessing || !address}
-                    variant="default"
-                    size="sm"
-                    className="w-full"
-                  >
-                    {isProcessing ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      "Revoke"
-                    )}
-                  </Button>
-                )}
-              </div>
-
-            </>
+              {isApproved && !isExpired && (
+                <Button
+                  onClick={() => revokeApprovalMutation.mutate()}
+                  disabled={isProcessing || !address}
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                >
+                  {isProcessing ? <Loader2 className="h-3 w-3 animate-spin" /> : "Revoke"}
+                </Button>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>

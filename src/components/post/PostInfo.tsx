@@ -157,12 +157,7 @@ export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }
                 const txUrl = getScanUrl(chainId, "tx", txHash);
                 return (
                   <DropdownMenuItem key={item.id} asChild>
-                    <Link
-                      href={txUrl}
-                      referrerPolicy="no-referrer"
-                      target="_blank"
-                      className="flex items-center gap-3"
-                    >
+                    <Link href={txUrl} referrerPolicy="no-referrer" target="_blank" className="flex items-center gap-3">
                       <Icon size={16} />
                       {itemProps.label}
                     </Link>

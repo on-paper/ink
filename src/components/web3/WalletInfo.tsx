@@ -93,9 +93,7 @@ export const WalletInfo = () => {
 
         <div>
           <div className="text-muted-foreground mb-1">Network</div>
-          <div className="font-medium flex items-center gap-1">
-            {chain?.name || "Unknown"}
-          </div>
+          <div className="font-medium flex items-center gap-1">{chain?.name || "Unknown"}</div>
         </div>
 
         {balance && (

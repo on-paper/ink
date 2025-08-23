@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { extractCAIP19URIs, resolveTokenMetadataFromContent } from "../resolveTokenMetadata";
 
 describe("extractCAIP19URIs", () => {
@@ -61,12 +61,10 @@ describe("extractCAIP19URIs", () => {
   });
 
   it("should extract URIs at start and end of text", () => {
-    const content = "eip155:1/erc20:0x1234567890123456789012345678901234567890 at start and at end eip155:8453/slip44:60";
+    const content =
+      "eip155:1/erc20:0x1234567890123456789012345678901234567890 at start and at end eip155:8453/slip44:60";
     const result = extractCAIP19URIs(content);
-    expect(result).toEqual([
-      "eip155:1/erc20:0x1234567890123456789012345678901234567890",
-      "eip155:8453/slip44:60",
-    ]);
+    expect(result).toEqual(["eip155:1/erc20:0x1234567890123456789012345678901234567890", "eip155:8453/slip44:60"]);
   });
 
   it("should handle empty content", () => {
@@ -93,11 +91,7 @@ describe("extractCAIP19URIs", () => {
       Litecoin: eip155:1/slip44:2
     `;
     const result = extractCAIP19URIs(content);
-    expect(result).toEqual([
-      "eip155:1/slip44:60",
-      "eip155:1/slip44:0", 
-      "eip155:1/slip44:2",
-    ]);
+    expect(result).toEqual(["eip155:1/slip44:60", "eip155:1/slip44:0", "eip155:1/slip44:2"]);
   });
 });
 
@@ -105,7 +99,7 @@ describe("resolveTokenMetadataFromContent", () => {
   it("should resolve SLIP-44 token metadata", async () => {
     const content = "Native token on eip155:8453/slip44:60";
     const result = await resolveTokenMetadataFromContent(content);
-    
+
     expect(result["eip155:8453/slip44:60"]).toEqual({
       symbol: "ETH",
       name: "Ethereum",
@@ -120,14 +114,14 @@ describe("resolveTokenMetadataFromContent", () => {
       Bitcoin: eip155:1/slip44:0
     `;
     const result = await resolveTokenMetadataFromContent(content);
-    
+
     expect(result["eip155:1/slip44:60"]).toEqual({
       symbol: "ETH",
       name: "Ethereum",
       address: "native",
       chainId: 1,
     });
-    
+
     expect(result["eip155:1/slip44:0"]).toEqual({
       symbol: "BTC",
       name: "Bitcoin",
@@ -139,7 +133,7 @@ describe("resolveTokenMetadataFromContent", () => {
   it("should handle unknown SLIP-44 coin types", async () => {
     const content = "Unknown: eip155:1/slip44:999999999";
     const result = await resolveTokenMetadataFromContent(content);
-    
+
     expect(result["eip155:1/slip44:999999999"]).toBeUndefined();
   });
 

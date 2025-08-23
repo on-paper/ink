@@ -38,12 +38,16 @@ export function CommunityIcon({
     return name.slice(0, 2).toUpperCase();
   };
 
-
   return (
     <div
       className={`${containerClass} ${roundingClass} relative overflow-hidden flex items-center justify-center ${className || ""}`}
     >
-      <img src={backgroundUrl} alt="" aria-hidden className={`absolute inset-0 w-full h-full object-cover opacity-60`} />
+      <img
+        src={backgroundUrl}
+        alt=""
+        aria-hidden
+        className={"absolute inset-0 w-full h-full object-cover opacity-60"}
+      />
       {community.metadata?.icon ? (
         <img src={iconUrl} alt={altText} className={`${imageClass} rounded-lg object-cover relative z-10`} />
       ) : community.metadata?.name ? (

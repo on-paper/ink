@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Info, Wallet } from "lucide-react";
+import type { Metadata } from "next";
 import { LatestCommit } from "~/components/LatestCommit";
 import { AppApprovalSettings } from "~/components/settings/AppApprovalSettings";
 import { ThemeSettings } from "~/components/ThemeSettings";
@@ -8,7 +7,6 @@ import { ThemeSettings } from "~/components/ThemeSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { DisconnectButton } from "~/components/web3/DisconnectButton";
 import { WalletInfo } from "~/components/web3/WalletInfo";
-import { getServerAuth } from "~/utils/getServerAuth";
 
 export const metadata: Metadata = {
   title: "Settings",

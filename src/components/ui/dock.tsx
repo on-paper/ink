@@ -204,7 +204,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(({ items, className }, 
               >
                 <motion.div
                   className={cn(
-                    "rounded-xl text-popover-foreground shadow-md overflow-hidden bg-background/80 backdrop-blur-lg border border-border/80"
+                    "rounded-xl text-popover-foreground shadow-md overflow-hidden bg-background/80 backdrop-blur-lg border border-border/80",
                   )}
                   key={hoveredIndex}
                   initial={{ y: getContentAnimationY(), opacity: 0, scale: 0.95 }}

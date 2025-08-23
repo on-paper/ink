@@ -116,9 +116,7 @@ export const Feed = <T extends { id: string } = any>({
           {isFetchingNextPage ? "Loading..." : "Load more"}
         </Button>
       )}
-      {!manualNextPage && isFetchingNextPage && (
-        LoadingView ? <LoadingView /> : <FeedSuspense />
-      )}
+      {!manualNextPage && isFetchingNextPage && (LoadingView ? <LoadingView /> : <FeedSuspense />)}
     </div>
   );
 };
