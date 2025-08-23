@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem } from "@/src/components/ui/form";
+import { CommunityIcon } from "~/components/communities/CommunityIcon";
 import { useUser } from "~/components/user/UserContext";
 import { useEthereumEdit } from "~/hooks/useEthereumEdit";
 import { useEthereumPost } from "~/hooks/useEthereumPost";
@@ -718,8 +719,9 @@ function ComposerContent() {
                                       setSelectedChannelId(ch.address);
                                       setSelectedChannelName(name);
                                     }}
-                                    className="h-8 text-sm"
+                                    className="h-9 text-sm flex items-center gap-2"
                                   >
+                                    <CommunityIcon community={ch} size="sm" className="w-6 h-6" />
                                     <span className="truncate">{name}</span>
                                   </DropdownMenuItem>
                                 );
