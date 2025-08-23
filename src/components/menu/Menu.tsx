@@ -10,7 +10,7 @@ import {
   PlusIcon,
   SettingsIcon,
   SunIcon,
-  UserIcon,
+  User2Icon,
   Users,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -166,7 +166,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           )}
           onClick={goProfile}
         >
-          <UserIcon size={16} />
+          <User2Icon size={16} strokeWidth={2} />
           <span className="ml-3">{displayName}</span>
         </button>
         <button
@@ -186,7 +186,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
           className="relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
-          {theme === "light" ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+          {theme === "light" ? <SunIcon size={16} strokeWidth={2.25} /> : <MoonIcon size={16} strokeWidth={2.25} />}
           <span className="ml-3">Theme</span>
         </button>
         <button
@@ -196,7 +196,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
             await signOut();
           }}
         >
-          <LogOutIcon size={16} />
+          <LogOutIcon size={16} strokeWidth={2} />
           <span className="ml-3">Log out</span>
         </button>
       </div>
