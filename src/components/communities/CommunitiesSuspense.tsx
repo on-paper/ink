@@ -19,7 +19,6 @@ const CommunitySuspenseItem = () => {
 export const CommunitiesSuspense = () => {
   return (
     <>
-      {/* Header with title and create button skeleton */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Communities</h1>
         <Skeleton className="h-9 w-20" />

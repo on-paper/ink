@@ -11,7 +11,7 @@ interface CommunityHeaderProps {
 
 export function CommunityHeader({ community }: CommunityHeaderProps) {
   return (
-    <Card className="flex items-center gap-4 p-4 rounded-xl mb-4">
+    <Card className="flex items-center gap-4 p-4 rounded-xl">
       <div className="flex-shrink-0">
         <CommunityIcon community={community} size="md" />
       </div>
