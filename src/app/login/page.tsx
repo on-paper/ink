@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Square } from "lucide-react";
+import { CreditCard, Loader2, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -60,6 +60,9 @@ export default function LoginPage() {
           <FamilyIcon />
         </div>
       );
+    } else if (connector.id === "xyz.ithaca.porto") {
+      name = "Porto";
+      icon = <CreditCard strokeWidth={1} className="w-5 h-5" />;
     } else if (connector.id === "baseAccount") {
       name = "Base Account";
       icon = <Square strokeWidth={1} className="w-5 h-5" />;
@@ -90,6 +93,7 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           {!isConnected ? (
             <div className="space-y-3">
+              {getConnectorButton("xyz.ithaca.porto")}
               {getConnectorButton("baseAccount")}
               {getConnectorButton("familyAccountsProvider")}
               {getConnectorButton("injected")}

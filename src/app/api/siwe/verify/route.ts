@@ -5,6 +5,7 @@ import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 import { parseSiweMessage } from "viem/siwe";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
+import { isPortoWallet, verifyPortoSignature } from "~/utils/portoVerification";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,11 +37,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isValid = await publicClient.verifyMessage({
-      address: parsedMessage.address as `0x${string}`,
-      message,
-      signature,
-    });
+    let isValid = false;
+
+    if (isPortoWallet(req.headers)) {
+      const portoResult = await verifyPortoSignature(message, signature);
+      isValid = portoResult.isValid;
+    } else {
+      try {
+        isValid = await publicClient.verifyMessage({
+          address: parsedMessage.address as `0x${string}`,
+          message,
+          signature,
+        });
+      } catch (error) {
+        console.error("Signature verification error:", error);
+        isValid = false;
+      }
+    }
 
     if (!isValid) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
@@ -49,7 +62,6 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const expirationTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Store complete session data as recommended by wagmi
     session.siwe = {
       address: parsedMessage.address || "",
       chainId: parsedMessage.chainId || 1,

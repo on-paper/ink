@@ -8,6 +8,7 @@ import { familyAccountsConnector } from "family";
 import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "next-themes";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
+import { porto } from "porto/wagmi";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
@@ -40,6 +41,7 @@ const wagmiConfig = createConfig({
   connectors: [
     familyAccountsConnector(),
     injected(),
+    porto(),
     baseAccount({
       appName: "Paper",
       appLogoUrl: "https://paper.ink/favicon.ico",

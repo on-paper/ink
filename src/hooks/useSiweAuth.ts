@@ -1,4 +1,3 @@
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createSiweMessage } from "viem/siwe";
@@ -13,10 +12,9 @@ interface SessionData {
 }
 
 export function useAuth() {
-  const { address, chainId, isConnected } = useAccount();
+  const { address, chainId, isConnected, connector } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { disconnect } = useDisconnect();
-  const router = useRouter();
   const [session, setSession] = useState<SessionData>({ isAuthenticated: false });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,13 +58,15 @@ export function useAuth() {
       });
 
       const signature = await signMessageAsync({
-        account: address as `0x${string}`,
         message,
       });
 
       const verifyRes = await fetch("/api/siwe/verify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Wallet-Connector": connector?.id || "unknown",
+        },
         body: JSON.stringify({
           message,
           signature,
@@ -86,8 +86,8 @@ export function useAuth() {
       });
 
       toast.success("Welcome to Paper!");
-      router.push("/home");
-      window.location.reload();
+      // Use window.location for navigation to ensure proper redirect
+      window.location.href = "/home";
     } catch (err: any) {
       console.error("Sign in error:", err);
       const errorMessage = prettifyViemError(err);
@@ -95,7 +95,7 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, chainId, signMessageAsync, router]);
+  }, [address, chainId, connector, signMessageAsync]);
 
   const signOut = useCallback(async () => {
     setIsLoading(true);
@@ -103,14 +103,14 @@ export function useAuth() {
       await fetch("/api/siwe/logout", { method: "POST" });
       setSession({ isAuthenticated: false });
       disconnect();
-      router.push("/");
-      window.location.reload();
+      // Use window.location for navigation to ensure proper redirect
+      window.location.href = "/";
     } catch (err) {
       console.error("Sign out error:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [disconnect, router]);
+  }, [disconnect]);
 
   return {
     address: session.address,
