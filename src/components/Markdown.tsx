@@ -12,7 +12,12 @@ import { getBaseUrl } from "~/utils/getBaseUrl";
 import { getScanUrl } from "~/utils/getScanUrl";
 import { parseContent } from "~/utils/parseContent";
 import { LinkPreview } from "./embeds/LinkPreview";
-import { extractConsecutiveMedia, MarkdownMediaGallery, MarkdownMediaItem } from "./MarkdownMedia";
+import { MediaUrlRenderer } from "./MediaUrlRenderer";
+import {
+  extractConsecutiveMedia,
+  MarkdownMediaGallery,
+  MarkdownMediaItem,
+} from "./MarkdownMedia";
 import { NFTLink } from "./NFTLink";
 import { TokenLink } from "./TokenLink";
 import { UserLazyHandle } from "./user/UserLazyHandle";
@@ -48,10 +53,6 @@ export const extractUrlsFromText = (text: string): string[] => {
       continue;
     }
 
-    if (cleanUrl.includes("ipfs.io/ipfs/") || cleanUrl.includes("api.grove.storage/")) {
-      continue;
-    }
-
     try {
       const urlObj = new URL(cleanUrl);
       const normalizedUrl = urlObj.href;
@@ -75,10 +76,20 @@ const Markdown: React.FC<{
   showLinkPreviews?: boolean;
   mediaData?: MediaData;
   tokenData?: TokenData;
-}> = ({ content, mentions, className = "", showLinkPreviews = false, mediaData, tokenData }) => {
+}> = ({
+  content,
+  mentions,
+  className = "",
+  showLinkPreviews = false,
+  mediaData,
+  tokenData,
+}) => {
   let processedText = content;
 
-  processedText = parseContent(content).parseLinks().replaceHandles().toString();
+  processedText = parseContent(content)
+    .parseLinks()
+    .replaceHandles()
+    .toString();
 
   const { mediaGroups, processedContent } = useMemo(() => {
     return extractConsecutiveMedia(processedText);
@@ -91,8 +102,11 @@ const Markdown: React.FC<{
       .join(" ") || "";
 
   // Process text to detect and render CAIP-19 URIs
-  const processTextForCAIP19 = (text: string): (string | React.ReactElement)[] => {
-    const caipRegex = /\b(eip155:\d+\/(?:erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}|slip44:\d+)(?:\/\d{1,78})?)\b/gi;
+  const processTextForCAIP19 = (
+    text: string
+  ): (string | React.ReactElement)[] => {
+    const caipRegex =
+      /\b(eip155:\d+\/(?:erc[a-z0-9]{2,5}:0x[a-fA-F0-9]{40}|slip44:\d+)(?:\/\d{1,78})?)\b/gi;
     const parts: (string | React.ReactElement)[] = [];
     let lastIndex = 0;
     let match;
@@ -106,15 +120,27 @@ const Markdown: React.FC<{
       const caipUri = match[1];
       const components = parseCAIP19URI(caipUri);
 
-      if (components?.assetNamespace && components.assetReference && components.chainId) {
+      if (
+        components?.assetNamespace &&
+        components.assetReference &&
+        components.chainId
+      ) {
         const { assetNamespace, assetReference, chainId, tokenId } = components;
-        const chainIdNum = typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
+        const chainIdNum =
+          typeof chainId === "string" ? Number.parseInt(chainId, 10) : chainId;
 
         let scanUrl: string | null;
         if (assetNamespace === "slip44") {
           scanUrl = null;
-        } else if (tokenId && (assetNamespace === "erc721" || assetNamespace === "erc1155")) {
-          scanUrl = `${getScanUrl(chainIdNum, "token", assetReference)}?a=${tokenId}`;
+        } else if (
+          tokenId &&
+          (assetNamespace === "erc721" || assetNamespace === "erc1155")
+        ) {
+          scanUrl = `${getScanUrl(
+            chainIdNum,
+            "token",
+            assetReference
+          )}?a=${tokenId}`;
         } else {
           scanUrl = getScanUrl(chainIdNum, "token", assetReference);
         }
@@ -128,9 +154,12 @@ const Markdown: React.FC<{
               scanUrl={scanUrl}
               colorClasses={colorClasses}
               tokenData={metadata}
-            />,
+            />
           );
-        } else if (assetNamespace === "erc721" || assetNamespace === "erc1155") {
+        } else if (
+          assetNamespace === "erc721" ||
+          assetNamespace === "erc1155"
+        ) {
           // For NFTs, use NFTLink component
           parts.push(
             <NFTLink
@@ -140,7 +169,7 @@ const Markdown: React.FC<{
               tokenId={tokenId}
               assetNamespace={assetNamespace}
               colorClasses={colorClasses}
-            />,
+            />
           );
         } else {
           if (scanUrl) {
@@ -153,7 +182,7 @@ const Markdown: React.FC<{
                 className={`lexical-link ${colorClasses}`}
               >
                 {caipUri}
-              </a>,
+              </a>
             );
           } else {
             parts.push(caipUri);
@@ -175,7 +204,10 @@ const Markdown: React.FC<{
     return parts.length > 0 ? parts : [text];
   };
 
-  const createCustomLink = (colorClasses: string, _mentions?: PostMention[]): Components["a"] => {
+  const createCustomLink = (
+    colorClasses: string,
+    _mentions?: PostMention[]
+  ): Components["a"] => {
     return ({ node, ...props }) => {
       const { href, children } = props;
 
@@ -185,7 +217,11 @@ const Markdown: React.FC<{
           let linkText = urlHandle;
           if (typeof children === "string") {
             linkText = children;
-          } else if (Array.isArray(children) && children.length > 0 && typeof children[0] === "string") {
+          } else if (
+            Array.isArray(children) &&
+            children.length > 0 &&
+            typeof children[0] === "string"
+          ) {
             linkText = children[0];
           }
 
@@ -197,6 +233,11 @@ const Markdown: React.FC<{
             </span>
           );
         }
+      }
+
+      // Use MediaUrlRenderer for all URLs to detect and render media types
+      if (href) {
+        return <MediaUrlRenderer url={href} colorClasses={colorClasses} />;
       }
 
       return (
@@ -224,7 +265,11 @@ const Markdown: React.FC<{
     if (Array.isArray(children)) {
       return children.map((child, index) => {
         if (typeof child === "string") {
-          return <React.Fragment key={index}>{processTextForCAIP19(child)}</React.Fragment>;
+          return (
+            <React.Fragment key={index}>
+              {processTextForCAIP19(child)}
+            </React.Fragment>
+          );
         }
         return child;
       });
@@ -242,7 +287,9 @@ const Markdown: React.FC<{
         textContent = children;
       } else if (Array.isArray(children)) {
         // Check if any child is the gallery placeholder
-        textContent = children.map((child) => (typeof child === "string" ? child : "")).join("");
+        textContent = children
+          .map((child) => (typeof child === "string" ? child : ""))
+          .join("");
       }
 
       if (textContent.includes("MEDIA_GALLERY_PLACEHOLDER_")) {
@@ -250,17 +297,29 @@ const Markdown: React.FC<{
         if (match) {
           const galleryIndex = Number.parseInt(match[1], 10);
           if (mediaGroups[galleryIndex]) {
-            return <MarkdownMediaGallery urls={mediaGroups[galleryIndex]} mimeTypes={mediaData} />;
+            return (
+              <MarkdownMediaGallery
+                urls={mediaGroups[galleryIndex]}
+                mimeTypes={mediaData}
+              />
+            );
           }
         }
       }
 
       if (Array.isArray(children) && children.length === 1) {
         const child = children[0];
-        if (child && typeof child === "object" && "props" in child && child.props?.src) {
+        if (
+          child &&
+          typeof child === "object" &&
+          "props" in child &&
+          child.props?.src
+        ) {
           const mimeType = mediaData?.[child.props.src];
           if (mimeType?.startsWith("video/")) {
-            return <MarkdownMediaItem url={child.props.src} mimeType={mimeType} />;
+            return (
+              <MarkdownMediaItem url={child.props.src} mimeType={mimeType} />
+            );
           }
         }
       } else if (
@@ -277,7 +336,11 @@ const Markdown: React.FC<{
         }
       }
 
-      return <p className="lexical-paragraph mb-4 last:mb-0">{processChildren(children)}</p>;
+      return (
+        <p className="lexical-paragraph mb-4 last:mb-0">
+          {processChildren(children)}
+        </p>
+      );
     },
     h1: ({ children }) => <h1 className="lexical-h1">{children}</h1>,
     h2: ({ children }) => <h2 className="lexical-h2">{children}</h2>,
@@ -285,12 +348,20 @@ const Markdown: React.FC<{
     h4: ({ children }) => <h4 className="lexical-h4">{children}</h4>,
     h5: ({ children }) => <h5 className="lexical-h5">{children}</h5>,
     h6: ({ children }) => <h6 className="lexical-h6">{children}</h6>,
-    strong: ({ children }) => <strong className="lexical-text-bold">{children}</strong>,
+    strong: ({ children }) => (
+      <strong className="lexical-text-bold">{children}</strong>
+    ),
     em: ({ children }) => <em className="lexical-text-italic">{children}</em>,
-    del: ({ children }) => <del className="lexical-text-strikethrough">{children}</del>,
-    code: ({ children }) => <code className="lexical-text-code">{children}</code>,
+    del: ({ children }) => (
+      <del className="lexical-text-strikethrough">{children}</del>
+    ),
+    code: ({ children }) => (
+      <code className="lexical-text-code">{children}</code>
+    ),
     pre: ({ children }) => <pre className="lexical-code">{children}</pre>,
-    blockquote: ({ children }) => <blockquote className="lexical-quote">{children}</blockquote>,
+    blockquote: ({ children }) => (
+      <blockquote className="lexical-quote">{children}</blockquote>
+    ),
     ul: ({ children }) => <ul className="lexical-list-ul">{children}</ul>,
     ol: ({ children }) => <ol className="lexical-list-ol">{children}</ol>,
     li: ({ children }) => <li className="lexical-listitem">{children}</li>,
