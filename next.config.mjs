@@ -3,7 +3,7 @@
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  transpilePackages: ['ethereum-identity-kit', 'lucide-react'],
+  transpilePackages: ["ethereum-identity-kit", "lucide-react"],
   typescript: {
     ignoreBuildErrors: false,
   },
