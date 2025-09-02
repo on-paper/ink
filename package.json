@@ -92,7 +92,7 @@
     "unsplash-js": "^7.0.19",
     "viem": "^2.34.0",
     "wagmi": "^2.16.4",
-    "zod": "^3.25.76"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

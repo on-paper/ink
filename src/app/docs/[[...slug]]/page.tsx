@@ -15,10 +15,10 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
   const MDX = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc} lastUpdate={page.data.lastModified} full={false}>
+    <DocsPage full toc={page.data.toc} lastUpdate={page.data.lastModified}>
       <DocsTitle>{page.data.title}</DocsTitle>
       {page.data.description && <DocsDescription>{page.data.description}</DocsDescription>}
-      <DocsBody className="max-w-none">
+      <DocsBody>
         <MDX components={getMDXComponents()} />
       </DocsBody>
     </DocsPage>
