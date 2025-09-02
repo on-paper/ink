@@ -91,7 +91,7 @@ const Dock = React.forwardRef<HTMLDivElement, DockProps>(({ items, className }, 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [showExtra, setShowExtra] = useState(false);
   const [previousIndex, setPreviousIndex] = useState<number | null>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout>();
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const buttonRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const handleMouseEnter = useCallback(

@@ -107,7 +107,7 @@ export function AppApprovalSettings() {
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "addApproval",
           args: [approvalStatus.appAddress, BigInt(expiryTimestamp)],
           chain: getDefaultChain(),
@@ -180,7 +180,7 @@ export function AppApprovalSettings() {
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "revokeApproval",
           args: [approvalStatus.appAddress],
           chain: getDefaultChain(),

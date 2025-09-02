@@ -302,7 +302,7 @@ function ComposerContent() {
   }, [watchedContent, isEmpty, editingPost, isReply]);
 
   // Auto-save on component unmount
-  const saveCurrentStateRef = useRef<() => void>();
+  const saveCurrentStateRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     saveCurrentStateRef.current = () => {
       // Only save if we have content and this is not an edit or reply

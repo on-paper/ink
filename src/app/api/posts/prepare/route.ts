@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
             // Return success response
             const response: PrepareResponse = {
               mode: "gasless_submitted",
-              txHash,
+              txHash: txHash as string,
               appSignature,
               commentData: serializeBigInt(commentData),
               chainId: chain.chain.id,

@@ -126,7 +126,7 @@ export function useEthereumEdit(options?: UseEthereumEditOptions) {
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "editComment",
           args: [result.data.commentId, result.data, result.signature],
           chain: getDefaultChain(),

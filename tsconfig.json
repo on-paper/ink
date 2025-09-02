@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "types": ["react", "react-dom"],
     "allowUmdGlobalAccess": true,
     "paths": {
       "~/*": ["./src/*"],
@@ -34,6 +35,8 @@
     "src/utils/**/*.ts",
     "src/styles/**.ts",
     "src/types/**.ts",
+    "src/types/**/*.ts",
+    "src/types/**/*.d.ts",
     "src/app/**/*.ts",
     "src/app/**/*.tsx",
     ".next/types/**/*.ts",
@@ -54,6 +57,8 @@
     ".next",
     "node_modules/@base-org/account/**/*",
     "**/node_modules/**/ox/**/*",
-    "node_modules/viem/node_modules/**/*"
+    "node_modules/viem/node_modules/**/*",
+    "node_modules/react-markdown/**/*",
+    "src/utils/tests/**/*"
   ]
 }
