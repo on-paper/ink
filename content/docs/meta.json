@@ -1,0 +1,18 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "overview",
+    "architecture",
+    "---",
+    "protocols/ens",
+    "protocols/efp",
+    "protocols/ecp",
+    "---",
+    "storage/ipfs-arweave",
+    "storage/lens-files",
+    "storage/grove",
+    "---",
+    "features/gasless-transactions",
+    "features/signless-approve"
+  ]
+}

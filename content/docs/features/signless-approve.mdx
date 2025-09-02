@@ -1,0 +1,603 @@
+---
+title: Signless Approve App
+description: How ECP signless approval enables seamless commenting
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Signless Approve App
+
+The signless approve system allows users to interact with Paper without signing every transaction, dramatically improving the user experience for frequent actions like commenting.
+
+## Overview
+
+Signless approval provides:
+
+- **One-time setup**: Approve once, interact freely
+- **No repeated signatures**: Seamless commenting experience
+- **Gasless comments**: Combined with gasless transactions
+- **Revocable permissions**: Users maintain control
+- **Security guarantees**: Cryptographically secure
+
+## How It Works
+
+### Approval Flow
+
+```
+┌──────────────────┐
+│   User Request   │
+│  Signless Access │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Check Eligibility│
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│  Sign Approval   │
+│   (One-time)     │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Store Approval   │
+│    On-chain      │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Signless Active  │
+│  (No more sigs)  │
+└──────────────────┘
+```
+
+### Technical Architecture
+
+<Callout type="info">
+Signless approval uses delegated signing, where the app can sign on behalf of the user for specific actions.
+</Callout>
+
+```typescript
+interface SignlessApproval {
+  user: string;
+  delegate: string;
+  permissions: Permission[];
+  expiresAt: number;
+  nonce: number;
+  signature: string;
+}
+
+interface Permission {
+  action: 'comment' | 'like' | 'follow';
+  target?: string; // Optional target restriction
+  limit?: number;  // Rate limit
+}
+```
+
+## Implementation
+
+### Approval Contract
+
+```solidity
+contract SignlessApprove {
+    mapping(address => Approval) public approvals;
+    
+    struct Approval {
+        address delegate;
+        uint256 permissions;
+        uint256 expiresAt;
+        uint256 nonce;
+    }
+    
+    function approve(
+        address delegate,
+        uint256 permissions,
+        uint256 duration,
+        bytes calldata signature
+    ) external {
+        // Verify signature
+        require(verifySignature(msg.sender, delegate, permissions, signature));
+        
+        // Store approval
+        approvals[msg.sender] = Approval({
+            delegate: delegate,
+            permissions: permissions,
+            expiresAt: block.timestamp + duration,
+            nonce: 0
+        });
+        
+        emit ApprovalGranted(msg.sender, delegate, permissions);
+    }
+    
+    function executeSignless(
+        address user,
+        bytes calldata action,
+        bytes calldata signature
+    ) external {
+        Approval storage approval = approvals[user];
+        
+        // Check approval is valid
+        require(approval.delegate == msg.sender, "Not authorized");
+        require(approval.expiresAt > block.timestamp, "Approval expired");
+        
+        // Verify action is permitted
+        require(isPermitted(approval.permissions, action));
+        
+        // Execute action
+        (bool success, ) = address(this).delegatecall(action);
+        require(success, "Action failed");
+        
+        // Update nonce
+        approval.nonce++;
+    }
+}
+```
+
+### Client Implementation
+
+```typescript
+export class SignlessClient {
+  private approvals = new Map<string, SignlessApproval>();
+  
+  async requestApproval(
+    user: string,
+    permissions: Permission[]
+  ): Promise<void> {
+    // Check if already approved
+    if (this.hasValidApproval(user)) {
+      return;
+    }
+    
+    // Create approval request
+    const approval: SignlessApproval = {
+      user,
+      delegate: DELEGATE_ADDRESS,
+      permissions,
+      expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+      nonce: 0,
+      signature: '',
+    };
+    
+    // Get user signature
+    const signature = await this.getUserSignature(approval);
+    approval.signature = signature;
+    
+    // Submit to contract
+    await this.submitApproval(approval);
+    
+    // Store locally
+    this.approvals.set(user, approval);
+  }
+  
+  async executeSignless(
+    user: string,
+    action: Action
+  ): Promise<TransactionReceipt> {
+    const approval = this.approvals.get(user);
+    
+    if (!approval || !this.isValid(approval)) {
+      throw new Error('No valid approval');
+    }
+    
+    // Sign action with delegate key
+    const signature = await this.signAction(action, approval);
+    
+    // Submit to contract
+    return this.contract.executeSignless(
+      user,
+      action.encode(),
+      signature
+    );
+  }
+}
+```
+
+## ECP Integration
+
+### Signless Comments
+
+```typescript
+export class ECPSignlessComments {
+  async createComment(
+    content: string,
+    parentId?: string
+  ): Promise<string> {
+    const user = await getCurrentUser();
+    
+    // Check signless approval
+    const hasApproval = await this.checkSignlessApproval(user);
+    
+    if (hasApproval) {
+      return this.createSignlessComment(content, parentId);
+    } else {
+      return this.createRegularComment(content, parentId);
+    }
+  }
+  
+  private async createSignlessComment(
+    content: string,
+    parentId?: string
+  ): Promise<string> {
+    // Create comment data
+    const comment = {
+      author: currentUser,
+      content,
+      parentId,
+      timestamp: Date.now(),
+    };
+    
+    // Sign with delegate key (no user interaction)
+    const signature = await this.delegateSigner.sign(comment);
+    
+    // Submit without user signature
+    const tx = await this.ecpContract.postCommentSignless(
+      comment,
+      signature
+    );
+    
+    return tx.hash;
+  }
+}
+```
+
+### Batch Operations
+
+```typescript
+export async function batchSignlessActions(
+  actions: Action[]
+): Promise<void> {
+  // Group by user
+  const grouped = groupBy(actions, 'user');
+  
+  for (const [user, userActions] of Object.entries(grouped)) {
+    // Check approval once
+    const approval = await getApproval(user);
+    
+    if (!approval) {
+      continue;
+    }
+    
+    // Execute all actions signlessly
+    const batch = userActions.map(action => ({
+      target: action.contract,
+      data: action.encode(),
+    }));
+    
+    await multicall.executeSignless(batch, approval);
+  }
+}
+```
+
+## User Management
+
+### Approval UI
+
+```tsx
+export function SignlessApprovalModal() {
+  const [permissions, setPermissions] = useState<Permission[]>([
+    { action: 'comment', limit: 100 },
+    { action: 'like', limit: 1000 },
+  ]);
+  
+  const handleApprove = async () => {
+    try {
+      await signlessClient.requestApproval(
+        currentUser,
+        permissions
+      );
+      
+      toast.success('Signless approval granted!');
+    } catch (error) {
+      toast.error('Approval failed');
+    }
+  };
+  
+  return (
+    <Modal>
+      <h2>Enable Signless Interactions</h2>
+      
+      <div className="space-y-4">
+        <Alert>
+          <Info className="w-4 h-4" />
+          <AlertDescription>
+            Approve once to interact without signing every action.
+            You can revoke this permission anytime.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="space-y-2">
+          <h3>Permissions</h3>
+          {permissions.map((perm, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Checkbox checked />
+              <span>{perm.action}</span>
+              {perm.limit && (
+                <span className="text-sm text-gray-500">
+                  (max {perm.limit}/day)
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <button
+          onClick={handleApprove}
+          className="w-full bg-blue-500 text-white py-2 rounded-lg"
+        >
+          Approve Signless Access
+        </button>
+      </div>
+    </Modal>
+  );
+}
+```
+
+### Status Display
+
+```tsx
+export function SignlessStatus() {
+  const { data: approval } = useSignlessApproval();
+  
+  if (!approval) {
+    return (
+      <button
+        onClick={openApprovalModal}
+        className="text-blue-500 underline"
+      >
+        Enable signless mode
+      </button>
+    );
+  }
+  
+  const daysLeft = Math.floor(
+    (approval.expiresAt - Date.now()) / (1000 * 60 * 60 * 24)
+  );
+  
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <CheckCircle className="w-4 h-4 text-green-500" />
+        <span className="text-sm">Signless enabled</span>
+      </div>
+      
+      <span className="text-xs text-gray-500">
+        {daysLeft} days remaining
+      </span>
+      
+      <button
+        onClick={handleRevoke}
+        className="text-xs text-red-500"
+      >
+        Revoke
+      </button>
+    </div>
+  );
+}
+```
+
+## Security Measures
+
+### Permission Scoping
+
+```typescript
+export class PermissionManager {
+  validateAction(
+    approval: SignlessApproval,
+    action: Action
+  ): boolean {
+    // Check permission exists
+    const permission = approval.permissions.find(
+      p => p.action === action.type
+    );
+    
+    if (!permission) {
+      return false;
+    }
+    
+    // Check target restriction
+    if (permission.target && action.target !== permission.target) {
+      return false;
+    }
+    
+    // Check rate limit
+    if (permission.limit) {
+      const usage = await this.getDailyUsage(
+        approval.user,
+        action.type
+      );
+      
+      if (usage >= permission.limit) {
+        return false;
+      }
+    }
+    
+    // Check expiration
+    if (approval.expiresAt < Date.now()) {
+      return false;
+    }
+    
+    return true;
+  }
+}
+```
+
+### Revocation System
+
+```typescript
+export async function revokeSignlessApproval(
+  user: string
+): Promise<void> {
+  // Revoke on-chain
+  const tx = await signlessContract.revoke();
+  await tx.wait();
+  
+  // Clear local storage
+  localStorage.removeItem(`signless_${user}`);
+  
+  // Invalidate cache
+  cache.delete(`approval_${user}`);
+  
+  // Notify user
+  toast.success('Signless approval revoked');
+}
+```
+
+### Audit Trail
+
+```typescript
+export class SignlessAudit {
+  async logAction(
+    user: string,
+    action: Action,
+    result: 'success' | 'failure'
+  ): Promise<void> {
+    await db.signlessLogs.create({
+      user,
+      action: action.type,
+      target: action.target,
+      timestamp: Date.now(),
+      result,
+      delegateSigner: DELEGATE_ADDRESS,
+    });
+  }
+  
+  async getUserActivity(
+    user: string,
+    period: Period
+  ): Promise<Activity[]> {
+    return db.signlessLogs.findMany({
+      where: {
+        user,
+        timestamp: {
+          gte: period.start,
+          lte: period.end,
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
+  }
+}
+```
+
+## Rate Limiting
+
+### Implementation
+
+```typescript
+export class SignlessRateLimiter {
+  private limits = new Map<string, RateLimit>();
+  
+  async checkLimit(
+    user: string,
+    action: string
+  ): Promise<boolean> {
+    const key = `${user}:${action}`;
+    const limit = this.limits.get(key);
+    
+    if (!limit) {
+      this.limits.set(key, {
+        count: 1,
+        resetAt: this.getNextReset(),
+      });
+      return true;
+    }
+    
+    if (Date.now() > limit.resetAt) {
+      limit.count = 1;
+      limit.resetAt = this.getNextReset();
+      return true;
+    }
+    
+    const maxLimit = await this.getMaxLimit(user, action);
+    
+    if (limit.count >= maxLimit) {
+      return false;
+    }
+    
+    limit.count++;
+    return true;
+  }
+  
+  private getNextReset(): number {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return tomorrow.getTime();
+  }
+}
+```
+
+## Analytics
+
+### Usage Metrics
+
+```typescript
+export async function getSignlessMetrics(): Promise<Metrics> {
+  const [
+    totalApprovals,
+    activeApprovals,
+    dailyActions,
+    successRate,
+  ] = await Promise.all([
+    getTotalApprovals(),
+    getActiveApprovals(),
+    getDailyActions(),
+    getSuccessRate(),
+  ]);
+  
+  return {
+    totalApprovals,
+    activeApprovals,
+    dailyActions,
+    successRate,
+    avgActionsPerUser: dailyActions / activeApprovals,
+  };
+}
+```
+
+### User Insights
+
+```typescript
+export function useSignlessInsights() {
+  const { data } = useQuery({
+    queryKey: ['signless-insights'],
+    queryFn: async () => {
+      const insights = await getSignlessInsights(currentUser);
+      
+      return {
+        actionsSaved: insights.totalActions,
+        timeSaved: insights.totalActions * 5, // 5 seconds per signature
+        gasLessCombined: insights.gaslessActions,
+        mostUsedAction: insights.topAction,
+      };
+    },
+  });
+  
+  return data;
+}
+```
+
+## Best Practices
+
+### User Experience
+- Clear explanation of permissions
+- Easy revocation process
+- Transparent activity logs
+- Gradual permission requests
+
+### Security
+- Minimal permission scope
+- Regular approval expiration
+- Audit all actions
+- Rate limiting protection
+
+### Performance
+- Cache approval status
+- Batch signless actions
+- Optimize permission checks
+- Efficient storage patterns

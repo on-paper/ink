@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ImagesIcon, MessageCircle, MessageSquare } from "lucide-react";
+import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
 import Link from "~/components/Link";
 

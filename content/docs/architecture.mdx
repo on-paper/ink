@@ -1,0 +1,295 @@
+---
+title: Architecture
+description: Technical architecture and design principles of Paper
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Architecture
+
+Paper's architecture is designed for scalability, decentralization, and optimal user experience. We combine on-chain protocols with off-chain infrastructure to create a performant social platform.
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Frontend (Next.js)                   │
+├─────────────────────────────────────────────────────────┤
+│                    State Management                      │
+│                   (Redux + React Query)                  │
+├─────────────────────────────────────────────────────────┤
+│                     Web3 Integration                     │
+│                    (Wagmi + Viem + EIK)                 │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
+│  │     ENS     │  │     EFP     │  │     ECP     │    │
+│  └─────────────┘  └─────────────┘  └─────────────┘    │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐    │
+│  │    IPFS     │  │   Arweave   │  │ Lens Files  │    │
+│  └─────────────┘  └─────────────┘  └─────────────┘    │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Core Components
+
+### Frontend Layer
+
+Built with **Next.js 14 App Router**, providing:
+
+- Server-side rendering for SEO and performance
+- Dynamic routing for user profiles and posts
+- Optimistic UI updates for better UX
+- Progressive enhancement
+
+#### Directory Structure
+
+```
+src/app/
+├── (feed)/          # Feed pages with shared layout
+├── (title)/         # Pages with title header
+├── api/             # REST API endpoints
+├── p/[slug]/        # Post pages
+└── u/[user]/        # User profiles
+
+src/components/
+├── auth/            # Authentication flows
+├── communities/     # Community features
+├── notifications/   # Real-time notifications
+├── post/            # Post creation and display
+├── user/            # User profiles and avatars
+└── web3/            # Wallet connections
+```
+
+### State Management
+
+**Redux Toolkit** for global state:
+- User session management
+- Cached post data
+- UI preferences
+
+**React Query** for server state:
+- API data fetching
+- Automatic cache invalidation
+- Optimistic updates
+
+### Web3 Integration
+
+#### Wagmi & Viem
+- Smart contract interactions
+- Wallet connection management
+- Transaction handling
+
+#### Ethereum Identity Kit (EIK)
+- Unified identity management
+- Cross-protocol interactions
+- Seamless EFP integration
+
+## Protocol Integration
+
+### ENS (Ethereum Name Service)
+
+ENS provides human-readable addresses and decentralized profiles:
+
+```typescript
+// Resolving ENS names
+const address = await publicClient.getEnsAddress({
+  name: 'vitalik.eth'
+});
+
+// Fetching ENS metadata
+const avatar = await publicClient.getEnsAvatar({
+  name: 'vitalik.eth'
+});
+```
+
+### EFP (Ethereum Follow Protocol)
+
+EFP manages the social graph:
+
+```typescript
+// Following a user
+await efpClient.follow({
+  address: userAddress,
+  list: myFollowList
+});
+
+// Fetching followers
+const followers = await efpClient.getFollowers({
+  address: userAddress
+});
+```
+
+### ECP (Ethereum Comments Protocol)
+
+ECP handles decentralized comments with optional gasless transactions:
+
+```typescript
+// Creating a comment
+await ecpClient.createComment({
+  content: commentText,
+  parentId: postId,
+  signless: true // Enable gasless for approved users
+});
+```
+
+## Storage Architecture
+
+### Content Storage Strategy
+
+<Callout type="info">
+Paper uses a hybrid storage approach for optimal performance and permanence.
+</Callout>
+
+#### IPFS (InterPlanetary File System)
+- Primary content storage
+- Content-addressed for integrity
+- P2P distribution
+
+#### Arweave
+- Permanent backup storage
+- Pay-once, store-forever model
+- Critical content preservation
+
+#### Lens Files
+- Structured data management
+- Metadata organization
+- Cross-platform compatibility
+
+### Storage Flow
+
+1. **Content Creation**: User creates post/comment
+2. **IPFS Upload**: Content uploaded to IPFS
+3. **CID Generation**: Receive content identifier
+4. **On-chain Reference**: Store CID on Ethereum
+5. **Arweave Backup**: Archive important content
+6. **Lens Indexing**: Structure for discovery
+
+## Gasless Transactions
+
+Paper implements sponsored transactions for improved UX:
+
+### Signless Approve Flow
+
+```typescript
+// Check if user is approved for gasless
+const isApproved = await gaslessSubmitter.isApproved(userAddress);
+
+if (isApproved) {
+  // Submit transaction without gas
+  await gaslessSubmitter.submit(transaction);
+} else {
+  // User pays gas normally
+  await wallet.sendTransaction(transaction);
+}
+```
+
+### Approval Criteria
+
+Users qualify for gasless transactions based on:
+- ENS name ownership
+- Community reputation
+- Stake amount
+- Activity level
+
+## API Architecture
+
+### RESTful Endpoints
+
+```
+/api/posts
+  GET    - Fetch posts feed
+  POST   - Create new post
+
+/api/users/[address]
+  GET    - Fetch user profile
+  PUT    - Update profile
+
+/api/notifications
+  GET    - Fetch notifications
+  POST   - Mark as read
+```
+
+### Data Flow
+
+1. **Client Request**: Frontend sends API request
+2. **Validation**: Request validation and auth check
+3. **Blockchain Query**: Fetch on-chain data if needed
+4. **IPFS Retrieval**: Get content from IPFS
+5. **Response**: Return formatted data
+
+## Security Considerations
+
+### Smart Contract Security
+- Minimal on-chain logic
+- Audited protocols (ENS, EFP, ECP)
+- Upgradeable proxy patterns
+
+### Frontend Security
+- Input sanitization
+- XSS prevention
+- CORS configuration
+- Rate limiting
+
+### Private Key Management
+- Client-side signing only
+- No private key storage
+- Hardware wallet support
+
+## Performance Optimizations
+
+### Caching Strategy
+- CDN for static assets
+- Redis for API responses
+- IPFS gateway caching
+- Browser cache headers
+
+### Bundle Optimization
+- Code splitting
+- Lazy loading
+- Tree shaking
+- Image optimization
+
+### Database Indexing
+- Graph Protocol for queries
+- Custom indexers for feeds
+- Efficient pagination
+
+## Monitoring & Analytics
+
+### Application Monitoring
+- Error tracking with Sentry
+- Performance monitoring
+- User analytics (privacy-preserving)
+
+### Blockchain Monitoring
+- Transaction status tracking
+- Gas price optimization
+- Network health checks
+
+## Deployment Architecture
+
+### Infrastructure
+- Vercel for frontend hosting
+- IPFS nodes for content
+- Redis for caching
+- PostgreSQL for indexing
+
+### CI/CD Pipeline
+1. Code push to GitHub
+2. Automated testing
+3. Build optimization
+4. Deployment to staging
+5. Production release
+
+## Future Considerations
+
+### Scalability
+- Layer 2 integration
+- Sharding for data
+- P2P content delivery
+
+### Decentralization
+- Fully decentralized hosting
+- DAO governance
+- Protocol ossification

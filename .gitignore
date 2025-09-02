@@ -43,3 +43,6 @@ certificates
 
 # vscode
 .vscode
+
+# fumadocs
+.source

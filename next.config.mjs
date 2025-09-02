@@ -1,4 +1,8 @@
+import { createMDX } from 'fumadocs-mdx/next';
+
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
+
+const withMDX = createMDX();
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -25,4 +29,4 @@ const config = {
   },
 };
 
-export default config;
+export default withMDX(config);

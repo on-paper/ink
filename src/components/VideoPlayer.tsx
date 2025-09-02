@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { useSetAtom } from "jotai";
 import {
   CopyIcon,
@@ -13,6 +12,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";

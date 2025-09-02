@@ -13,7 +13,8 @@ export interface ServerAuthResult {
 
 export async function getServerAuth(): Promise<ServerAuthResult> {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
 
     if (!session.siwe?.address) {
       return { isAuthenticated: false, user: null };

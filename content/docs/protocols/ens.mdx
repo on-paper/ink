@@ -1,0 +1,315 @@
+---
+title: ENS (Ethereum Name Service)
+description: How Paper integrates with ENS for decentralized identity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# ENS Integration
+
+ENS (Ethereum Name Service) is the foundation of identity in Paper, providing human-readable names for Ethereum addresses and decentralized profile management.
+
+## Overview
+
+ENS transforms complex addresses like `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1` into readable names like `alice.eth`. In Paper, ENS serves as:
+
+- **Primary Identity**: User profiles are built on ENS names
+- **Avatar System**: Profile pictures via ENS metadata
+- **Discovery Mechanism**: Find users by their ENS names
+- **Verification Badge**: ENS ownership proves identity
+
+## Implementation
+
+### Name Resolution
+
+Paper resolves ENS names in real-time:
+
+```typescript
+// Resolve ENS name to address
+export async function resolveEnsName(name: string): Promise<string | null> {
+  try {
+    const address = await publicClient.getEnsAddress({
+      name: normalize(name),
+    });
+    return address;
+  } catch (error) {
+    console.error('ENS resolution failed:', error);
+    return null;
+  }
+}
+```
+
+### Reverse Resolution
+
+Convert addresses back to ENS names:
+
+```typescript
+// Get ENS name from address
+export async function getEnsName(address: `0x${string}`): Promise<string | null> {
+  try {
+    const name = await publicClient.getEnsName({
+      address,
+    });
+    return name;
+  } catch (error) {
+    return null;
+  }
+}
+```
+
+### Avatar Fetching
+
+ENS avatars are fetched and cached:
+
+```typescript
+// Fetch ENS avatar
+export async function getEnsAvatar(nameOrAddress: string): Promise<string | null> {
+  const avatar = await publicClient.getEnsAvatar({
+    name: nameOrAddress,
+  });
+  
+  // Fallback to default avatar
+  return avatar || generateDefaultAvatar(nameOrAddress);
+}
+```
+
+## Profile Metadata
+
+### Text Records
+
+Paper reads ENS text records for rich profiles:
+
+```typescript
+const records = [
+  'description',  // Bio
+  'url',         // Website
+  'twitter',     // Twitter handle
+  'github',      // GitHub username
+  'discord',     // Discord handle
+  'email',       // Contact email
+];
+
+// Fetch all text records
+const profile = await Promise.all(
+  records.map(key => 
+    publicClient.getEnsText({
+      name: 'alice.eth',
+      key,
+    })
+  )
+);
+```
+
+### Custom Records
+
+Paper stores additional metadata:
+
+- `paper.theme`: User's UI preference
+- `paper.verified`: Verification status
+- `paper.badge`: Special badges/roles
+
+## ENS Subdomains
+
+Paper supports ENS subdomains for organizations:
+
+```typescript
+// Create subdomain for community member
+async function createSubdomain(
+  parent: string,
+  subdomain: string,
+  owner: string
+) {
+  const parentNode = namehash(parent);
+  const label = labelhash(subdomain);
+  
+  await ensRegistry.setSubnodeOwner(
+    parentNode,
+    label,
+    owner
+  );
+}
+```
+
+<Callout type="info">
+Subdomains allow communities to issue names like `alice.paper.eth` to members.
+</Callout>
+
+## Name Validation
+
+### Input Validation
+
+```typescript
+export function validateEnsName(name: string): boolean {
+  try {
+    // Normalize the name (handles Unicode)
+    const normalized = normalize(name);
+    
+    // Check format
+    if (!normalized.endsWith('.eth')) {
+      return false;
+    }
+    
+    // Check for valid characters
+    const validPattern = /^[a-z0-9-]+\.eth$/;
+    return validPattern.test(normalized);
+  } catch {
+    return false;
+  }
+}
+```
+
+### Availability Check
+
+```typescript
+export async function isNameAvailable(name: string): Promise<boolean> {
+  const resolver = await publicClient.getEnsResolver({ name });
+  return resolver === null;
+}
+```
+
+## Caching Strategy
+
+ENS data is cached for performance:
+
+```typescript
+class EnsCache {
+  private cache = new Map<string, CacheEntry>();
+  private ttl = 3600000; // 1 hour
+  
+  async getAddress(name: string): Promise<string | null> {
+    const cached = this.cache.get(name);
+    
+    if (cached && Date.now() - cached.timestamp < this.ttl) {
+      return cached.address;
+    }
+    
+    const address = await resolveEnsName(name);
+    
+    if (address) {
+      this.cache.set(name, {
+        address,
+        timestamp: Date.now(),
+      });
+    }
+    
+    return address;
+  }
+}
+```
+
+## UI Components
+
+### ENS Name Display
+
+```tsx
+export function EnsName({ address }: { address: string }) {
+  const { data: ensName } = useEnsName({ address });
+  
+  return (
+    <span className="font-medium">
+      {ensName || truncateAddress(address)}
+    </span>
+  );
+}
+```
+
+### ENS Avatar
+
+```tsx
+export function EnsAvatar({ name, size = 40 }: Props) {
+  const { data: avatar } = useEnsAvatar({ name });
+  
+  return (
+    <Image
+      src={avatar || defaultAvatar}
+      alt={name}
+      width={size}
+      height={size}
+      className="rounded-full"
+    />
+  );
+}
+```
+
+## Search Integration
+
+ENS names are searchable in Paper:
+
+```typescript
+export async function searchEnsNames(query: string) {
+  // Search in local index
+  const localResults = await db.ensNames.search(query);
+  
+  // Try direct resolution
+  if (query.endsWith('.eth')) {
+    const address = await resolveEnsName(query);
+    if (address) {
+      return [{ name: query, address }];
+    }
+  }
+  
+  return localResults;
+}
+```
+
+## Best Practices
+
+### Performance
+- Cache ENS lookups aggressively
+- Batch multiple lookups when possible
+- Use local indexes for search
+- Implement progressive loading
+
+### User Experience
+- Show loading states during resolution
+- Provide fallbacks for missing avatars
+- Support both addresses and ENS names
+- Validate input before resolution
+
+### Error Handling
+```typescript
+try {
+  const address = await resolveEnsName(name);
+  // Success flow
+} catch (error) {
+  if (error.code === 'INVALID_NAME') {
+    // Invalid ENS name format
+  } else if (error.code === 'NOT_FOUND') {
+    // Name doesn't exist
+  } else {
+    // Network or other error
+  }
+}
+```
+
+## Integration with Other Protocols
+
+### ENS + EFP
+- Follow lists tied to ENS names
+- Portable social graph
+
+### ENS + ECP
+- Comments linked to ENS identity
+- Reputation based on ENS history
+
+### ENS + Storage
+- IPFS content linked to ENS
+- Decentralized website hosting
+
+## Future Enhancements
+
+### Planned Features
+- ENS name registration in-app
+- Subdomain management UI
+- Advanced text record editor
+- ENS-based messaging
+
+### L2 Integration
+- Support for L2 ENS resolution
+- Reduced gas costs
+- Faster updates
+
+### Cross-chain Names
+- Support for other naming services
+- Unified identity layer
+- Interoperability

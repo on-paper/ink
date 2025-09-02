@@ -1,0 +1,537 @@
+---
+title: EFP (Ethereum Follow Protocol)
+description: Building portable social graphs with EFP
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# EFP Integration
+
+EFP (Ethereum Follow Protocol) powers Paper's social graph, enabling users to own their social connections and take them anywhere.
+
+## Overview
+
+EFP revolutionizes social networking by making follow relationships:
+
+- **Portable**: Take your followers to any platform
+- **Composable**: Build on top of existing social graphs
+- **Transparent**: All relationships are public and verifiable
+- **Resilient**: No single point of failure
+
+## Core Concepts
+
+### Follow Lists
+
+Users create and manage follow lists:
+
+```typescript
+interface FollowList {
+  id: number;
+  owner: string;
+  name: string;
+  tags: string[];
+  followers: string[];
+  blockList: string[];
+}
+```
+
+### List Types
+
+Paper supports multiple list types:
+
+- **Primary List**: Main follow list
+- **Curated Lists**: Topic-specific follows
+- **Block Lists**: Users to exclude
+- **Recommended Lists**: Algorithm-generated
+
+## Implementation
+
+### Ethereum Identity Kit Integration
+
+Paper uses EIK for seamless EFP interactions:
+
+```typescript
+import { useEFP } from 'ethereum-identity-kit';
+
+export function useFollowSystem() {
+  const { followList, follow, unfollow } = useEFP();
+  
+  const handleFollow = async (address: string) => {
+    try {
+      await follow({
+        address,
+        listId: followList.id,
+      });
+      
+      // Update local state
+      updateFollowState(address, true);
+    } catch (error) {
+      console.error('Follow failed:', error);
+    }
+  };
+  
+  return { handleFollow, followList };
+}
+```
+
+### Creating Follow Lists
+
+```typescript
+export async function createFollowList(
+  name: string,
+  tags: string[] = []
+): Promise<number> {
+  const tx = await efpContract.createList({
+    name,
+    tags,
+    visibility: 'public',
+  });
+  
+  const receipt = await tx.wait();
+  const listId = extractListId(receipt);
+  
+  return listId;
+}
+```
+
+### Following Users
+
+```typescript
+export async function followUser(
+  userAddress: string,
+  listId: number
+): Promise<void> {
+  // Add to follow list
+  await efpContract.addToList({
+    listId,
+    addresses: [userAddress],
+  });
+  
+  // Emit event for indexers
+  emit('UserFollowed', {
+    follower: currentUser,
+    followee: userAddress,
+    timestamp: Date.now(),
+  });
+}
+```
+
+### Batch Operations
+
+EFP supports efficient batch operations:
+
+```typescript
+export async function batchFollow(
+  addresses: string[],
+  listId: number
+): Promise<void> {
+  // Batch add to save gas
+  await efpContract.batchAdd({
+    listId,
+    addresses,
+  });
+  
+  // Update local cache
+  addresses.forEach(addr => {
+    cache.markAsFollowing(addr);
+  });
+}
+```
+
+## Social Graph Queries
+
+### Get Followers
+
+```typescript
+export async function getFollowers(
+  address: string
+): Promise<Follower[]> {
+  // Query from indexer for efficiency
+  const followers = await graphClient.query({
+    query: GET_FOLLOWERS,
+    variables: { address },
+  });
+  
+  return followers.map(f => ({
+    address: f.follower,
+    followedAt: f.timestamp,
+    listId: f.listId,
+  }));
+}
+```
+
+### Get Following
+
+```typescript
+export async function getFollowing(
+  address: string
+): Promise<Following[]> {
+  const lists = await efpContract.getListsByOwner(address);
+  
+  const following = await Promise.all(
+    lists.map(list => 
+      efpContract.getListMembers(list.id)
+    )
+  );
+  
+  return following.flat();
+}
+```
+
+### Mutual Follows
+
+```typescript
+export function getMutualFollows(
+  userA: string,
+  userB: string
+): Promise<string[]> {
+  const followingA = await getFollowing(userA);
+  const followingB = await getFollowing(userB);
+  
+  return followingA.filter(addr => 
+    followingB.includes(addr)
+  );
+}
+```
+
+## UI Components
+
+### Follow Button
+
+```tsx
+export function FollowButton({ address }: Props) {
+  const { isFollowing, follow, unfollow } = useEFP();
+  const [loading, setLoading] = useState(false);
+  
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      if (isFollowing(address)) {
+        await unfollow(address);
+      } else {
+        await follow(address);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className={cn(
+        "px-4 py-2 rounded-lg font-medium",
+        isFollowing(address) 
+          ? "bg-gray-200 text-gray-800"
+          : "bg-blue-500 text-white"
+      )}
+    >
+      {loading ? (
+        <Spinner />
+      ) : isFollowing(address) ? (
+        "Following"
+      ) : (
+        "Follow"
+      )}
+    </button>
+  );
+}
+```
+
+### Follower Count
+
+```tsx
+export function FollowerCount({ address }: Props) {
+  const { data: count } = useQuery({
+    queryKey: ['followers', address],
+    queryFn: () => getFollowerCount(address),
+  });
+  
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-bold">{count || 0}</span>
+      <span className="text-gray-600">followers</span>
+    </div>
+  );
+}
+```
+
+## Advanced Features
+
+### List Recommendations
+
+Paper uses AI to recommend follow lists:
+
+```typescript
+export async function getRecommendedUsers(
+  userAddress: string
+): Promise<Recommendation[]> {
+  // Get user's interests from their follows
+  const following = await getFollowing(userAddress);
+  const interests = await analyzeInterests(following);
+  
+  // Find similar users
+  const recommendations = await findSimilarUsers({
+    interests,
+    exclude: following,
+    limit: 20,
+  });
+  
+  return recommendations.map(r => ({
+    address: r.address,
+    score: r.similarity,
+    reason: r.matchReason,
+  }));
+}
+```
+
+### Social Proof
+
+Display mutual connections:
+
+```typescript
+export function getMutualFollowers(
+  userA: string,
+  userB: string
+): Promise<MutualConnection[]> {
+  const followersA = await getFollowers(userA);
+  const followersB = await getFollowers(userB);
+  
+  const mutual = followersA.filter(f => 
+    followersB.some(fb => fb.address === f.address)
+  );
+  
+  return mutual.map(m => ({
+    address: m.address,
+    name: m.ensName,
+    avatar: m.avatar,
+  }));
+}
+```
+
+<Callout type="info">
+Mutual connections increase trust and engagement in social networks.
+</Callout>
+
+## List Management
+
+### Creating Curated Lists
+
+```typescript
+export async function createCuratedList(
+  name: string,
+  description: string,
+  members: string[]
+): Promise<number> {
+  // Create the list
+  const listId = await efpContract.createList({
+    name,
+    metadata: {
+      description,
+      curator: currentUser,
+      created: Date.now(),
+    },
+  });
+  
+  // Add initial members
+  if (members.length > 0) {
+    await efpContract.batchAdd({
+      listId,
+      addresses: members,
+    });
+  }
+  
+  return listId;
+}
+```
+
+### List Discovery
+
+```typescript
+export async function discoverLists(
+  category?: string
+): Promise<DiscoverableList[]> {
+  const lists = await graphClient.query({
+    query: GET_PUBLIC_LISTS,
+    variables: {
+      category,
+      limit: 50,
+    },
+  });
+  
+  return lists.map(list => ({
+    id: list.id,
+    name: list.name,
+    curator: list.owner,
+    memberCount: list.members.length,
+    description: list.metadata?.description,
+  }));
+}
+```
+
+## Privacy & Blocking
+
+### Block List Management
+
+```typescript
+export async function blockUser(
+  address: string
+): Promise<void> {
+  // Add to block list
+  await efpContract.addToBlockList({
+    addresses: [address],
+  });
+  
+  // Remove from follow lists
+  const lists = await getMyLists();
+  for (const list of lists) {
+    await efpContract.removeFromList({
+      listId: list.id,
+      addresses: [address],
+    });
+  }
+}
+```
+
+### Privacy Settings
+
+```typescript
+interface PrivacySettings {
+  allowListDiscovery: boolean;
+  showFollowerCount: boolean;
+  requireApproval: boolean;
+}
+
+export async function updatePrivacy(
+  settings: PrivacySettings
+): Promise<void> {
+  await efpContract.updateListSettings({
+    visibility: settings.allowListDiscovery ? 'public' : 'private',
+    approval: settings.requireApproval,
+    metadata: {
+      showCount: settings.showFollowerCount,
+    },
+  });
+}
+```
+
+## Performance Optimization
+
+### Caching Strategy
+
+```typescript
+class EFPCache {
+  private followCache = new Map<string, Set<string>>();
+  private followerCache = new Map<string, Set<string>>();
+  
+  async isFollowing(
+    follower: string,
+    followee: string
+  ): Promise<boolean> {
+    const cached = this.followCache.get(follower);
+    
+    if (cached) {
+      return cached.has(followee);
+    }
+    
+    // Fetch and cache
+    const following = await getFollowing(follower);
+    this.followCache.set(
+      follower,
+      new Set(following)
+    );
+    
+    return following.includes(followee);
+  }
+}
+```
+
+### Batch Loading
+
+```typescript
+export async function batchLoadProfiles(
+  addresses: string[]
+): Promise<Profile[]> {
+  // Batch load follow counts
+  const counts = await Promise.all(
+    addresses.map(addr => 
+      getFollowerCount(addr)
+    )
+  );
+  
+  // Batch load ENS names
+  const names = await batchResolveEns(addresses);
+  
+  return addresses.map((addr, i) => ({
+    address: addr,
+    followerCount: counts[i],
+    ensName: names[i],
+  }));
+}
+```
+
+## Integration with Paper Features
+
+### Feed Algorithm
+
+EFP data influences Paper's feed:
+
+```typescript
+export async function generateFeed(
+  userAddress: string
+): Promise<Post[]> {
+  // Get following list
+  const following = await getFollowing(userAddress);
+  
+  // Fetch posts from followed users
+  const posts = await getPosts({
+    authors: following,
+    limit: 50,
+  });
+  
+  // Boost posts from mutual follows
+  const mutuals = await getMutualFollows(userAddress);
+  
+  return rankPosts(posts, {
+    boostMutuals: mutuals,
+    userPreferences: await getUserPrefs(userAddress),
+  });
+}
+```
+
+### Social Notifications
+
+```typescript
+export function subscribeToFollows(
+  address: string,
+  callback: (event: FollowEvent) => void
+) {
+  efpContract.on('Follow', (follower, followee) => {
+    if (followee === address) {
+      callback({
+        type: 'new_follower',
+        follower,
+        timestamp: Date.now(),
+      });
+    }
+  });
+}
+```
+
+## Best Practices
+
+### Gas Optimization
+- Batch operations when possible
+- Use events instead of storage for non-critical data
+- Implement lazy loading for large lists
+
+### User Experience
+- Show pending states during transactions
+- Implement optimistic updates
+- Cache aggressively but invalidate smartly
+
+### Data Integrity
+- Validate addresses before operations
+- Handle list conflicts gracefully
+- Implement retry logic for failed transactions

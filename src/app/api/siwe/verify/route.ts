@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const { message, signature } = await req.json();
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
 
     const parsedMessage = parseSiweMessage(message);
