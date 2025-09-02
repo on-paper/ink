@@ -29,7 +29,8 @@
       },
       "suspicious": {
         "noExplicitAny": "off",
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noArrayIndexKey": "off"
       },
       "a11y": {
         "useKeyWithClickEvents": "off",
