@@ -30,7 +30,9 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noUnknownAtRules": "off",
-        "noArrayIndexKey": "off"
+        "noAssignInExpressions": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "off"
       },
       "a11y": {
         "useKeyWithClickEvents": "off",
