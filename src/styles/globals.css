@@ -308,6 +308,44 @@
   }
 }
 
+/* Search modal styling - make it compact and centered */
+/* Target the actual dialog container */
+div[class*="fixed"][class*="inset-0"] > div,
+div[class*="fixed"][class*="z-"] > div[role="dialog"],
+[data-radix-portal] > div > div[role="dialog"] {
+  position: fixed !important;
+  max-width: 640px !important;
+  width: min(90vw, 640px) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+  margin: 0 !important;
+  top: 10% !important;
+}
+
+/* Ensure the search dialog itself is properly sized */
+[role="dialog"][data-state="open"] {
+  max-width: 640px !important;
+  width: 100% !important;
+}
+
+/* Override any left-0 positioning */
+.left-0[role="dialog"],
+[class*="left-0"][role="dialog"],
+div[class*="inset-x-0"][role="dialog"] {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  max-width: 640px !important;
+  width: min(90vw, 640px) !important;
+}
+
+/* Command palette inner content */
+[cmdk-root],
+[data-cmdk-root] {
+  width: 100% !important;
+}
+
 /* Override all fumadocs container max-widths */
 :where([data-container]),
 :where([class*="container"]) {
