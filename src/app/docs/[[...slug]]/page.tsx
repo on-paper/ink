@@ -1,8 +1,9 @@
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getMDXComponents } from "@/mdx-components";
 import { source } from "~/utils/docs/source";
+import defaultMdxComponents from "fumadocs-ui/mdx";
+import type { MDXComponents } from "mdx/types";
 
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
   const resolvedParams = await params;
@@ -36,5 +37,12 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
   return {
     title: page.data.title,
     description: page.data.description,
+  };
+}
+
+export function getMDXComponents(components?: MDXComponents): MDXComponents {
+  return {
+    ...defaultMdxComponents,
+    ...components,
   };
 }
