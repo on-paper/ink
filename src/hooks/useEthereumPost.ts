@@ -162,7 +162,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
             toast.loading("Posting...", { id: toastId });
             const hash = await writeContractAsync({
               abi: CommentManagerABI,
-              address: COMMENT_MANAGER_ADDRESS,
+              address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
               functionName: "postComment",
               args: [regularData.commentData, regularData.appSignature],
               chain: getDefaultChain(),
@@ -226,7 +226,7 @@ export function useEthereumPost(options?: UseSimplePostCommentOptions) {
         toast.loading("Posting...", { id: toastId });
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "postComment",
           args: [preparedData.commentData, preparedData.appSignature],
           chain: getDefaultChain(),

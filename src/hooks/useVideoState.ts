@@ -16,8 +16,8 @@ const cleanupGlobalVideoState = () => {
 };
 
 export const useVideoState = (videoId: string) => {
-  const pauseCallbackRef = useRef<() => void>();
-  const muteCallbackRef = useRef<() => void>();
+  const pauseCallbackRef = useRef<(() => void) | null>(null);
+  const muteCallbackRef = useRef<(() => void) | null>(null);
 
   const registerPlayer = (pauseCallback: () => void, muteCallback?: () => void) => {
     pauseCallbackRef.current = pauseCallback;

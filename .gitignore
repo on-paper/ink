@@ -37,3 +37,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 certificates
+
+# claude
+.claude/settings.json
+
+# vscode
+.vscode
+
+# fumadocs
+.source

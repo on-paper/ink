@@ -28,7 +28,11 @@
         "noUselessElse": "error"
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noUnknownAtRules": "off",
+        "noAssignInExpressions": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "off"
       },
       "a11y": {
         "useKeyWithClickEvents": "off",

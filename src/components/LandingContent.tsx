@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { LuGithub, LuGlobe, LuHandCoins, LuLock, LuZap } from "react-icons/lu";
 import { SiEthereum } from "react-icons/si";

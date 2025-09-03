@@ -129,7 +129,7 @@ export function useEthereumReaction(options?: UseEthereumReactionOptions) {
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "postComment",
           args: [result.commentData, result.signature],
           chain: getDefaultChain(),

@@ -1,0 +1,13 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "architecture",
+    "---",
+    "protocols/ens",
+    "protocols/efp",
+    "protocols/ecp",
+    "---",
+    "features/gasless-transactions",
+    "features/signless-approve"
+  ]
+}

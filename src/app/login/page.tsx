@@ -2,7 +2,7 @@
 
 import { CreditCard, Loader2, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { useConnect, useDisconnect } from "wagmi";
 import { FamilyIcon, GlobeIcon, WalletConnectIcon } from "~/components/Icons";
@@ -41,7 +41,7 @@ export default function LoginPage() {
     if (!connector) return null;
 
     let name: string;
-    let icon: JSX.Element;
+    let icon: React.JSX.Element;
 
     if (connector.id === "injected") {
       name = "Browser Wallet";

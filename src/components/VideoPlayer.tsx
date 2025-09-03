@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { useSetAtom } from "jotai";
 import {
   CopyIcon,
@@ -13,6 +12,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
@@ -102,7 +102,7 @@ export const VideoPlayer = ({
   autoplay?: boolean;
   authorHandle?: string;
 }) => {
-  const playerWithControlsRef = useRef<HTMLDivElement | null>(null);
+  const playerWithControlsRef = useRef<HTMLDivElement>(null!);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -120,7 +120,7 @@ export const VideoPlayer = ({
   const [virtualIndex, setVirtualIndex] = useState(currentIndex || 0);
   const [isClickingMutePreview, setIsClickingMutePreview] = useState(false);
   const [modalSessionWantsAudio, setModalSessionWantsAudio] = useState(false);
-  const progressAnimationRef = useRef<number>();
+  const progressAnimationRef = useRef<number | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const videoId = useRef(`video-${Math.random().toString(36).substring(2, 11)}`).current;
@@ -936,8 +936,10 @@ export const VideoPlayer = ({
       />
       <div
         ref={(node) => {
-          playerWithControlsRef.current = node;
-          autoplayRef.current = node;
+          if (node) {
+            playerWithControlsRef.current = node;
+            autoplayRef.current = node;
+          }
         }}
         className={`relative inline-flex justify-center items-center rounded-lg overflow-hidden 
            ${isClickingMutePreview ? "" : "active:scale-[99%]"}

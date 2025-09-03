@@ -2,8 +2,7 @@
 
 import type { MediaData, PostMention, TokenData } from "@cartel-sh/ui";
 import React, { useMemo } from "react";
-import ReactMarkdown from "react-markdown";
-import type { Components } from "react-markdown/lib/ast-to-react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
@@ -176,7 +175,7 @@ const Markdown: React.FC<{
   };
 
   const createCustomLink = (colorClasses: string, _mentions?: PostMention[]): Components["a"] => {
-    return ({ node, ...props }) => {
+    return (props: any) => {
       const { href, children } = props;
 
       if (href?.startsWith(`${BASE_URL}/u/`)) {
@@ -208,7 +207,7 @@ const Markdown: React.FC<{
   };
 
   const createCustomImage = (mediaData?: MediaData): Components["img"] => {
-    return ({ node, ...props }) => {
+    return (props: any) => {
       const { src } = props;
       if (!src) return null;
       const mimeType = mediaData?.[src];
@@ -233,7 +232,7 @@ const Markdown: React.FC<{
   };
 
   const components: Components = {
-    p: ({ children }) => {
+    p: ({ children }: any) => {
       // Check if this paragraph contains a media gallery placeholder
       // Children could be a string, array, or React element
       let textContent = "";
@@ -279,24 +278,24 @@ const Markdown: React.FC<{
 
       return <p className="lexical-paragraph mb-4 last:mb-0">{processChildren(children)}</p>;
     },
-    h1: ({ children }) => <h1 className="lexical-h1">{children}</h1>,
-    h2: ({ children }) => <h2 className="lexical-h2">{children}</h2>,
-    h3: ({ children }) => <h3 className="lexical-h3">{children}</h3>,
-    h4: ({ children }) => <h4 className="lexical-h4">{children}</h4>,
-    h5: ({ children }) => <h5 className="lexical-h5">{children}</h5>,
-    h6: ({ children }) => <h6 className="lexical-h6">{children}</h6>,
-    strong: ({ children }) => <strong className="lexical-text-bold">{children}</strong>,
-    em: ({ children }) => <em className="lexical-text-italic">{children}</em>,
-    del: ({ children }) => <del className="lexical-text-strikethrough">{children}</del>,
-    code: ({ children }) => <code className="lexical-text-code">{children}</code>,
-    pre: ({ children }) => <pre className="lexical-code">{children}</pre>,
-    blockquote: ({ children }) => <blockquote className="lexical-quote">{children}</blockquote>,
-    ul: ({ children }) => <ul className="lexical-list-ul">{children}</ul>,
-    ol: ({ children }) => <ol className="lexical-list-ol">{children}</ol>,
-    li: ({ children }) => <li className="lexical-listitem">{children}</li>,
+    h1: ({ children }: any) => <h1 className="lexical-h1">{children}</h1>,
+    h2: ({ children }: any) => <h2 className="lexical-h2">{children}</h2>,
+    h3: ({ children }: any) => <h3 className="lexical-h3">{children}</h3>,
+    h4: ({ children }: any) => <h4 className="lexical-h4">{children}</h4>,
+    h5: ({ children }: any) => <h5 className="lexical-h5">{children}</h5>,
+    h6: ({ children }: any) => <h6 className="lexical-h6">{children}</h6>,
+    strong: ({ children }: any) => <strong className="lexical-text-bold">{children}</strong>,
+    em: ({ children }: any) => <em className="lexical-text-italic">{children}</em>,
+    del: ({ children }: any) => <del className="lexical-text-strikethrough">{children}</del>,
+    code: ({ children }: any) => <code className="lexical-text-code">{children}</code>,
+    pre: ({ children }: any) => <pre className="lexical-code">{children}</pre>,
+    blockquote: ({ children }: any) => <blockquote className="lexical-quote">{children}</blockquote>,
+    ul: ({ children }: any) => <ul className="lexical-list-ul">{children}</ul>,
+    ol: ({ children }: any) => <ol className="lexical-list-ol">{children}</ol>,
+    li: ({ children }: any) => <li className="lexical-listitem">{children}</li>,
     a: createCustomLink(colorClasses, mentions),
     img: createCustomImage(mediaData),
-    u: ({ children }) => <u className="lexical-text-underline">{children}</u>,
+    u: ({ children }: any) => <u className="lexical-text-underline">{children}</u>,
   };
 
   const extractedUrls = useMemo(() => {

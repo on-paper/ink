@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
     try {
       expiry = await retryOperation(async () => {
         const result = await publicClient.readContract({
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           abi: CommentManagerABI,
           functionName: "getApprovalExpiry",
           args: [authorAddress, appAddress],

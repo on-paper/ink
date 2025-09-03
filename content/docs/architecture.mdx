@@ -1,0 +1,54 @@
+---
+title: Architecture
+description: Technical architecture and design principles of Paper
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Architecture
+
+Paper's architecture is designed for scalability, decentralization, and optimal user experience.
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Frontend (Next.js)                  │
+├─────────────────────────────────────────────────────────┤
+│                    State Management                     │
+│                   (Redux + React Query)                 │
+├─────────────────────────────────────────────────────────┤
+│                     Web3 Integration                    │
+│                    (Wagmi + Viem + EIK)                 │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
+│  │     ENS     │  │     EFP     │  │     ECP     │      │
+│  └─────────────┘  └─────────────┘  └─────────────┘      │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
+│  │    IPFS     │  │   Arweave   │  │   Grove     │      │
+│  └─────────────┘  └─────────────┘  └─────────────┘      │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Core Components
+
+### ENS (Ethereum Name Service)
+
+ENS provides human-readable addresses and decentralized profiles
+
+### EFP (Ethereum Follow Protocol)
+
+EFP manages the social graph
+
+### ECP (Ethereum Comments Protocol)
+
+ECP handles decentralized comments with optional gasless transactions
+
+## Storage Architecture
+
+### Content Storage Strategy
+
+<Callout type="info">
+IPFS and Arweave integrations are coming soon
+</Callout>

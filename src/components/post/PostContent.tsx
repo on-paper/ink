@@ -1,5 +1,5 @@
 import type { Post } from "@cartel-sh/ui";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { forwardRef } from "react";
 import { LinkPreview } from "../embeds/LinkPreview";

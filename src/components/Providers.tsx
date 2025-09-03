@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ConnectKitProvider } from "connectkit";
 import { TransactionProvider } from "ethereum-identity-kit";
 import { familyAccountsConnector } from "family";
+import { RootProvider } from "fumadocs-ui/provider";
 import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "next-themes";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
@@ -95,26 +96,28 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <JotaiProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableColorScheme>
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <ConnectKitProvider>
-              <TransactionProvider>
-                <ExplosionProvider>
-                  <UpdatesProvider>
-                    <OverlayScrollbarsComponent defer className="h-full">
-                      {children}
-                    </OverlayScrollbarsComponent>
-                    <Toaster position="top-center" offset={16} />
-                    <ReactQueryDevtools initialIsOpen={false} />
-                  </UpdatesProvider>
-                </ExplosionProvider>
-              </TransactionProvider>
-            </ConnectKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </ThemeProvider>
-    </JotaiProvider>
+    <RootProvider>
+      <JotaiProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange enableColorScheme>
+          <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+              <ConnectKitProvider>
+                <TransactionProvider>
+                  <ExplosionProvider>
+                    <UpdatesProvider>
+                      <OverlayScrollbarsComponent defer className="h-full">
+                        {children}
+                      </OverlayScrollbarsComponent>
+                      <Toaster position="top-center" offset={16} />
+                      <ReactQueryDevtools initialIsOpen={false} />
+                    </UpdatesProvider>
+                  </ExplosionProvider>
+                </TransactionProvider>
+              </ConnectKitProvider>
+            </QueryClientProvider>
+          </WagmiProvider>
+        </ThemeProvider>
+      </JotaiProvider>
+    </RootProvider>
   );
 }

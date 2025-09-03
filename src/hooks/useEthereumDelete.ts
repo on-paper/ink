@@ -124,7 +124,7 @@ export function useEthereumDelete(options?: UseEthereumDeleteOptions) {
 
         const hash = await writeContractAsync({
           abi: CommentManagerABI,
-          address: COMMENT_MANAGER_ADDRESS,
+          address: COMMENT_MANAGER_ADDRESS as `0x${string}`,
           functionName: "deleteComment",
           args: [result.data.commentId],
           chain: getDefaultChain(),
