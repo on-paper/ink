@@ -38,8 +38,8 @@ export default function ChangelogPage() {
             )}
 
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full glass border-2 border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-pink-500/10">
-                <span className="text-sm font-bold text-purple-500">{entry.version || "1.0.0"}</span>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full glass border-2">
+                <span className="text-sm font-bold">{entry.version || "1.0.0"}</span>
               </div>
 
               <div className="flex-1">
@@ -61,14 +61,14 @@ export default function ChangelogPage() {
 
                   {entry.features && entry.features.length > 0 && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold mb-2 text-green-500">✨ New Features</h3>
+                      <h3 className="text-sm font-semibold mb-2"> New Features</h3>
                       <ul className="space-y-1">
                         {entry.features.map((feature, i) => (
                           <li
                             key={`feature-${entry.id}-${i}`}
                             className="text-sm text-muted-foreground flex items-start gap-2"
                           >
-                            <span className="text-green-500 mt-0.5">•</span>
+                            <span className="mt-0.5">•</span>
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -78,14 +78,14 @@ export default function ChangelogPage() {
 
                   {entry.fixes && entry.fixes.length > 0 && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold mb-2 text-blue-500">🔧 Bug Fixes</h3>
+                      <h3 className="text-sm font-semibold mb-2"> Bug Fixes</h3>
                       <ul className="space-y-1">
                         {entry.fixes.map((fix, i) => (
                           <li
                             key={`fix-${entry.id}-${i}`}
                             className="text-sm text-muted-foreground flex items-start gap-2"
                           >
-                            <span className="text-blue-500 mt-0.5">•</span>
+                            <span className="mt-0.5">•</span>
                             <span>{fix}</span>
                           </li>
                         ))}
@@ -95,14 +95,14 @@ export default function ChangelogPage() {
 
                   {entry.breaking && entry.breaking.length > 0 && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold mb-2 text-red-500">⚠️ Breaking Changes</h3>
+                      <h3 className="text-sm font-semibold mb-2">⚠️ Breaking Changes</h3>
                       <ul className="space-y-1">
                         {entry.breaking.map((item, i) => (
                           <li
                             key={`breaking-${entry.id}-${i}`}
                             className="text-sm text-muted-foreground flex items-start gap-2"
                           >
-                            <span className="text-red-500 mt-0.5">•</span>
+                            <span className="mt-0.5">•</span>
                             <span>{item}</span>
                           </li>
                         ))}
@@ -160,7 +160,7 @@ export default function ChangelogPage() {
             <div key={commit.sha} className="relative flex items-center gap-3 group">
               {/* Small dot on the timeline */}
               <div className="relative z-10 flex-shrink-0">
-                <div className={cn("h-1.5 w-1.5 rounded-full", index === 0 ? "bg-purple-500" : "bg-foreground/90")} />
+                <div className={cn("h-1.5 w-1.5 rounded-full", index === 0 ? "bg-primary" : "bg-foreground/90")} />
               </div>
 
               {/* Commit content - single line */}
@@ -215,10 +215,10 @@ export default function ChangelogPage() {
           {/* Base commit marker */}
           <div className="relative flex items-center gap-3 mt-2">
             <div className="relative z-10 flex-shrink-0">
-              <div className="h-2 w-2 rounded-full bg-green-500/70" />
+              <div className="h-2 w-2 rounded-full bg-primary/70" />
             </div>
             <div className="flex items-center gap-2 py-1.5">
-              <p className="text-xs font-medium text-green-500/90">Initial Release</p>
+              <p className="text-xs font-medium text-primary/90">Initial Release</p>
               <span className="text-xs text-muted-foreground font-mono">{BASE_COMMIT_SHA.substring(0, 7)}</span>
             </div>
           </div>

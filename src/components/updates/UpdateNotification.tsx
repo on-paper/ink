@@ -19,7 +19,7 @@ export function UpdateNotification() {
         <Link href="/changelog" className="block w-full">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-0.5">
-              <Sparkles className="h-5 w-5 text-purple-500" />
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm mb-1">New Release: v{latestRelease.version}</p>
