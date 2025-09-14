@@ -32,7 +32,7 @@ export const LandingContent = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen max-w-5xl mx-auto">
       <div className="flex flex-col min-h-screen items-center justify-start relative z-10 gap-40 py-20 px-4">
         {/* Section 1: Header */}
         <div className="text-center space-y-2">

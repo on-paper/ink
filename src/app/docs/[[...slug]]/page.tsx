@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { source } from "~/utils/docs/source";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
+import { Button } from "~/components/ui/button";
 
 export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
   const resolvedParams = await params;
@@ -16,8 +17,18 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
   const MDX = page.data.body;
 
   return (
-    <DocsPage full toc={page.data.toc} lastUpdate={page.data.lastModified}>
-      <DocsTitle>{page.data.title}</DocsTitle>
+    <DocsPage
+      full
+      tableOfContent={{
+        style: 'clerk',
+        enabled: true,
+      }}
+      toc={page.data.toc}
+      footer={{ enabled: true }}
+      editOnGithub={{ owner: "on-paper", repo: "ink", sha:"main", path: `/docs/${page.path}` }}
+      lastUpdate={page.data.lastModified}>
+
+      <DocsTitle className="font-extrabold">{page.data.title}</DocsTitle>
       {page.data.description && <DocsDescription>{page.data.description}</DocsDescription>}
       <DocsBody>
         <MDX components={getMDXComponents()} />
@@ -43,6 +54,12 @@ export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): P
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
+    h1: (props) => <h1 {...props} className="font-bold" />,
+    h2: (props) => <h2 {...props} className="font-bold" />,
+    h3: (props) => <h3 {...props} className="font-bold" />,
+    h4: (props) => <h4 {...props} className="font-bold" />,
+    h5: (props) => <h5 {...props} className="font-bold" />,
+    h6: (props) => <h6 {...props} className="font-bold" />,
     ...components,
   };
 }

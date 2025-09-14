@@ -12,6 +12,16 @@ const config = {
     ignoreBuildErrors: false,
   },
 
+  redirects: async () => {
+    return [
+      {
+        source: '/docs',
+        destination: '/docs/overview',
+        permanent: true,
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       {

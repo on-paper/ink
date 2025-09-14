@@ -45,9 +45,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <UpdateNotification />
                   <Menu isAuthenticated={isAuthenticated} user={user} />
 
-                  <PageTransition>
-                    <div className="min-w-0 max-w-5xl mx-auto grow sm:shrink h-full">{children}</div>
-                  </PageTransition>
+                  {/* <PageTransition> */}
+                    <div className="min-w-0 h-full">{children}</div>
+                  {/* </PageTransition> */}
 
                   <FloatingAudioPlayer />
                 </NotificationsProvider>
