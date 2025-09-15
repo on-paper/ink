@@ -181,15 +181,15 @@ export const MarkdownMediaItem = ({ url, mimeType }: { url: string; mimeType?: s
   const isVideo = mimeType?.startsWith("video/");
   if (isVideo) {
     return (
-      <div className="my-2 w-fit">
+      <span className="inline-block my-2 w-fit">
         <VideoPlayer url={url} preview="" autoplay={true} />
-      </div>
+      </span>
     );
   }
 
   return (
-    <div className="max-w-md">
+    <span className="inline-block max-w-md">
       <ImageViewer src={url} alt="" className="rounded-lg w-full" />
-    </div>
+    </span>
   );
 };
