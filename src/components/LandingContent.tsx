@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { BookOpenIcon, SquareLibrary } from "lucide-react";
 import { LuGithub, LuGlobe, LuHandCoins, LuLock, LuZap } from "react-icons/lu";
 import { SiEthereum } from "react-icons/si";
 
@@ -46,11 +47,6 @@ export const LandingContent = () => {
             </span>
           </h1>
           <p className="text-lg text-primary/10">to Ethereum-native social</p>
-          <div className="mt-4">
-            <Link href="/docs" className="text-primary underline-offset-4 hover:underline">
-              Read the docs
-            </Link>
-          </div>
         </div>
 
         {/* Section 2: Cards */}
@@ -185,6 +181,22 @@ export const LandingContent = () => {
                 <span className="text-primary/60">. Your content lives directly on chain and is forever available</span>
               </p>
             </div>
+          </div>
+
+          <div className="mt-40 max-w-3xl mx-auto">
+            <Link href="/docs" className="block group">
+              <div className="relative w-full border border-primary/20 rounded-lg p-6 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 overflow-hidden">
+                <SquareLibrary className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-24 text-primary opacity-20 transition-opacity duration-200 group-hover:opacity-30" />
+                <div className="relative pr-28 z-10">
+                  <p className="text-xl font-semibold text-primary">
+                    Want to learn more?
+                  </p>
+                  <p className="text-lg text-primary/60">
+                    Read the Paper documentation
+                  </p>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
