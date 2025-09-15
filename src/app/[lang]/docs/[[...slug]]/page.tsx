@@ -5,9 +5,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { source } from "~/utils/docs/source";
 
-export default async function Page({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = await params;
-  const page = source.getPage(resolvedParams.slug || []);
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug?: string[]; lang: string }>;
+}) {
+  const { slug = [], lang } = await params;
+  const page = source.getPage(slug, lang);
 
   if (!page) {
     notFound();
@@ -24,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
       }}
       toc={page.data.toc}
       footer={{ enabled: true }}
-      editOnGithub={{ owner: "on-paper", repo: "ink", sha: "main", path: `/docs/${page.path}` }}
+      editOnGithub={{ owner: "on-paper", repo: "ink", sha: "main", path: `/docs/${page.locale}/${page.path}` }}
       lastUpdate={page.data.lastModified}
     >
       <DocsTitle className="font-extrabold">{page.data.title}</DocsTitle>
@@ -37,12 +41,13 @@ export default async function Page({ params }: { params: Promise<{ slug?: string
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  return source.generateParams("slug", "lang");
 }
 
-export async function generateMetadata(props: PageProps<"/docs/[[...slug]]">): Promise<Metadata> {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
+export async function generateMetadata(props: PageProps<"/[lang]/docs/[[...slug]]">): Promise<Metadata> {
+  const { params } = props;
+  const { slug = [], lang } = await params;
+  const page = source.getPage(slug, lang);
   if (!page) notFound();
   return {
     title: page.data.title,
@@ -63,3 +68,4 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ...components,
   };
 }
+

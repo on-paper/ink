@@ -24,10 +24,17 @@ export function baseOptions(): BaseLayoutProps {
   };
 }
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
   return (
     <DocsLayout
-      tree={source.pageTree}
+      tree={source.getPageTree(lang)}
       {...baseOptions()}
       sidebar={{
         defaultOpenLevel: 1,
@@ -37,3 +44,4 @@ export default function Layout({ children }: { children: ReactNode }) {
     </DocsLayout>
   );
 }
+
