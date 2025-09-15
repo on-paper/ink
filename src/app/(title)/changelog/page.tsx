@@ -38,12 +38,12 @@ export default function ChangelogPage() {
             )}
 
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full glass border-2">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50 border-2">
                 <span className="text-sm font-bold">{entry.version || "1.0.0"}</span>
               </div>
 
               <div className="flex-1">
-                <div className="glass rounded-lg p-6 border border-border/50">
+                <div className="bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h2 className="text-xl font-bold mb-1">{entry.title}</h2>

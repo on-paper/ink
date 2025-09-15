@@ -56,7 +56,7 @@ const DropdownMenuSubContent = React.forwardRef<
             opacity: { duration: 0.1 },
           }}
           className={cn(
-            "z-50 min-w-[8rem] overflow-hidden rounded-lg glass text-popover-foreground shadow-lg p-1",
+            "z-50 min-w-[8rem] overflow-hidden rounded-lg bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50 text-popover-foreground shadow-lg p-1",
             className,
           )}
         >
@@ -84,7 +84,7 @@ const DropdownMenuContent = React.forwardRef<
       >
         <motion.div
           className={cn(
-            "z-50 min-w-[8rem] rounded-lg glass text-popover-foreground shadow-md overflow-hidden p-1",
+            "z-50 min-w-[8rem] rounded-lg bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50 text-popover-foreground shadow-md overflow-hidden p-1",
             className,
           )}
           initial={{ scale: 0.95, y: -10, opacity: 0 }}

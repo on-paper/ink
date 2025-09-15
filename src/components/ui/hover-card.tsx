@@ -19,7 +19,7 @@ const HoverCardContent = React.forwardRef<
       <HoverCardPrimitive.Content asChild ref={ref} align={align} sideOffset={sideOffset} {...props}>
         <motion.div
           className={cn(
-            "z-[70] w-64 rounded-2xl glass text-popover-foreground shadow-md overflow-hidden p-4",
+            "z-[70] w-64 rounded-2xl bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50 text-popover-foreground shadow-md overflow-hidden p-4",
             className,
           )}
           initial={{ scale: 0.95, opacity: 0 }}

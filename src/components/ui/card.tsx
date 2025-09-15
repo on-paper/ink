@@ -8,7 +8,7 @@ const cardVariants = cva("rounded-lg text-card-foreground border-0 transition du
   variants: {
     variant: {
       default: "bg-transparent",
-      glass: "glass",
+      glass: "bg-secondary/50 backdrop-blur-sm backdrop-saturate-150 border border-border/50",
     },
   },
   defaultVariants: {
