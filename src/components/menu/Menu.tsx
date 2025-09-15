@@ -1,7 +1,7 @@
 "use client";
 
 import type { User } from "@cartel-sh/ui";
-import { Bookmark, Heart, LogInIcon } from "lucide-react";
+import { Bookmark, BookOpenIcon, Heart, LogInIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
@@ -59,6 +59,7 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
   const isActivity = pathname === "/activity";
   const isBookmarks = pathname === "/bookmarks";
   const isSettings = pathname === "/settings";
+  const isDocs = pathname === "/docs" || pathname.startsWith("/docs/");
 
   let homeInnerIcon: React.ReactNode;
   if (isHome) {
@@ -214,6 +215,18 @@ export function Menu({ isAuthenticated, user }: MenuClientProps) {
         >
           {theme === "light" ? <SunIcon ref={sunIconRef} size={16} /> : <MoonIcon ref={moonIconRef} size={16} />}
           <span className="ml-3">Theme</span>
+        </button>
+        <button
+          type="button"
+          aria-current={isDocs ? "page" : undefined}
+          className={cn(
+            "relative flex cursor-default select-none items-center rounded-lg px-3 py-1.5 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left",
+            isDocs && "bg-accent/50 text-accent-foreground",
+          )}
+          onClick={() => router.push("/docs")}
+        >
+          <BookOpenIcon size={16} />
+          <span className="ml-3">Docs</span>
         </button>
         <button
           type="button"

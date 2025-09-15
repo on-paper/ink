@@ -7,48 +7,22 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Architecture
 
-Paper's architecture is designed for scalability, decentralization, and optimal user experience.
+Paper is powered by the following protocols:
 
-## System Overview
+- [Ethereum Comments Protocol (ECP)](/docs/protocols/ecp), ensures your discussions are permanent and uncensorable.
+- [Ethereum Follow Protocol (EFP)](/docs/protocols/efp), secures your connections and allows you to take them with you across the decentralized web.
+- [Ethereum Name Service (ENS)](/docs/protocols/ens), powers your identity across the decentralized web.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Frontend (Next.js)                  │
-├─────────────────────────────────────────────────────────┤
-│                    State Management                     │
-│                   (Redux + React Query)                 │
-├─────────────────────────────────────────────────────────┤
-│                     Web3 Integration                    │
-│                    (Wagmi + Viem + EIK)                 │
-├─────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
-│  │     ENS     │  │     EFP     │  │     ECP     │      │
-│  └─────────────┘  └─────────────┘  └─────────────┘      │
-├─────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
-│  │    IPFS     │  │   Arweave   │  │   Grove     │      │
-│  └─────────────┘  └─────────────┘  └─────────────┘      │
-└─────────────────────────────────────────────────────────┘
-```
+## Posts
+The posts on [ECP](/docs/protocols/ecp) are stored **directly on-chain** inside the blocks. 
 
-## Core Components
+Attachments inside the posts (images, videos, etc.) are stored on decentralized storage networks.  
+Currently we use [Grove](https://lens.xyz/docs/storage), with IPFS and Arweave coming in the future.
 
-### ENS (Ethereum Name Service)
+## Identity
+Your identity is powered by [ENS](/docs/protocols/ens), which is a decentralized naming system for Ethereum addresses.
+It's stored **directly on-chain**.
 
-ENS provides human-readable addresses and decentralized profiles
-
-### EFP (Ethereum Follow Protocol)
-
-EFP manages the social graph
-
-### ECP (Ethereum Comments Protocol)
-
-ECP handles decentralized comments with optional gasless transactions
-
-## Storage Architecture
-
-### Content Storage Strategy
-
-<Callout type="info">
-IPFS and Arweave integrations are coming soon
-</Callout>
+## Connections
+Your connections are powered by [EFP](/docs/protocols/efp), which is a decentralized follow protocol.
+It's stored **directly on-chain**.

@@ -1,9 +1,8 @@
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import type { ReactNode } from "react";
-import { source } from "~/utils/docs/source";
-
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import type { ReactNode } from "react";
 import PaperLogo from "~/components/icons/PaperLogo";
+import { source } from "~/utils/docs/source";
 
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -28,7 +27,6 @@ export function baseOptions(): BaseLayoutProps {
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <DocsLayout
-      containerProps={{ tw: "max-w-3xl mx-auto" }}
       tree={source.pageTree}
       {...baseOptions()}
       sidebar={{

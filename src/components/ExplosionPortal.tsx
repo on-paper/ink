@@ -70,28 +70,13 @@ const ExplosionEffect = ({ type, x, y }: { type: ExplosionType; x: number; y: nu
   const [isReady, setIsReady] = useState(false);
 
   const heartShape = useMemo(
-    () =>
-      confetti.shapeFromPath(
-        "M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z",
-      ),
+    () => confetti.shapeFromPath("M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"),
     [],
   );
 
-  const upArrowShape = useMemo(
-    () =>
-      confetti.shapeFromPath(
-        "M12 2l-7 7h4v9h6v-9h4z",
-      ),
-    [],
-  );
+  const upArrowShape = useMemo(() => confetti.shapeFromPath("M12 2l-7 7h4v9h6v-9h4z"), []);
 
-  const downArrowShape = useMemo(
-    () =>
-      confetti.shapeFromPath(
-        "M12 22l7-7h-4V6H9v9H5z",
-      ),
-    [],
-  );
+  const downArrowShape = useMemo(() => confetti.shapeFromPath("M12 22l7-7h-4V6H9v9H5z"), []);
 
   const onInitHandler = ({ conductor }: { conductor: any }) => {
     controllerRef.current = conductor;

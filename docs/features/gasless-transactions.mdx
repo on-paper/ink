@@ -7,4 +7,23 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Gasless Transactions
 
+
+The [ECP](/docs/protocols/ecp) protocol implements an approvals system that allows comment authors to delegate 
+the ability for an app to post comments on their behalf. This enables a smooth UX where a user signs a one-time 
+approval transaction, and the app can post comments on their behalf without requiring the user to sign each comment. 
+These approvals can be revoked by the user at any time.
+
 Paper implements ECP gasless transactions to remove friction from user interactions.
+
+You can approve transactions on Paper to be sponsored by Paper. This means you can post on Paper without needing to pay gas fees.
+
+## How to use it
+
+1. Go to [settings](/settings)
+2. Scroll to "Gasless Posting"
+3. Choose a period of time to approve transactions for
+4. Sign an approval trascation (free, only pay gas fees)
+
+After that, paper will cover the gas fees for your posts.
+
+Learn more: [Official ECP Documentation](https://docs.ethcomments.xyz/)

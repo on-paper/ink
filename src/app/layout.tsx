@@ -3,7 +3,6 @@ import { DeletedPostsProvider } from "~/components/DeletedPostsContext";
 import { FilteredUsersProvider } from "~/components/FilteredUsersContext";
 import { FloatingAudioPlayer } from "~/components/FloatingAudioPlayer";
 import { NotificationsProvider } from "~/components/notifications/NotificationsContext";
-import { PageTransition } from "~/components/PageTransition";
 import { Providers } from "~/components/Providers";
 import { UserProvider } from "~/components/user/UserContext";
 import { quicksand } from "~/styles/fonts";
@@ -46,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Menu isAuthenticated={isAuthenticated} user={user} />
 
                   {/* <PageTransition> */}
-                    <div className="min-w-0 h-full">{children}</div>
+                  <div className="min-w-0 h-full">{children}</div>
                   {/* </PageTransition> */}
 
                   <FloatingAudioPlayer />

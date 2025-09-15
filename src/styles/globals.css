@@ -145,7 +145,6 @@
     filter: blur(var(--bg-blur));
   }
 
-
   /* Button hover effect with expanding background */
   .hover-expand {
     position: relative;
