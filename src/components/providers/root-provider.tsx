@@ -18,6 +18,10 @@ const { provider } = defineI18nUI(i18n, {
       displayName: 'Chinese',
       search: '搜尋文檔',
     },
+    jp: {
+      displayName: 'Japanese',
+      search: '検索',
+    },
   },
 });
 

@@ -1,0 +1,28 @@
+---
+title: アーキテクチャ
+description: Paper の技術アーキテクチャと設計原則
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# アーキテクチャ
+
+Paper は次のプロトコル群により動作します：
+
+- [Ethereum Comments Protocol（ECP）](./protocols/ecp)：議論が恒久的で、検閲不能であることを保証します。
+- [Ethereum Follow Protocol（EFP）](./protocols/efp)：あなたのつながりを保護し、分散型ウェブ全体で持ち運べるようにします。
+- [Ethereum Name Service（ENS）](./protocols/ens)：分散型ウェブにおけるあなたのアイデンティティを支えます。
+
+## 投稿
+[ECP](./protocols/ecp) 上の投稿は、ブロック内に**直接オンチェーン**で保存されます。
+
+投稿に含まれる添付（画像・動画など）は分散型ストレージに保存されます。  
+現在は [Grove](https://lens.xyz/docs/storage) を使用しており、今後 IPFS や Arweave にも対応予定です。
+
+## アイデンティティ
+あなたのアイデンティティは [ENS](./protocols/ens) によって提供され、イーサリアムアドレスの分散型ネーミングシステムです。
+これらの情報は**直接オンチェーン**に保存されます。
+
+## つながり
+あなたのフォロー関係は [EFP](./protocols/efp) によって提供され、分散型のフォロープロトコルです。
+これらの情報も**直接オンチェーン**に保存されます。
