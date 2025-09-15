@@ -37,26 +37,26 @@ export const LandingContent = () => {
     <div className="relative min-h-screen max-w-5xl mx-auto">
       <div className="flex flex-col min-h-screen items-center justify-start relative z-10 gap-40 py-20 px-4">
         {/* Section 1: Header */}
-        <div className="text-center space-y-2">
-          <p className="text-lg text-primary/10">Welcome, you have arrived just in time</p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight flex flex-col sm:flex-row sm:justify-center items-center">
+        <div className="text-center space-y-2 w-full">
+          <p className="text-lg text-primary/30">Welcome, you have arrived just in time</p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight flex flex-col lg:flex-row justify-center items-center gap-2 lg:gap-6">
             <span className="text-primary/30">Permanent.</span>
-            <span className="text-primary/50 sm:ml-4">Permissionless.</span>
-            <span className="sm:ml-4 dark:text-white dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] drop-shadow-md">
+            <span className="text-primary/50">Permissionless.</span>
+            <span className="dark:text-white dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] drop-shadow-md">
               Paper.
             </span>
           </h1>
-          <p className="text-lg text-primary/10">to Ethereum-native social</p>
+          <p className="text-lg text-primary/30">to Ethereum-native social</p>
         </div>
 
         {/* Section 2: Cards */}
         <div className="w-full max-w-xl mx-auto">
           <div className="flex flex-col gap-4">
-            <div className="rounded-lg p-4 pl-8 flex items-center gap-6">
+            <div className="rounded-lg p-4 flex items-center gap-4">
               <SiEthereum className="text-4xl text-primary flex-shrink-0 dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] drop-shadow-sm" />
 
               <div className="h-20 flex flex-col justify-center flex-1">
-                <h3 className="text-xl font-bold text-left whitespace-nowrap flex items-baseline">
+                <h3 className="text-lg sm:text-xl font-bold text-left flex flex-wrap items-baseline">
                   <span>Ethereum</span>
                   <span className="ml-[5px]"> </span>
                   <span className="relative inline-flex" style={{ minWidth: "160px" }}>
@@ -108,8 +108,8 @@ export const LandingContent = () => {
             </div>
 
             <div className="flex justify-end">
-              <div className="rounded-lg p-4 pr-8 flex items-center gap-4 w-full md:w-auto">
-                <div className="text-right">
+              <div className="rounded-lg p-4 flex items-center gap-4 w-full sm:w-auto">
+                <div className="text-right flex-1 sm:flex-initial">
                   <h3 className="text-lg font-bold">Fully open source</h3>
                   <p className="text-sm text-primary/60 text-right">
                     Every line of code{" "}
@@ -128,7 +128,7 @@ export const LandingContent = () => {
               </div>
             </div>
 
-            <div className="rounded-lg p-4 pl-8 flex items-center gap-4">
+            <div className="rounded-lg p-4 flex items-center gap-4">
               <LuGlobe className="text-3xl text-primary flex-shrink-0 dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] drop-shadow-sm" />
               <div>
                 <h3 className="text-lg font-bold">Public goods</h3>
@@ -140,15 +140,15 @@ export const LandingContent = () => {
 
         {/* Section 3: Closing content */}
         <div className="w-full">
-          <div className="max-w-xl mx-auto mb-12">
+          <div className="max-w-xl mx-auto mb-16">
             <p className="text-xl text-primary">You'll love it.</p>
-            <p className="text-xl text-primary/60">It's never been easier to communicate on-chain.</p>
+            <p className="text-xl text-primary/60 mb-32">It's never been easier to communicate on-chain.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-2xl mx-auto">
-            <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-20 max-w-2xl mx-auto px-4 md:px-12">
+            <div className="relative pl-12 md:pl-0">
               <LuZap
-                className="absolute -top-12 -left-12 text-7xl text-primary -z-10"
+                className="absolute -top-8 md:-top-12 left-0 md:-left-12 text-6xl md:text-7xl text-primary -z-10"
                 style={{ filter: "opacity(0.2)" }}
               />
               <p className="text-base relative">
@@ -157,9 +157,9 @@ export const LandingContent = () => {
               </p>
             </div>
 
-            <div className="relative">
+            <div className="relative pl-12 md:pl-0">
               <LuHandCoins
-                className="absolute -top-12 -left-12 text-7xl text-primary -z-10"
+                className="absolute -top-8 md:-top-12 left-0 md:-left-12 text-6xl md:text-7xl text-primary -z-10"
                 style={{ filter: "opacity(0.2)" }}
               />
               <p className="text-base relative">
@@ -170,10 +170,10 @@ export const LandingContent = () => {
               </p>
             </div>
 
-            <div className="relative">
+            <div className="relative pl-12 md:pl-0">
               <LuLock
                 strokeWidth={2.5}
-                className="absolute -top-12 -left-12 text-7xl text-primary -z-10"
+                className="absolute -top-8 md:-top-12 left-0 md:-left-12 text-6xl md:text-7xl text-primary -z-10"
                 style={{ filter: "opacity(0.2)", transform: "scaleX(0.85)" }}
               />
               <p className="text-base relative">
