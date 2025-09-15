@@ -7,15 +7,28 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import { i18n } from "~/utils/i18n";
 
+
+const { provider } = defineI18nUI(i18n, {
+  translations: {
+    en: {
+      displayName: 'English',
+      search: 'Search',
+    },
+    zh: {
+      displayName: 'Chinese',
+      search: '搜尋文檔',
+    },
+  },
+});
+
+
 export function RootProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const currentLocale = useMemo(() => {
     const first = pathname?.split("/").filter(Boolean)[0];
     return i18n.languages.includes(first as any) ? (first as typeof i18n.languages[number]) : i18n.defaultLanguage;
   }, [pathname]);
-
-  const I18N = useMemo(() => defineI18nUI(i18n, { translations: {} }), []);
-  const i18nProps = useMemo(() => I18N.provider(currentLocale), [I18N, currentLocale]);
+  const i18nProps = useMemo(() => provider(currentLocale), [provider, currentLocale]);
 
   return (
     <FumaProvider

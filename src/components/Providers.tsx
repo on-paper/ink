@@ -5,7 +5,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ConnectKitProvider } from "connectkit";
 import { TransactionProvider } from "ethereum-identity-kit";
 import { familyAccountsConnector } from "family";
-import { RootProvider } from "fumadocs-ui/provider";
 import { Provider as JotaiProvider } from "jotai";
 import { ThemeProvider } from "next-themes";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
@@ -21,6 +20,7 @@ import { ExplosionProvider } from "./ExplosionPortal";
 import { UpdatesProvider } from "./updates/UpdatesContext";
 import "overlayscrollbars/styles/overlayscrollbars.css";
 import { Toaster } from "~/components/ui/sonner";
+import { RootProvider } from "./providers/root-provider";
 
 const projectId = env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 const url = getBaseUrl();

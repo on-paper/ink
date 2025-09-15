@@ -1,4 +1,4 @@
-import defaultMdxComponents from "fumadocs-ui/mdx";
+import defaultMdxComponents, { createRelativeLink } from "fumadocs-ui/mdx";
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import type { MDXComponents } from "mdx/types";
 import type { Metadata } from "next";
@@ -18,6 +18,7 @@ export default async function Page({
   }
 
   const MDX = page.data.body;
+  const RelativeA = createRelativeLink(source, page);
 
   return (
     <DocsPage
@@ -34,7 +35,7 @@ export default async function Page({
       <DocsTitle className="font-extrabold">{page.data.title}</DocsTitle>
       {page.data.description && <DocsDescription>{page.data.description}</DocsDescription>}
       <DocsBody>
-        <MDX components={getMDXComponents()} />
+        <MDX components={getMDXComponents({ a: RelativeA })} />
       </DocsBody>
     </DocsPage>
   );
@@ -68,4 +69,3 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ...components,
   };
 }
-

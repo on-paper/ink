@@ -2,6 +2,7 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import type { ReactNode } from "react";
 import PaperLogo from "~/components/icons/PaperLogo";
+import { i18n } from "~/utils/i18n";
 import { source } from "~/utils/docs/source";
 
 export function baseOptions(): BaseLayoutProps {
@@ -18,6 +19,7 @@ export function baseOptions(): BaseLayoutProps {
     themeSwitch: {
       enabled: true,
     },
+    i18n,
     searchToggle: {
       enabled: true,
     },

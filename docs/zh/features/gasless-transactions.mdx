@@ -1,0 +1,27 @@
+---
+title: 免 Gas 交易
+description: 为已授权用户提供赞助交易，带来无缝体验
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# 免 Gas 交易
+
+[ECP](./protocols/ecp) 协议实现了一套授权机制，允许评论作者将“代表其发评论”的能力委托给应用。
+这带来了顺滑的使用体验：用户只需签名一次授权交易，之后应用即可代表用户发评论，而无需用户每次都手动签名。
+用户可以随时撤销这些授权。
+
+Paper 基于 ECP 实现了免 Gas 交易，以尽可能减少用户交互中的摩擦。
+
+你可以授权由 Paper 来赞助你的交易。这意味着你在 Paper 上发帖无需自行支付 Gas 费。
+
+## 如何使用
+
+1. 打开 [设置](/settings)
+2. 下拉至 “免 Gas 发帖”
+3. 选择授权的有效期
+4. 签名一次性授权交易（免费，仅需支付 Gas 费）
+
+完成后，Paper 会为你的帖子承担 Gas 费用。
+
+了解更多： [ECP 官方文档](https://docs.ethcomments.xyz/)

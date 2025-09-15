@@ -1,0 +1,28 @@
+---
+title: 架构
+description: Paper 的技术架构与设计原则
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# 架构
+
+Paper 基于以下协议构建：
+
+- [以太坊评论协议（ECP）](./protocols/ecp)，确保你的讨论是永久且不可审查的。
+- [以太坊关注协议（EFP）](./protocols/efp)，保障你的连接，并让你在去中心化网络中随身携带它们。
+- [以太坊域名服务（ENS）](./protocols/ens)，为你的去中心化身份提供支持。
+
+## 帖子
+发布在 [ECP](./protocols/ecp) 上的帖子**直接存储在链上**的区块中。
+
+帖子中的附件（图片、视频等）存储在去中心化存储网络中。  
+目前我们使用 [Grove](https://lens.xyz/docs/storage)，未来将支持 IPFS 和 Arweave。
+
+## 身份
+你的身份由 [ENS](./protocols/ens) 提供支持，它是以太坊地址的去中心化命名系统。
+这些信息**直接存储在链上**。
+
+## 连接
+你的社交连接由 [EFP](./protocols/efp) 提供支持，它是去中心化的关注协议。
+这些信息**直接存储在链上**。
