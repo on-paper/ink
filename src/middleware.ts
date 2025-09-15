@@ -2,8 +2,8 @@ import { createI18nMiddleware } from "fumadocs-core/i18n/middleware";
 import { getIronSession } from "iron-session";
 import type { NextFetchEvent, NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { i18n } from "~/utils/i18n";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
+import { i18n } from "~/utils/i18n";
 
 const i18nMiddleware = createI18nMiddleware({
   ...i18n,
@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
 
   // i18n only inside /docs, but skip root to allow Next redirect to /docs/overview
   if (path.startsWith("/docs") && path !== "/docs") {
-    const res = i18nMiddleware(request, ({ waitUntil() {} } as unknown) as NextFetchEvent);
+    const res = i18nMiddleware(request, { waitUntil() {} } as unknown as NextFetchEvent);
     if (res) return res;
   }
 

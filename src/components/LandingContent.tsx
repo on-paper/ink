@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LuGithub, LuGlobe, LuHandCoins, LuLock, LuZap } from "react-icons/lu";
 import { SiEthereum } from "react-icons/si";
@@ -45,6 +46,11 @@ export const LandingContent = () => {
             </span>
           </h1>
           <p className="text-lg text-primary/10">to Ethereum-native social</p>
+          <div className="mt-4">
+            <Link href="/docs" className="text-primary underline-offset-4 hover:underline">
+              Read the docs
+            </Link>
+          </div>
         </div>
 
         {/* Section 2: Cards */}

@@ -4,12 +4,9 @@ import type { MDXComponents } from "mdx/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { source } from "~/utils/docs/source";
+import { generateDocsOGUrl } from "~/utils/generateOGUrl";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug?: string[]; lang: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ slug?: string[]; lang: string }> }) {
   const { slug = [], lang } = await params;
   const page = source.getPage(slug, lang);
 
@@ -45,14 +42,44 @@ export async function generateStaticParams() {
   return source.generateParams("slug", "lang");
 }
 
-export async function generateMetadata(props: PageProps<"/[lang]/docs/[[...slug]]">): Promise<Metadata> {
-  const { params } = props;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug?: string[]; lang: string }>;
+}): Promise<Metadata> {
   const { slug = [], lang } = await params;
   const page = source.getPage(slug, lang);
   if (!page) notFound();
+
+  const title = page.data.title;
+  const description = page.data.description;
+  const docPath = slug.join("/");
+
+  const ogImageURL = generateDocsOGUrl({
+    title,
+    description,
+    path: docPath,
+    lang,
+  });
+
   return {
-    title: page.data.title,
-    description: page.data.description,
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      title,
+      description: description || `${title} - Paper Documentation`,
+      images: [ogImageURL],
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${lang}/docs/${docPath}`,
+      siteName: "Paper",
+      locale: lang === "en" ? "en_US" : lang === "zh" ? "zh_CN" : "ja_JP",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: description || `${title} - Paper Documentation`,
+      images: [ogImageURL],
+    },
   };
 }
 

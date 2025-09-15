@@ -2,8 +2,8 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import type { ReactNode } from "react";
 import PaperLogo from "~/components/icons/PaperLogo";
-import { i18n } from "~/utils/i18n";
 import { source } from "~/utils/docs/source";
+import { i18n } from "~/utils/i18n";
 
 export function baseOptions(): BaseLayoutProps {
   return {
@@ -26,13 +26,7 @@ export function baseOptions(): BaseLayoutProps {
   };
 }
 
-export default async function Layout({
-  children,
-  params,
-}: {
-  children: ReactNode;
-  params: Promise<{ lang: string }>;
-}) {
+export default async function Layout({ children, params }: { children: ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   return (
     <DocsLayout
@@ -46,4 +40,3 @@ export default async function Layout({
     </DocsLayout>
   );
 }
-

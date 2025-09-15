@@ -52,3 +52,26 @@ export function generateCommunityOGUrl(params: { name?: string; address?: string
 
   return `${baseUrl}/api/og/community?${searchParams.toString()}`;
 }
+
+export function generateDocsOGUrl(params: {
+  title: string;
+  description?: string;
+  path?: string;
+  lang?: string;
+}): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const searchParams = new URLSearchParams();
+
+  searchParams.append("title", params.title);
+  if (params.description) {
+    searchParams.append("description", params.description);
+  }
+  if (params.path) {
+    searchParams.append("path", params.path);
+  }
+  if (params.lang) {
+    searchParams.append("lang", params.lang);
+  }
+
+  return `${baseUrl}/api/og/docs?${searchParams.toString()}`;
+}
