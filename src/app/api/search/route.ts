@@ -3,5 +3,9 @@ import { source } from "~/utils/docs/source";
 
 export const { GET } = createFromSource(source, {
   // https://docs.orama.com/docs/orama-js/supported-languages
-  language: "english",
+  localeMap: {
+    en: { language: "english" },
+    zh: { language: "chinese" },
+    jp: { language: "japanese" },
+  }
 });
