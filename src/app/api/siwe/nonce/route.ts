@@ -1,13 +1,13 @@
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateNonce } from "siwe";
+import { generateSiweNonce } from "viem/siwe";
 import { type SessionData, sessionOptions } from "~/lib/siwe-session";
 
 export async function GET() {
   try {
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-    const nonce = generateNonce();
+    const nonce = generateSiweNonce();
     session.nonce = nonce;
     await session.save();
 

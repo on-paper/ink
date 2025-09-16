@@ -7,8 +7,7 @@
     "dev": "bunx --bun next dev -p 3010 --experimental-https",
     "start": "bunx --bun next start",
     "check": "bunx @biomejs/biome check --write --unsafe ./src/*",
-    "generate-app-key": "bun scripts/generate-app-key.ts",
-    "postinstall": "fumadocs-mdx"
+    "generate-app-key": "bun scripts/generate-app-key.ts"
   },
   "dependencies": {
     "@base-org/account": "^2.0.2",
@@ -72,7 +71,7 @@
     "overlayscrollbars": "^2.11.4",
     "overlayscrollbars-react": "^0.5.6",
     "pino-pretty": "^13.1.1",
-    "porto": "^0.0.77",
+    "porto": "latest",
     "postcss": "^8.5.6",
     "react": "^19.0.0-rc.1",
     "react-canvas-confetti": "^2.0.7",
@@ -90,8 +89,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "unsplash-js": "^7.0.19",
-    "viem": "^2.34.0",
-    "wagmi": "^2.16.4",
+    "viem": "^2.37.6",
+    "wagmi": "^2.16.9",
     "zod": "^4.0.0"
   },
   "devDependencies": {
@@ -106,9 +105,6 @@
     "patch-package": "^8.0.0",
     "tailwindcss": "4.0.0-beta.10",
     "typescript": "5.4.5"
-  },
-  "overrides": {
-    "ox": "0.7.2"
   },
   "packageManager": "bun@1.2.5"
 }

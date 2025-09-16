@@ -54,7 +54,7 @@ export function useAuth() {
         chainId,
         nonce,
         issuedAt: new Date(),
-        expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        expirationTime: new Date(Date.now() + 24 * 60 * 60 * 1000 * 30 ), // 30 days
       });
 
       const signature = await signMessageAsync({
@@ -65,7 +65,6 @@ export function useAuth() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Wallet-Connector": connector?.id || "unknown",
         },
         body: JSON.stringify({
           message,
