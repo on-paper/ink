@@ -18,7 +18,7 @@ export default function LoginPage() {
     mutation: {
       onError: (error) => {
         const errorMessage = prettifyViemError(error);
-        toast.error("Connection Failed", { description: errorMessage });
+        toast.error(errorMessage);
       },
     },
   });

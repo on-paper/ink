@@ -14,6 +14,7 @@ interface FeedProps<T = any> {
   refetchInterval?: number;
   LoadingView?: React.ComponentType;
   headers?: Record<string, string>;
+  emptyStateTitle?: string;
   emptyStateDescription?: string;
 }
 
@@ -30,7 +31,8 @@ export const Feed = <T extends { id: string } = any>({
   refetchInterval,
   LoadingView,
   headers,
-  emptyStateDescription = "Nothing here but us chickens...",
+  emptyStateTitle = "Nothing to see here yet",
+  emptyStateDescription = "When new posts arrive, they will appear here.",
 }: FeedProps<T>) => {
   const { data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<FeedResponse<T>>({
     queryKey: queryKey || ["feed", endpoint],
@@ -93,7 +95,6 @@ export const Feed = <T extends { id: string } = any>({
 
   const items = data?.pages.flatMap((page) => page.data) || [];
   const list = items.filter(Boolean).map((item) => <ItemView key={item.id} item={item} />);
-
   return (
     <div className="flex flex-col gap-2">
       {list}
@@ -101,7 +102,7 @@ export const Feed = <T extends { id: string } = any>({
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4 relative">
           <StickyNote className="absolute w-32 h-32 text-muted-foreground opacity-10" />
           <div className="relative z-10">
-            <h3 className="text-lg font-bold mb-2">Crisp. Clean. Waiting for ink.</h3>
+            <h3 className="text-lg font-bold mb-2">{emptyStateTitle}</h3>
             <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
           </div>
         </div>

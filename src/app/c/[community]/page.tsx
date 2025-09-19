@@ -66,7 +66,12 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
   return (
     <>
       <CommunityPostComposer community={community} communityAddress={params.community} />
-      <Feed ItemView={PostView} endpoint={endpoint} />
+      <Feed
+        ItemView={PostView}
+        endpoint={endpoint}
+        emptyStateTitle="No posts in this community yet"
+        emptyStateDescription="Start the conversation with the first post."
+      />
     </>
   );
 }

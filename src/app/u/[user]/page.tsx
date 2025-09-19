@@ -51,7 +51,14 @@ const UserPage = async ({ params }: { params: { user: string } }) => {
 
   if (!user) return notFound();
 
-  return <Feed ItemView={PostView} endpoint={`/api/posts?address=${user.address}&type=main`} />;
+  return (
+    <Feed
+      ItemView={PostView}
+      endpoint={`/api/posts?address=${user.address}&type=main`}
+      emptyStateTitle="No posts from this user yet"
+      emptyStateDescription="Check back soon to see what they share."
+    />
+  );
 };
 
 export default UserPage;

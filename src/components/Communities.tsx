@@ -39,6 +39,8 @@ export default function Communities({ initialQuery = "" }: CommunitiesProps) {
         endpoint={`/api/communities${query ? `?q=${encodeURIComponent(query)}` : ""}`}
         queryKey={["communities", query]}
         LoadingView={CommunitiesListSuspense}
+        emptyStateTitle="No communities found"
+        emptyStateDescription="Try adjusting your search or create a new community."
       />
     </>
   );
