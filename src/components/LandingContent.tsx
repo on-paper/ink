@@ -3,8 +3,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BookOpenIcon, SquareLibrary } from "lucide-react";
+import { MessageCircle, MessageCircleHeart, SquareLibrary } from "lucide-react";
 import { LuGithub, LuGlobe, LuHandCoins, LuLock, LuZap } from "react-icons/lu";
+import { FaDiscord, FaTelegramPlane } from "react-icons/fa";
 import { SiEthereum } from "react-icons/si";
 
 const protocols = [
@@ -22,6 +23,19 @@ const protocols = [
   },
 ];
 
+const communityLinks = [
+  {
+    name: "Discord",
+    href: "https://discord.gg/VQ72d2yHge",
+    Icon: FaDiscord,
+  },
+  {
+    name: "Telegram",
+    href: "https://t.me/globalcartel",
+    Icon: FaTelegramPlane,
+  },
+];
+
 export const LandingContent = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -35,7 +49,7 @@ export const LandingContent = () => {
 
   return (
     <div className="relative min-h-screen max-w-5xl mx-auto">
-      <div className="flex flex-col min-h-screen items-center justify-start relative z-10 gap-40 py-20 px-4">
+      <div className="flex flex-col min-h-screen items-center justify-start relative z-10 gap-40 px-4 pt-20 pb-40 sm:pb-28 md:pb-24">
         {/* Section 1: Header */}
         <div className="text-center space-y-2 w-full">
           <p className="text-lg text-primary/30">Welcome, you have arrived just in time</p>
@@ -140,12 +154,12 @@ export const LandingContent = () => {
 
         {/* Section 3: Closing content */}
         <div className="w-full">
-          <div className="max-w-xl mx-auto mb-16">
+          <div className="max-w-xl mx-auto mb-16 px-4">
             <p className="text-xl text-primary">You'll love it.</p>
-            <p className="text-xl text-primary/60 mb-32">It's never been easier to communicate on-chain.</p>
+            <p className="text-xl text-primary/60 mb-28">It's never been easier to communicate on-chain.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-20 max-w-2xl mx-auto px-4 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-20 max-w-2xl mx-auto px-4 md:px-12 pl-8 md:pl-12">
             <div className="relative pl-12 md:pl-0">
               <LuZap
                 className="absolute -top-8 md:-top-12 left-0 md:-left-12 text-6xl md:text-7xl text-primary -z-10"
@@ -183,12 +197,12 @@ export const LandingContent = () => {
             </div>
           </div>
 
-          <div className="mt-40 max-w-3xl mx-auto">
+          <div className="mt-32 max-w-3xl mx-auto">
             <Link href="/docs" className="block group">
-              <div className="relative w-full border border-primary/20 rounded-lg p-6 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 overflow-hidden">
+              <div className="relative w-full border border-primary/20 rounded-2xl p-6 py-10 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 overflow-hidden">
                 <SquareLibrary className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-24 text-primary opacity-20 transition-opacity duration-200 group-hover:opacity-30" />
                 <div className="relative pr-28 z-10">
-                  <p className="text-xl font-semibold text-primary">
+                  <p className="text-2xl font-semibold text-primary">
                     Want to learn more?
                   </p>
                   <p className="text-lg text-primary/60">
@@ -198,8 +212,54 @@ export const LandingContent = () => {
               </div>
             </Link>
           </div>
+
+          <div className="mt-16 max-w-3xl mx-auto">
+            <div className="group relative w-full border border-primary/20 rounded-2xl px-6 py-6 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 overflow-hidden">
+              <MessageCircle
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-24 text-primary opacity-20 transition-opacity duration-200 group-hover:opacity-30"
+                aria-hidden
+              />
+              <div className="relative pr-28 z-10">
+                <p className="text-2xl font-semibold text-primary">Questions? Feedback?</p>
+                <p className="text-lg text-primary/60">Come chat with us.</p>
+              </div>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 relative z-10">
+                {communityLinks.map(({ name, href, Icon }) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 rounded-full border border-primary/20 px-4 py-2 text-sm font-medium text-primary/80 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                  >
+                    <Icon className="h-5 w-5 text-primary/70 transition-colors duration-200 group-hover:text-primary" aria-hidden />
+                    <span>{name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      <footer className="mt-24 w-full border-t border-primary/10">
+        <div className="flex flex-row justify-between items-center pb-20 sm:pb-0 gap-4 px-4 text-sm text-primary/60 sm:flex-row sm:items-center sm:justify-between">
+          <a href="https://cartel.sh" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary underline-offset-2 hover:underline">Secured by Cartel</a>
+          <div className="flex items-center gap-4">
+            {communityLinks.map(({ name, href, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-full border border-transparent p-2 text-primary/60 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                aria-label={name}
+              >
+                <Icon className="h-5 w-5" aria-hidden />
+              </a>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
