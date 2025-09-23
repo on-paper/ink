@@ -27,21 +27,24 @@ built on top of ENS, EFP & ECP
    Replace the variables with your own values.
 
 3. Install dependencies:
-   Make sure you have a new version of bun installed
+   - Make sure you're running **Node.js 22** (the project targets `>=22 <23`).
+   - Install [Bun](https://bun.sh) **1.2.5 or newer**:
 
-```sh
-curl -fsSL https://bun.sh/install | bash
-```
+     ```sh
+     curl -fsSL https://bun.sh/install | bash
+     ```
 
-```sh
-bun install
-```
+   - Install project packages:
+
+     ```sh
+     bun install
+     ```
 
 4. Run the dev server:
    ```sh
    bun run dev
    ```
-   Navigate to [http://localhost:3000/home](http://localhost:3000/home)
+   Navigate to [https://localhost:3010/home](https://localhost:3010/home) and accept the self-signed certificate prompt from your browser.
 
 ### Next Steps
 
@@ -53,4 +56,10 @@ Biome is used for formatting and linting. Install it via [Zed/VSCode extensions]
 
 ```sh
 bun run check
+```
+
+For type safety, also run:
+
+```sh
+bunx tsc --noEmit
 ```
