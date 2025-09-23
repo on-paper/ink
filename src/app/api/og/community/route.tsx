@@ -40,8 +40,8 @@ async function generateOGImage(params: { name?: string | null; address?: string 
           <path
             d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
             stroke="#FFFFFF"
-            stroke-width="56"
-            stroke-linecap="round"
+            strokeWidth={56}
+            strokeLinecap="round"
           />
         </svg>
       </div>,
@@ -61,8 +61,8 @@ async function generateOGImage(params: { name?: string | null; address?: string 
           <path
             d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
             stroke="#FFFFFF"
-            stroke-width="56"
-            stroke-linecap="round"
+            strokeWidth={56}
+            strokeLinecap="round"
           />
         </svg>
       </div>
@@ -73,14 +73,14 @@ async function generateOGImage(params: { name?: string | null; address?: string 
           <path
             d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
             stroke="#000000"
-            stroke-width="180"
-            stroke-linecap="round"
+            strokeWidth={180}
+            strokeLinecap="round"
           />
           <path
             d="M350.5 426.182C299 459.5 215 476 128.486 426.182C97.8615 470.932 28 464.172 28 434.339C28 404.506 44.5 269 68 170C163.082 -74.5 499 24.9999 462 269C443.627 390.161 319.238 339.11 336.373 269M336.373 269C374.653 112.375 191.131 100.278 163.082 236.905C132.458 386.071 307.275 388.055 336.373 269Z"
             stroke="#ffffff"
-            stroke-width="56"
-            stroke-linecap="round"
+            strokeWidth={56}
+            strokeLinecap="round"
           />
         </svg>
       </div>
@@ -108,7 +108,7 @@ async function generateOGImage(params: { name?: string | null; address?: string 
             />
           ) : (
             <div tw="w-48 h-48 rounded-2xl relative z-10 flex items-center justify-center bg-white/10">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5}>
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
