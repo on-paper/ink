@@ -3,7 +3,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MessageCircle, MessageCircleHeart, SquareLibrary } from "lucide-react";
+import { LogIn, MessageCircleHeart, SquareLibrary } from "lucide-react";
+import { Button } from "~/components/ui/button";
 import { LuGithub, LuGlobe, LuHandCoins, LuLock, LuZap } from "react-icons/lu";
 import { FaDiscord, FaTelegramPlane } from "react-icons/fa";
 import { SiEthereum } from "react-icons/si";
@@ -213,13 +214,13 @@ export const LandingContent = () => {
             </Link>
           </div>
 
-          <div className="mt-16 max-w-3xl mx-auto">
-            <div className="group relative w-full border border-primary/20 rounded-2xl px-6 py-6 transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 overflow-hidden">
-              <MessageCircle
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-24 text-primary opacity-20 transition-opacity duration-200 group-hover:opacity-30"
+          <div className="mt-12 max-w-3xl mx-auto">
+            <div className="group relative w-full border border-primary/20 rounded-2xl px-6 py-6 transition-all duration-200 overflow-hidden">
+              <MessageCircleHeart
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-24 text-primary opacity-20 transition-opacity duration-200"
                 aria-hidden
               />
-              <div className="relative pr-28 z-10">
+              <div className="relative pr-28 pt-6 z-10">
                 <p className="text-2xl font-semibold text-primary">Questions? Feedback?</p>
                 <p className="text-lg text-primary/60">Come chat with us.</p>
               </div>
@@ -238,6 +239,16 @@ export const LandingContent = () => {
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="mt-24 flex flex-col items-center gap-4">
+            <p className="text-3xl font-semibold text-primary">Try Paper now!</p>
+            <Button asChild size="lg" className="dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] drop-shadow-md">
+              <Link href="/login" className="inline-flex items-center gap-2">
+                <LogIn className="h-4 w-4" aria-hidden />
+                <span>Connect</span>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
